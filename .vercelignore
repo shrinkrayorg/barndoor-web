@@ -1,0 +1,6 @@
+Barndoor.app/
+__pycache__/
+.streamlit/
+.DS_Store
+.env
+Barndoor.app.command
