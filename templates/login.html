@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barndoor - Login</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #d32f2f;
+            --primary-dark: #1a1a1a;
+            --accent-green: #00e676;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .hero-container {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+            background-image: url('https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            /* Classic Car Placeholder */
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            /* Dark overlay */
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+
+        /* Navbar style top bar */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .live-badge {
+            background: var(--accent-green);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .live-badge::before {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 6px;
+            background: black;
+            border-radius: 50%;
+        }
+
+        .brand-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.2s;
+        }
+
+        .nav-link.active {
+            color: var(--primary-red);
+        }
+
+        .nav-link:hover {
+            color: white;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 72px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 400;
+            margin-bottom: 48px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-red);
+            color: white;
+            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: #b71c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(211, 47, 47, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .login-form-container {
+            display: none;
+            /* Hidden by default */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            z-index: 20;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .login-form-container.active {
+            display: block;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .form-header h2 {
+            color: #1a1a1a;
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .form-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #333;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .backdrop {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 15;
+            backdrop-filter: blur(5px);
+        }
+
+        .backdrop.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -45%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="hero-container">
+        <div class="overlay"></div>
+
+        <!-- Top Navigation -->
+        <nav class="top-bar">
+            <div class="logo">
+                <span class="live-badge">LIVE</span>
+                <span class="brand-name">BARNDOOR</span>
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link active">HOME</a>
+                <a href="#" class="nav-link">TICKLE FILE</a>
+                <a href="#" class="nav-link">SETTINGS</a>
+                <a href="#" class="nav-link">ACCESS PORTAL</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="content">
+            <h1>DISCOVER HIDDEN<br>TREASURES</h1>
+            <p class="subtitle">Premium classic car finder across the heartland</p>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="showLogin()">LOGIN TO DASHBOARD</button>
+                <button class="btn btn-secondary" onclick="requestAccess()">REQUEST ACCESS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="backdrop" id="backdrop" onclick="hideLogin()"></div>
+    <div class="login-form-container" id="loginForm">
+        <button class="close-btn" onclick="hideLogin()">
+            <span class="material-icons">close</span>
+        </button>
+        <div class="form-header">
+            <h2>Welcome Back</h2>
+            <p>Enter your credentials to access the barn.</p>
+        </div>
+        <form action="/login" method="POST">
+            <div class="input-group">
+                <label>Access ID</label>
+                <input type="text" name="username" placeholder="e.g. hunter2" required>
+            </div>
+            <div class="input-group">
+                <label>Security Key</label>
+                <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">UNLOCK SYSTEM</button>
+        </form>
+    </div>
+
+    <script>
+        function showLogin() {
+            document.getElementById('backdrop').classList.add('active');
+            document.getElementById('loginForm').classList.add('active');
+        }
+
+        function hideLogin() {
+            document.getElementById('backdrop').classList.remove('active');
+            document.getElementById('loginForm').classList.remove('active');
+        }
+
+        function requestAccess() {
+            window.location.href = "mailto:access@barndoor.com?subject=Request Access to Barndoor";
+        }
+    </script>
+</body>
+
+</html>

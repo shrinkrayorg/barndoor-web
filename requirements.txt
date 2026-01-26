@@ -1,0 +1,15 @@
+playwright
+python-dotenv
+tinydb
+twilio
+sendgrid
+requests
+fake-useragent
+geopy
+schedule
+# rumps (Disabled for Vercel/Linux compatibility)
+# rumps
+
+flask
+streamlit
+pandas

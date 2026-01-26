@@ -1,0 +1,3316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barndoor - Premium Classic Car Finder</title>
+    <link rel="icon" href="/static/favicon.png" type="image/png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        html {
+            overflow-y: scroll;
+        }
+
+        /* Force scrollbar to prevent jumps */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-red: #CC0000;
+            --dark-bg: #1a1a1a;
+            --darker-bg: #0d0d0d;
+            --text-light: #ffffff;
+            --text-gray: #b0b0b0;
+            --border-gray: #333333;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--darker-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* Navigation - standardized fixed layout */
+        .navbar {
+            background: var(--dark-bg);
+            border-bottom: 1px solid var(--border-gray);
+            height: 80px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Spectator Button in Nav */
+        .nav-spectator-btn {
+            background: linear-gradient(135deg, #00f260 0%, #0575e6 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-right: 20px;
+            /* Space between btn and logo */
+            font-weight: 700;
+            font-size: 12px;
+            box-shadow: 0 2px 10px rgba(5, 117, 230, 0.3);
+            text-transform: uppercase;
+        }
+
+        .nav-spectator-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(5, 117, 230, 0.5);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-light);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .logo:hover {
+            color: var(--primary-red);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+            padding: 10px 0;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary-red);
+        }
+
+        .nav-contact {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 80px;
+            height: 600px;
+            /* Reduced overlay opacity from 0.3/0.5 to 0.1/0.2 to make car more visible */
+            background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3)),
+            url("{{ url_for('static', filename='barn_find_hero.png') }}") center 60%/cover no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(13, 13, 13, 0.9));
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        /* Feed Container for Split View */
+        .feed-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .feed-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .hero-title {
+            font-size: 64px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: var(--text-gray);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: #ffffff;
+            padding: 60px 40px;
+        }
+
+        .search-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .search-title {
+            text-align: center;
+            color: var(--dark-bg);
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .search-form {
+            background: #f5f5f5;
+            padding: 40px;
+            border-radius: 8px;
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .search-input {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            color: #333;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+
+        .search-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 16px 40px;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #aa0000;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(204, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-red);
+            border: 2px solid var(--primary-red);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        /* Inventory Browser Section */
+        .inventory-section {
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .inventory-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Filter Sidebar */
+        .filter-sidebar {
+            background: white;
+            border-right: 1px solid #ddd;
+            height: 100vh;
+            overflow-y: scroll;
+            position: sticky;
+            top: 0;
+            padding: 16px 20px 24px 20px;
+        }
+
+        /* Total Vehicles Banner */
+        .total-vehicles-banner {
+            background: linear-gradient(135deg, var(--primary-red) 0%, #aa0000 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 4px 12px rgba(204, 0, 0, 0.3);
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .banner-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .banner-icon .material-icons {
+            font-size: 24px;
+            /* Slightly smaller icon */
+            color: white;
+        }
+
+        .banner-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            /* Align label and count horizontally */
+            gap: 10px;
+            /* Space between label and count */
+        }
+
+        .banner-label {
+            font-size: 13px;
+            /* Slightly larger for readability */
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0;
+            /* Remove bottom margin */
+        }
+
+        .banner-count {
+            font-size: 24px;
+            /* More economical size */
+            font-weight: 800;
+            color: white;
+            line-height: 1;
+            margin-left: 0;
+            /* Tight margins */
+        }
+
+        /* Deal Quality Section */
+        .deal-quality-section {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0;
+            /* Remove padding from container */
+            margin-bottom: 24px;
+            overflow: hidden;
+            /* Ensure header fits */
+            animation: slideDown 0.6s ease;
+        }
+
+        .quality-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            background: #4a0000;
+            /* Dark red header */
+            padding: 10px 16px;
+            margin-bottom: 0;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .quality-header .material-icons {
+            font-size: 18px;
+            color: #ffcc00;
+            /* Bright yellow icon */
+        }
+
+        .quality-description {
+            font-size: 11px;
+            color: #666;
+            padding: 12px 16px 4px 16px;
+            /* Padding for content */
+            margin-bottom: 8px;
+        }
+
+        .quality-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 16px 16px 16px;
+            /* Bottom padding */
+            margin-bottom: 0;
+        }
+
+        .quality-bar {
+            flex: 1;
+            height: 24px;
+            background: #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .quality-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 50%, #f59e0b 100%);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quality-fill:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .quality-percentage {
+            font-size: 16px;
+            font-weight: 800;
+            color: #1a1a1a;
+            min-width: 45px;
+        }
+
+        .quality-criteria {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .criteria-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .criteria-item .material-icons {
+            font-size: 16px;
+            color: var(--primary-red);
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: flex-start;
+            gap: 12px;
+            /* Equal distancing */
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 16px;
+            /* Compact padding */
+            background: linear-gradient(135deg, var(--primary-red) 0%, #aa0000 100%);
+            /* Gradient matching Total Inventory */
+            border-radius: 6px;
+            /* Rounded corners */
+        }
+
+        .sidebar-header h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 0.5px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .settings-link {
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .settings-link:hover {
+            color: white;
+        }
+
+        .btn-reset-filters {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .btn-reset-filters:hover {
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .filter-group {
+            margin-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .filter-group h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-group h4:after {
+            content: '▼';
+            font-size: 10px;
+            color: #999;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .filter-group.expanded h4:after {
+            transform: rotate(180deg);
+        }
+
+        .filter-content {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease,
+                padding 0.3s ease;
+        }
+
+        .filter-group.expanded .filter-content {
+            max-height: 2000px;
+            opacity: 1;
+            padding-top: 8px;
+        }
+
+        .filter-item {
+            margin-bottom: 10px;
+        }
+
+        .filter-item label,
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .filter-select,
+        .filter-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            color: #333;
+        }
+
+        .filter-select:focus,
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+
+        .range-inputs {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .range-inputs span {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+
+        .filter-input-small {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .btn-apply-filters {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-apply-filters:hover {
+            background: #aa0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(204, 0, 0, 0.3);
+        }
+
+        .btn-apply-mini {
+            width: auto;
+            height: auto;
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 0;
+            /* Removed margin for uniform gap */
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .btn-apply-mini:hover {
+            background: rgba(0, 0, 0, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Main Content Area */
+        .inventory-main {
+            flex: 1;
+            padding: 16px 40px 40px 40px;
+            /* Added top padding per user request for small space */
+            background: #f5f5f5;
+        }
+
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .results-info h2 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .results-info p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Spectator Styles */
+        .btn-spectator {
+            background: linear-gradient(135deg, #00f260 0%, #0575e6 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(5, 117, 230, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-left: 20px;
+            width: 120px;
+            height: 100px;
+        }
+
+        .btn-spectator:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(5, 117, 230, 0.6);
+        }
+
+        .spectator-icon .material-icons {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        /* Spectator Modal */
+        .spectator-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .spectator-content {
+            background: #111;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 242, 96, 0.2);
+            text-align: center;
+        }
+
+        .spectator-video {
+            max-width: 90vw;
+            max-height: 80vh;
+            border: 2px solid #333;
+        }
+
+        .close-spectator {
+            margin-top: 20px;
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Sort Controls */
+        .sort-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sort-controls label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .sort-select {
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* Inventory Grid */
+        .inventory-grid {
+            display: block;
+            /* grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); */
+            gap: 24px;
+        }
+
+        .loading-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .loading-state .material-icons {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .loading-state p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .rotating {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Vehicle Card in Grid */
+        .vehicle-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .vehicle-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(204, 0, 0, 0.2);
+        }
+
+        .vehicle-card-image {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        .vehicle-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .vehicle-card:hover .vehicle-card-image img {
+            transform: scale(1.05);
+        }
+
+        .vehicle-card-price {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--primary-red);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 800;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .vehicle-card-info {
+            padding: 20px;
+        }
+
+        .vehicle-card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .vehicle-card-details {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .vehicle-card-details span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .vehicle-card-location {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 12px;
+        }
+
+        .vehicle-card-score {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .score-high {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .score-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .score-low {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Inventory Carousel */
+        .inventory-carousel-section {
+            background: #000000;
+            padding: 0;
+            border-top: 1px solid var(--border-gray);
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .carousel-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px 0;
+            /* Drastically reduced from 60px */
+        }
+
+        .carousel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px 4px;
+            /* Restoring original padding */
+            margin: 0;
+            /* Removing margin */
+            background: transparent;
+            /* Removing red background */
+        }
+
+        .carousel-header h2 {
+            font-size: 28px;
+            /* Restoring original size */
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            /* Restoring text color variable */
+            margin: 0;
+        }
+
+        .carousel-nav {
+            display: flex;
+            gap: 12px;
+        }
+
+        .carousel-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--dark-bg);
+            border: 1px solid var(--border-gray);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-btn:hover {
+            background: var(--primary-red);
+            border-color: var(--primary-red);
+            transform: scale(1.1);
+        }
+
+        .carousel-scroll {
+            display: flex;
+            gap: 24px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 0 40px 10px;
+            /* Reduced bottom padding from 20px */
+            scrollbar-width: none;
+        }
+
+        .carousel-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Car Card */
+        .car-card {
+            min-width: 225px;
+            /* Reduced from 280px */
+            background: var(--dark-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .car-card:hover {
+            box-shadow: 0 12px 40px rgba(204, 0, 0, 0.3);
+            /* Removed bounce transform */
+        }
+
+        .car-image {
+            position: relative;
+            width: 100%;
+            height: 160px;
+            /* Reduced from 200px */
+            overflow: hidden;
+        }
+
+        .car-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .car-card:hover .car-image img {
+            transform: scale(1.1);
+        }
+
+        .price-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--primary-red);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: 800;
+            z-index: 2;
+        }
+
+        .price-badge.call-for-price {
+            background: var(--dark-bg);
+            border: 2px solid var(--primary-red);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .price-badge.special {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        }
+
+        .save-btn {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .save-btn:hover {
+            background: var(--primary-red);
+            border-color: var(--primary-red);
+            transform: scale(1.05);
+        }
+
+        .save-btn.active {
+            background: var(--primary-red);
+            border-color: var(--primary-red);
+        }
+
+        .save-btn .material-icons {
+            font-size: 16px;
+        }
+
+        .inventory-table td {
+            padding: 8px 16px;
+            /* Reduced from 12px 16px */
+            color: var(--text-gray);
+            border-bottom: 1px solid var(--border-gray);
+            font-size: 13px;
+            /* Slightly smaller font */
+        }
+
+        .car-info {
+            padding: 12px;
+            /* Reduced from 20px */
+            border-bottom: 1px solid var(--border-gray);
+            height: 120px;
+            /* Reduced from 160px */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* .car-year removed */
+
+        .car-name {
+            font-size: 16px;
+            /* Slightly smaller */
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 42px;
+            /* Approx 2 lines */
+            line-height: 1.3;
+        }
+
+        /* Container for Meta and DQM Score alignment */
+        .car-meta-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
+            width: 100%;
+        }
+
+        .car-meta {
+            font-size: 13px;
+            color: var(--text-gray);
+        }
+
+        .dqm-score-large {
+            color: #00ff00;
+            font-size: 32px;
+            /* Much larger as requested */
+            font-weight: 900;
+            line-height: 1;
+            text-align: right;
+            text-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            letter-spacing: -1px;
+        }
+
+        .dqm-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+            display: block;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .car-actions {
+            background: var(--border-gray);
+            width: 100%;
+        }
+
+        .archive-btn {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            padding: 16px;
+            color: var(--text-gray);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .archive-btn:hover {
+            background: #222;
+            color: white;
+        }
+
+        .archive-btn .material-icons {
+            font-size: 20px;
+        }
+
+        /* Dashboard Section */
+        .dashboard-section {
+            background: var(--dark-bg);
+            padding: 80px 40px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Status Card */
+        .status-card {
+            background: var(--darker-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .status-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .status-icon.running {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .status-icon.stopped {
+            background: #333;
+            color: #666;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .status-text h3 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .status-text p {
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+
+        /* Control Buttons */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .btn-start {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            background: #aa0000;
+        }
+
+        .btn-stop {
+            background: transparent;
+            color: var(--primary-red);
+            border: 2px solid var(--primary-red);
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--darker-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            padding: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary-red);
+            box-shadow: 0 8px 30px rgba(204, 0, 0, 0.2);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text-light);
+        }
+
+        .stat-value.time {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        /* Activity Logs */
+        .logs-section {
+            background: var(--darker-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            padding: 40px;
+        }
+
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .logs-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-refresh {
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-refresh:hover {
+            background: #aa0000;
+            transform: translateY(-2px);
+        }
+
+        .logs-content {
+            background: #000000;
+            border-radius: 6px;
+            padding: 24px;
+            height: 350px;
+            overflow-y: auto;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #10b981;
+            border: 1px solid #222;
+        }
+
+        .logs-content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .logs-content::-webkit-scrollbar-track {
+            background: #111;
+        }
+
+        .logs-content::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 5px;
+        }
+
+        .logs-content::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 36px;
+            }
+
+            .search-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+
+        /* Notification Dropdown (Refined) */
+        .notification-dropdown {
+            position: absolute;
+            top: 150%;
+            right: -100px;
+            width: 300px;
+            background: var(--darker-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            z-index: 2000;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .notification-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 108px;
+            width: 12px;
+            height: 12px;
+            background: var(--darker-bg);
+            border-left: 1px solid var(--border-gray);
+            border-top: 1px solid var(--border-gray);
+            transform: rotate(45deg);
+        }
+
+        .notification-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-gray);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .dropdown-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-gray);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: #222;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-title {
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .dropdown-meta {
+            color: var(--text-gray);
+            font-size: 12px;
+        }
+
+        @keyframes bellShake {
+            0% {
+                transform: rotate(0);
+            }
+
+            15% {
+                transform: rotate(15deg);
+            }
+
+            30% {
+                transform: rotate(-15deg);
+            }
+
+            45% {
+                transform: rotate(10deg);
+            }
+
+            60% {
+                transform: rotate(-10deg);
+            }
+
+            75% {
+                transform: rotate(5deg);
+            }
+
+            90% {
+                transform: rotate(-5deg);
+            }
+
+            100% {
+                transform: rotate(0);
+            }
+        }
+
+        .notification-bell:hover .material-icons {
+            color: var(--primary-red) !important;
+            animation: bellShake 0.6s ease-out both;
+        }
+
+        /* Table View Styles */
+        .inventory-table-container {
+            overflow-x: auto;
+            background: #1a1a1a;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            color: #ccc;
+            min-width: 1200px;
+            /* Force scroll on small screens */
+        }
+
+        .inventory-table th {
+            text-align: left;
+            padding: 12px 16px;
+            background: #4a0000;
+            /* Darker red per request */
+            color: #ffffff;
+            /* High contrast white */
+            font-weight: 700;
+            /* Bolder text */
+            border-bottom: 1px solid #660000;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .inventory-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #333;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .inventory-table tr:hover {
+            background: #2a2a2a;
+        }
+
+        .inventory-table tr:nth-child(even) {
+            background: #1e1e1e;
+        }
+
+        .dqm-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .dqm-high {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .dqm-med {
+            background: rgba(241, 196, 15, 0.2);
+            color: #f1c40f;
+        }
+
+        .dqm-low {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .source-badge {
+            text-transform: capitalize;
+            padding: 2px 6px;
+            background: #333;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div style="display: flex; align-items: center;">
+                <!-- LIVE VIEW BUTTON (Left of Logo) -->
+                <button class="nav-spectator-btn" onclick="openSpectator()">
+                    <span class="material-icons" style="font-size: 16px;">visibility</span>
+                    LIVE
+                </button>
+                <a href="#" class="logo">Barndoor</a>
+            </div>
+
+            <ul class="nav-links">
+                <a href="/" class="active">HOME</a>
+
+                <!-- Bell Notification -->
+                <div class="notification-wrapper" style="position: relative;">
+                    <div class="notification-bell" id="bellIcon" onclick="toggleDropdown()"
+                        style="cursor: pointer; display: flex; align-items: center; padding: 0 10px;">
+                        <span class="material-icons"
+                            style="color: var(--text-gray); transition: color 0.3s;">notifications</span>
+                        <span id="badge"
+                            style="position: absolute; top: -5px; right: 0px; background: var(--primary-red); color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; display: none;">0</span>
+                    </div>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="dropdown-header">Notifications</div>
+                        <div id="dropdownContent"></div>
+                    </div>
+                </div>
+
+                <a href="/tickle">TICKLE FILE</a>
+                <a href="/settings">SETTINGS</a>
+                <a href="/portal" class="admin-link">ACCESS PORTAL</a>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">DISCOVER HIDDEN TREASURES</h1>
+            <p class="hero-subtitle">Premium classic car finder across the heartland</p>
+        </div>
+    </div>
+
+    <!-- Scrolling Inventory Carousel -->
+    <section class="inventory-carousel-section">
+        <div class="carousel-container">
+            <div class="carousel-header">
+                <h2>FEATURED INVENTORY <span style="color: #00ff00;">(TOP 10 DQM)</span></h2>
+                <div class="carousel-nav">
+                    <button class="carousel-btn prev" onclick="scrollCarousel('left')">
+                        <span class="material-icons">chevron_left</span>
+                    </button>
+                    <button class="carousel-btn next" onclick="scrollCarousel('right')">
+                        <span class="material-icons">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="carousel-scroll" id="inventoryCarousel">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Inventory Browser Section -->
+    <section id="inventory" class="inventory-section">
+        <div class="inventory-layout">
+            <!-- Left Sidebar - Filters -->
+            <aside class="filter-sidebar">
+                <!-- Total Vehicles Banner -->
+
+
+                <!-- Deal Quality Score -->
+
+
+                <div class="sidebar-header">
+                    <h3>FILTERS</h3>
+                    <a href="/settings" class="settings-link" title="Configure Search Settings">
+                        <span class="material-icons">settings</span>
+                    </a>
+                    <button class="btn-reset-filters" onclick="resetAllFilters()">RESET</button>
+                    <button class="btn-apply-mini" onclick="applyFilters(event)" title="Apply Filters">APPLY</button>
+                </div>
+
+                <!-- Location -->
+                <div class="filter-group expanded">
+                    <h4>Location</h4>
+                    <div class="filter-content">
+                        <div class="input-group">
+                            <label>Search within</label>
+                            <select class="filter-select" id="filterRadius">
+                                <option value="5">5 miles</option>
+                                <option value="10">10 miles</option>
+                                <option value="15">15 miles</option>
+                                <option value="20">20 miles</option>
+                                <option value="25">25 miles</option>
+                                <option value="30">30 miles</option>
+                                <option value="50">50 miles</option>
+                                <option value="100">100 miles</option>
+                                <option value="250">250 miles</option>
+                                <option value="500">500 miles</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>ZIP code</label>
+                            <input type="text" class="filter-input" id="filterZip" placeholder="73160">
+                        </div>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="filterShippable">
+                            <span>Include shippable listings</span>
+                        </label>
+                    </div>
+                </div>
+
+                <script>
+                    async function renderListings() {
+                        // Apply Filters first (this updates filteredInventory)
+                        applyFilters();
+
+                        // Get Sort Criteria
+                        const criteria = document.getElementById('sortFilter').value;
+                        console.log("Sorting by:", criteria); // Debug
+
+                        // Sort filteredInventory in place
+                        filteredInventory.sort((a, b) => {
+                            let valA, valB;
+
+                            switch (criteria) {
+                                case 'newest_posted':
+                                    // Sort by Time Posted (Seller)
+                                    // Fallback to 'processed_at' (System Found) if 'time_posted' is missing
+                                    const dateA = a.time_posted ? new Date(a.time_posted) : new Date(a.processed_at);
+                                    const dateB = b.time_posted ? new Date(b.time_posted) : new Date(b.processed_at);
+                                    return dateB.getTime() - dateA.getTime(); // Descending (Newest First)
+
+                                case 'newest':
+                                    // Sort by System Found Time
+                                    return new Date(b.processed_at).getTime() - new Date(a.processed_at).getTime();
+
+                                case 'score':
+                                    valA = parseFloat(a.score) || 0;
+                                    valB = parseFloat(b.score) || 0;
+                                    return valB - valA; // Descending
+
+                                case 'price_low':
+                                    valA = parseFloat(a.price) || 0;
+                                    valB = parseFloat(b.price) || 0;
+                                    return valA - valB; // Ascending
+
+                                case 'price_high':
+                                    valA = parseFloat(a.price) || 0;
+                                    valB = parseFloat(b.price) || 0;
+                                    return valB - valA; // Descending
+
+                                default:
+                                    return 0;
+                            }
+                        });
+
+                        // Force re-render
+                        displayInventory(filteredInventory);
+                    }
+                </script>
+
+                <!-- Basics -->
+                <div class="filter-group">
+                    <h4>Basics</h4>
+                    <div class="filter-content">
+                        <div class="filter-item">
+                            <label>Condition</label>
+                            <select class="filter-select" id="filterCondition">
+                                <option value="">Any</option>
+                                <option value="new">New</option>
+                                <option value="used">Used</option>
+                                <option value="certified">Certified Pre-Owned</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Make</label>
+                            <select class="filter-select" id="filterMake">
+                                <option value="">Any Make</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Model</label>
+                            <select class="filter-select" id="filterModel">
+                                <option value="">Any Model</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Trim</label>
+                            <select class="filter-select" id="filterTrim">
+                                <option value="">Any Trim</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Year</label>
+                            <div class="range-inputs">
+                                <input type="number" class="filter-input-small" id="filterYearMin" placeholder="Min">
+                                <span>to</span>
+                                <input type="number" class="filter-input-small" id="filterYearMax" placeholder="Max">
+                            </div>
+                        </div>
+                        <div class="filter-item">
+                            <label>Price</label>
+                            <div class="range-inputs">
+                                <input type="number" class="filter-input-small" id="filterPriceMin" placeholder="Min">
+                                <span>to</span>
+                                <input type="number" class="filter-input-small" id="filterPriceMax" placeholder="Max">
+                            </div>
+                        </div>
+                        <div class="filter-item">
+                            <label>DQM Score (0-100)</label>
+                            <div class="range-inputs">
+                                <input type="number" class="filter-input-small" id="filterScoreMin" placeholder="Min"
+                                    min="0" max="100">
+                                <span>to</span>
+                                <input type="number" class="filter-input-small" id="filterScoreMax" placeholder="Max"
+                                    min="0" max="100">
+                            </div>
+                        </div>
+                        <div class="filter-item">
+                            <label>Mileage</label>
+                            <div class="range-inputs">
+                                <input type="number" class="filter-input-small" id="filterMileageMin" placeholder="Min">
+                                <span>to</span>
+                                <input type="number" class="filter-input-small" id="filterMileageMax" placeholder="Max">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vehicle History -->
+                <div class="filter-group">
+                    <h4>Vehicle History</h4>
+                    <div class="filter-content">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="filterNoAccidents">
+                            <span>No accidents reported</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="filterCleanTitle">
+                            <span>Clean title</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="filterOneOwner">
+                            <span>One owner</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="filterPersonalUse">
+                            <span>Personal use</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Style -->
+                <div class="filter-group">
+                    <h4>Style</h4>
+                    <div class="filter-content">
+                        <div class="filter-item">
+                            <label>Body style</label>
+                            <select class="filter-select" id="filterBodyStyle">
+                                <option value="">Any</option>
+                                <option value="sedan">Sedan</option>
+                                <option value="suv">SUV</option>
+                                <option value="truck">Truck</option>
+                                <option value="coupe">Coupe</option>
+                                <option value="convertible">Convertible</option>
+                                <option value="wagon">Wagon</option>
+                                <option value="van">Van/Minivan</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Door count</label>
+                            <select class="filter-select" id="filterDoors">
+                                <option value="">Any</option>
+                                <option value="2">2 doors</option>
+                                <option value="4">4 doors</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Exterior color</label>
+                            <select class="filter-select" id="filterExteriorColor">
+                                <option value="">Any</option>
+                                <option value="black">Black</option>
+                                <option value="white">White</option>
+                                <option value="silver">Silver</option>
+                                <option value="gray">Gray</option>
+                                <option value="red">Red</option>
+                                <option value="blue">Blue</option>
+                                <option value="green">Green</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance -->
+                <div class="filter-group">
+                    <h4>Performance</h4>
+                    <div class="filter-content">
+                        <div class="filter-item">
+                            <label>Fuel type</label>
+                            <select class="filter-select" id="filterFuelType">
+                                <option value="">Any</option>
+                                <option value="gasoline">Gasoline</option>
+                                <option value="diesel">Diesel</option>
+                                <option value="electric">Electric</option>
+                                <option value="hybrid">Hybrid</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Transmission</label>
+                            <select class="filter-select" id="filterTransmission">
+                                <option value="">Any</option>
+                                <option value="automatic">Automatic</option>
+                                <option value="manual">Manual</option>
+                                <option value="cvt">CVT</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Drivetrain</label>
+                            <select class="filter-select" id="filterDrivetrain">
+                                <option value="">Any</option>
+                                <option value="fwd">FWD</option>
+                                <option value="rwd">RWD</option>
+                                <option value="awd">AWD</option>
+                                <option value="4wd">4WD</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Cylinders</label>
+                            <select class="filter-select" id="filterCylinders">
+                                <option value="">Any</option>
+                                <option value="4">4 cylinder</option>
+                                <option value="6">6 cylinder</option>
+                                <option value="8">8 cylinder</option>
+                                <option value="10">10+ cylinder</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Show Only -->
+                <div class="filter-group">
+                    <h4>Show only</h4>
+                    <div class="filter-content">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="filterWithPhotos">
+                            <span>Cars with photos</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="filterWithPrice">
+                            <span>Has price listed</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-apply-filters" onclick="applyFilters(event)">
+                    <span class="material-icons">search</span>
+                    APPLY FILTERS
+                </button>
+            </aside>
+
+            <!-- Main Content - Results -->
+            <main class="inventory-main">
+                <div class="inventory-header"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0px; gap: 20px;">
+                    <div class="results-info" style="flex: 1; min-width: 0;">
+                        <h2 style="margin-bottom: 0px; font-size: 18px;">SEARCH RESULTS</h2>
+                        <p id="resultsCount"
+                            style="margin-bottom:0px; line-height: 1.2; font-size: 12px; margin-top: 2px;">Loading
+                            inventory...</p>
+                    </div>
+
+                    <!-- Center Badges Container -->
+                    <div class="badges-container"
+                        style="display: flex; align-items: center; gap: 12px; justify-content: center;">
+                        <!-- Total Inventory Badge -->
+                        <div class="total-vehicles-banner"
+                            style="margin: 0; padding: 6px 16px; height: 36px; box-shadow: none; animation: none; flex-direction: row; gap: 12px; min-width: auto; background: linear-gradient(135deg, var(--primary-red) 0%, #aa0000 100%); border-radius: 6px;">
+                            <div class="banner-icon"
+                                style="width: 24px; height: 24px; background: rgba(255,255,255,0.2);">
+                                <span class="material-icons" style="font-size: 16px;">directions_car</span>
+                            </div>
+                            <div class="banner-info" style="display: flex; align-items: center; gap: 8px;">
+                                <div class="banner-label" style="font-size: 11px; margin: 0; white-space: nowrap;">TOTAL
+                                    INVENTORY</div>
+                                <div class="banner-count" id="totalVehicleCount" style="font-size: 16px; margin: 0;">0
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deal Quality Badge -->
+                        <div class="deal-quality-banner"
+                            style="margin: 0; padding: 6px 16px; height: 36px; display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, var(--primary-red) 0%, #aa0000 100%); border-radius: 6px;">
+                            <div class="banner-icon"
+                                style="width: 24px; height: 24px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; border-radius: 4px;">
+                                <span class="material-icons" style="font-size: 16px; color: #ffcc00;">stars</span>
+                            </div>
+                            <div class="banner-info" style="display: flex; align-items: center; gap: 10px;">
+                                <div class="banner-label"
+                                    style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; white-space: nowrap;">
+                                    DEAL QUALITY</div>
+                                <div class="quality-bar-container"
+                                    style="display: flex; align-items: center; gap: 8px; padding: 0; margin: 0;">
+                                    <div class="quality-bar"
+                                        style="width: 60px; height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; box-shadow: none;">
+                                        <div class="quality-fill" id="qualityFill"
+                                            style="width: 0%; height: 100%; background: #00ff00;"></div>
+                                    </div>
+                                    <div class="quality-percentage" id="qualityPercentage"
+                                        style="font-size: 14px; font-weight: 800; color: white;">0%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bulk-actions"
+                        style="flex: 1; display: flex; align-items: center; gap: 15px; min-width: 0; justify-content: flex-end;">
+                        <button class="btn btn-danger" onclick="deleteSelected()" id="deleteBtn" disabled
+                            style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 12px; height: 32px;">
+                            <span class="material-icons" style="font-size: 16px;">delete</span> DELETE SELECTED
+                        </button>
+                        <span id="selectionCount" style="color: #666; font-size: 13px; font-weight: 500;">0
+                            selected</span>
+                    </div>
+                </div>
+
+                <div class="inventory-grid" id="inventoryGrid">
+                    <!-- Results will be loaded here -->
+                    <div class="loading-state">
+                        <span class="material-icons rotating">sync</span>
+                        <p>Loading vehicles...</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+
+
+    <!-- Spectator Modal -->
+    <div id="spectatorModal" class="spectator-modal">
+        <div class="spectator-content" style="max-width: 1000px;">
+            <h3 style="color:white; margin-bottom:10px;">LIVE SCRAPER FEED</h3>
+            <div class="feed-container">
+                <div class="feed-box">
+                    <h4 style="color:#aaa; text-align:center; margin-bottom:5px;">FACEBOOK (Active)</h4>
+                    <!-- 
+                        We use a query parameter 'source=facebook' to hint to the backend 
+                        which buffer to stream, or simply show the same feed if single-threaded.
+                        For now, assuming the backend serves the *current* ghost view at /video_feed.
+                    -->
+                    <img id="spectatorImgFB" class="spectator-video" src="" alt="Facebook Feed"
+                        style="width:100%; height:auto;">
+                </div>
+                <div class="feed-box">
+                    <h4 style="color:#aaa; text-align:center; margin-bottom:5px;">CRAIGSLIST (Active)</h4>
+                    <img id="spectatorImgCL" class="spectator-video" src="" alt="Craigslist Feed"
+                        style="width:100%; height:auto;">
+                </div>
+            </div>
+            <br>
+            <button class="close-spectator" onclick="closeSpectator()">CLOSE LINK</button>
+        </div>
+    </div>
+
+    <!-- Custom Delete Modal -->
+    <div id="deleteModal" class="spectator-modal" style="background: rgba(0,0,0,0.9);">
+        <div class="spectator-content" style="max-width: 400px; text-align:center;">
+            <div style="margin-bottom:20px;">
+                <span class="material-icons" style="font-size: 48px; color: #e74c3c;">warning</span>
+            </div>
+            <h3 style="color:white; margin-bottom:15px; font-weight:700;">CONFIRM DELETION</h3>
+            <p style="color:#ccc; margin-bottom:25px;">
+                Are you sure you want to PERMANENTLY delete <span id="deleteCount"
+                    style="color:white; font-weight:bold;">0</span> vehicle(s)?
+                <br><br>
+                <span style="font-size:12px; color:#777;">This action cannot be undone.</span>
+            </p>
+            <div style="display:flex; justify-content:center; gap:15px;">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()" style="min-width:100px;">CANCEL</button>
+                <button class="btn btn-danger" onclick="performDelete()"
+                    style="min-width:100px; background:#e74c3c;">DELETE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="dashboard-section">
+        <div class="container">
+            <!-- Service Status -->
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-icon" id="statusIcon">
+                        <span class="material-icons">pending</span>
+                    </div>
+                    <div class="status-text">
+                        <h3>Service Status</h3>
+                        <p id="statusText">Checking system...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn btn-start" id="startBtn" onclick="startService()">
+                    <span class="material-icons" style="font-size: 18px; vertical-align: middle;">play_arrow</span>
+                    START SERVICE
+                </button>
+                <button class="btn btn-stop" id="stopBtn" onclick="stopService()">
+                    <span class="material-icons" style="font-size: 18px; vertical-align: middle;">stop</span>
+                    STOP SERVICE
+                </button>
+                <!-- SPECTATOR MODE TILE -->
+                <button class="btn btn-spectator" onclick="openSpectator()">
+                    <div class="spectator-icon">
+                        <span class="material-icons">visibility</span>
+                    </div>
+                    <span>LIVE VIEW</span>
+                </button>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">TOTAL LISTINGS</div>
+                    <div class="stat-value" id="totalListings">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">LAST SCAN</div>
+                    <div class="stat-value time" id="lastRun">—</div>
+                </div>
+            </div>
+
+            <!-- Activity Logs -->
+            <div class="logs-section">
+                <div class="logs-header">
+                    <h3>RECENT ACTIVITY</h3>
+                    <button class="btn-refresh" onclick="refreshLogs()">
+                        <span class="material-icons" style="font-size: 16px;">refresh</span>
+                        REFRESH
+                    </button>
+                </div>
+                <div class="logs-content" id="logsContent">
+                    Initializing system...
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let autoRefreshInterval;
+        let allInventory = [];
+        let filteredInventory = [];
+        let dealSettings = {};
+        let currentPage = 1;
+        const itemsPerPage = 50;
+        let currentSortField = 'dealScore';
+        let currentSortDir = 'desc';
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Load settings first
+            try {
+                const settingsResp = await fetch('/api/settings');
+                dealSettings = await settingsResp.json();
+
+                // Update criteria display
+                if (dealSettings.location) {
+                    const locText = `${dealSettings.location.city_state} • ${dealSettings.location.radius}mi`;
+                    const el = document.getElementById('criteriaLocation');
+                    if (el) el.textContent = locText;
+                }
+            } catch (e) {
+                console.error("Failed to load settings", e);
+            }
+
+            // Setup filter group toggles
+            // Setup filter group toggles (Accordion Style)
+            document.querySelectorAll('.filter-group h4').forEach(header => {
+                header.addEventListener('click', function () {
+                    const parent = this.parentElement;
+                    const isExpanded = parent.classList.contains('expanded');
+
+                    // If we are opening this one, close all others first
+                    if (!isExpanded) {
+                        document.querySelectorAll('.filter-group').forEach(group => {
+                            group.classList.remove('expanded');
+                        });
+                    }
+
+                    // Toggle the clicked one
+                    parent.classList.toggle('expanded');
+                });
+            });
+
+            // Load inventory
+            loadInventory();
+
+            // Load dashboard status
+            updateStatus();
+            refreshLogs();
+
+            // Auto-refresh every 5 seconds
+            autoRefreshInterval = setInterval(() => {
+                updateStatus();
+                refreshLogs();
+            }, 5000);
+        });
+
+        async function loadInventory() {
+            try {
+                const response = await fetch('/api/listings');
+                const data = await response.json();
+                allInventory = data.listings || [];
+
+                // Calculate deal quality score for each vehicle
+                allInventory = allInventory.map(vehicle => {
+                    vehicle.dealScore = calculateDealQuality(vehicle, dealSettings);
+                    return vehicle;
+                });
+
+                filteredInventory = allInventory;
+
+                // Update total count
+                document.getElementById('totalVehicleCount').textContent = allInventory.length;
+
+                // Calculate average quality
+                updateDealQualityDisplay();
+
+                // Update Featured Inventory (Top 10)
+                updateFeaturedInventory();
+
+                // Display results
+                displayInventory(filteredInventory);
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+                document.getElementById('inventoryGrid').innerHTML = `
+                    <div class="loading-state">
+                        <span class="material-icons">error_outline</span>
+                        <p>Failed to load: ${error.message}</p>
+                        <p style="font-size:12px; margin-top:5px;">Endpoint: /api/listings</p>
+                    </div>
+                `;
+            }
+        }
+
+        function updateFeaturedInventory() {
+            // Sort by Deal Score Descending
+            const sortedByScore = [...allInventory].sort((a, b) => (b.dealScore || 0) - (a.dealScore || 0));
+            const top10 = sortedByScore.slice(0, 10);
+
+            const carousel = document.getElementById('inventoryCarousel');
+            if (top10.length === 0) {
+                carousel.innerHTML = '<div style="padding:40px; color:#666; text-align:center;">No featured vehicles found</div>';
+                return;
+            }
+
+            carousel.innerHTML = top10.map(v => {
+                const year = extractYear(v.title);
+                const price = v.price ? '$' + v.price.toLocaleString() : 'Call';
+                const image = (v.images && v.images.length > 0) ? v.images[0] : 'https://via.placeholder.com/400x300?text=No+Image';
+                const miles = v.mileage ? v.mileage.toLocaleString() + ' mi' : 'Mileage Unknown';
+                const score = v.dealScore || 0;
+                let url = v.listing_url || '#';
+
+                // Stars based on score (approx)
+                let stars = '★★★☆☆';
+                if (score >= 90) stars = '★★★★★';
+                else if (score >= 70) stars = '★★★★☆';
+                else if (score >= 50) stars = '★★★☆☆';
+
+                // Check if saved
+                const saved = isSaved(url);
+                const heartIcon = saved ? 'favorite' : 'favorite_border';
+                const btnClass = saved ? 'save-btn active' : 'save-btn';
+
+                return `
+                <div class="car-card" onclick="window.open('${url}', '_blank')">
+                    <div class="car-image">
+                        <div class="price-badge">${price}</div>
+                        <img src="${image}" alt="${v.title}" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+
+                    </div>
+                    <div class="car-info">
+                        <div>
+                            <!-- Year removed as requested -->
+                            <div class="car-name" title="${v.title}">${v.title}</div>
+                        </div>
+                        
+                        <div class="car-meta-container">
+                            <div class="car-meta">
+                                <div style="font-weight:600; font-size:14px; color:#ddd; margin-bottom:4px;">${miles}</div>
+                                <div style="color:#666; font-size:12px;">${stars}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="dqm-label">DQM SCORE</span>
+                                <div class="dqm-score-large">${score}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="car-actions">
+                        <button class="archive-btn" onclick="archiveListing('${url}', event)">
+                            <span class="material-icons">archive</span>
+                            Archive
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function calculateDealQuality(vehicle, settings) {
+            let score = 0;
+            const titleLower = vehicle.title.toLowerCase();
+            const year = extractYear(vehicle.title);
+            const mileage = vehicle.mileage || 999999;
+
+            // Use settings or defaults
+            const lists = settings.lists || {};
+            const weights = settings.score_weights || {};
+
+            // HIGH VALUE MAKES/MODELS
+            const highValueMakes = lists.high_value_makes || [
+                'toyota', 'honda', 'subaru', 'tacoma', 'tundra', 'corolla', 'camry',
+                'sienna', 'highlander', 'rav', 'prius', 'cr-v', 'crv', 'accord',
+                'odyssey', 'fit', 'insight', 'outback', 'forester', 'crosstrek',
+                'f-150', 'f150', 'silverado', 'sierra', 'ram', 'tundra', 'colorado',
+                'ranger', 'gladiator', 'wrangler', 'grand cherokee'
+            ];
+
+            // MEDIUM VALUE
+            const mediumValueMakes = lists.medium_value_makes || [
+                'mazda', 'hyundai', 'kia', 'volkswagen', 'jeep', 'gmc', 'chevrolet'
+            ];
+
+            // LOW/NO VALUE MAKES
+            const lowValueMakes = lists.low_value_makes || [
+                'nissan', 'ford focus', 'ford fusion', 'ford taurus', 'ford escape',
+                'chevy blazer', 'chevy aveo', 'chevy traverse', 'chevy equinox',
+                'chevy impala', 'chevy malibu', 'chevy spark', 'chevy cruze',
+                'smart', 'dodge', 'mitsubishi', 'isuzu', 'buick', 'pontiac',
+                'mercury', 'crown victoria', 'range rover'
+            ];
+
+            const highBonus = weights.high_value_make || 40;
+            const medBonus = weights.medium_value_make || 25;
+            const lowPenalty = weights.low_value_make_penalty || 5;
+            const lowBonus = weights.low_value_make_bonus || 10;
+
+            // Check for low value first (penalty)
+            let isLowValue = false;
+            for (const lowMake of lowValueMakes) {
+                if (titleLower.includes(lowMake.toLowerCase())) {
+                    // Only value if 2010+ and under 100k miles
+                    if (year < 2010 || mileage > 100000) {
+                        score = lowPenalty; // Very low score
+                        isLowValue = true;
+                        break;
+                    } else {
+                        score += lowBonus; // Some value if newer/low miles
+                        isLowValue = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!isLowValue) {
+                // Check for high value makes
+                for (const highMake of highValueMakes) {
+                    if (titleLower.includes(highMake.toLowerCase())) {
+                        score += highBonus;
+                        break;
+                    }
+                }
+
+                // Check for medium value if not high
+                if (score === 0) {
+                    for (const medMake of mediumValueMakes) {
+                        if (titleLower.includes(medMake.toLowerCase())) {
+                            score += medBonus;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // YEAR SCORING
+            if (year >= 2018) score += weights.year_2018_plus || 25;
+            else if (year >= 2014) score += weights.year_2014_plus || 20;
+            else if (year >= 2010) score += weights.year_2010_plus || 15;
+            else if (year >= 2005) score += weights.year_2005_plus || 8;
+            else if (year > 0) score += 3;
+
+            // MILEAGE SCORING
+            if (mileage <= 50000) score += weights.mileage_under_50k || 20;
+            else if (mileage <= 80000) score += weights.mileage_under_80k || 16;
+            else if (mileage <= 120000) score += weights.mileage_under_120k || 12;
+            else if (mileage <= 150000) score += weights.mileage_under_150k || 6;
+            else if (mileage <= 200000) score += 3;
+
+            // VEHICLE TYPE BONUSES
+            if (titleLower.match(/pickup|truck|f-150|silverado|sierra|tacoma|tundra|ranger|colorado|ram/)) {
+                score += weights.type_pickup || 15;
+            } else if (titleLower.match(/minivan|odyssey|sienna|caravan|pacifica|town.?country/)) {
+                score += weights.type_minivan || 12;
+            } else if (titleLower.match(/handicap|wheelchair|accessible/)) {
+                score += weights.type_handicap || 20;
+            } else if (titleLower.match(/15.?passenger|passenger.?van/)) {
+                score += weights.type_passenger_van || 10;
+            } else if (titleLower.match(/suv|explorer|highlander|pilot|traverse|tahoe|suburban/)) {
+                score += weights.type_suv || 8;
+            }
+
+            // ENGINE TYPE BONUS
+            if (titleLower.match(/v8|v-8|8.?cyl/)) {
+                score += weights.engine_v8 || 8;
+            } else if (titleLower.match(/v6|v-6|6.?cyl/)) {
+                score += weights.engine_v6 || 5;
+            }
+
+            // TITLE STATUS (critical - can make or break)
+            if (titleLower.match(/salvage|branded|rebuilt|flood|lemon/)) {
+                score = Math.min(score, 15); // Cap at very low if bad title
+            } else if (titleLower.match(/clean.?title|clear.?title/)) {
+                score += 5; // Bonus for clean title
+            }
+
+            // Normalize to 0-100
+            return Math.min(100, Math.max(0, score));
+        }
+
+        function updateDealQualityDisplay() {
+            if (filteredInventory.length === 0) {
+                document.getElementById('qualityFill').style.width = '0%';
+                document.getElementById('qualityPercentage').textContent = '0%';
+                return;
+            }
+
+            // Calculate average score of filtered results
+            const avgScore = filteredInventory.reduce((sum, v) => sum + (v.dealScore || 0), 0) / filteredInventory.length;
+            const roundedScore = Math.round(avgScore);
+
+            // Animate progress bar
+            setTimeout(() => {
+                document.getElementById('qualityFill').style.width = `${roundedScore}%`;
+                document.getElementById('qualityPercentage').textContent = `${roundedScore}%`;
+            }, 300);
+        }
+
+
+        function populateFilterOptions() {
+            // Extract unique makes
+            const makes = [...new Set(allInventory.map(v => extractMake(v.title)).filter(m => m))].sort();
+            const makeSelect = document.getElementById('filterMake');
+            makes.forEach(make => {
+                const option = document.createElement('option');
+                option.value = make.toLowerCase();
+                option.textContent = make;
+                makeSelect.appendChild(option);
+            });
+
+            // Extract unique batches
+            const batches = [...new Set(allInventory.map(v => v.batch_name).filter(b => b))].sort().reverse();
+            // Just assume there's a batch filter (add if missing)
+            let batchSelect = document.getElementById('filterBatch');
+            if (!batchSelect) {
+                // If not in DOM, inject it into filter grid
+                const grid = document.querySelector('.filter-grid');
+                if (grid) {
+                    const div = document.createElement('div');
+                    div.className = 'filter-item';
+                    div.innerHTML = `
+                       <label>Scrape Batch (Storm)</label>
+                       <select class="filter-select" id="filterBatch" onchange="applyFilters()">
+                            <option value="">All Storms</option>
+                       </select>
+                   `;
+                    grid.prepend(div);
+                    batchSelect = document.getElementById('filterBatch');
+                }
+            }
+
+            if (batchSelect) {
+                batches.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b;
+                    opt.textContent = b;
+                    batchSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function extractMake(title) {
+            const makes = ['toyota', 'honda', 'subaru', 'nissan', 'ford', 'chevrolet', 'chevy',
+                'dodge', 'mitsubishi', 'buick', 'hyundai', 'kia', 'jeep', 'gmc',
+                'bmw', 'mercedes', 'audi', 'volkswagen', 'mazda', 'lexus', 'acura',
+                'ram', 'tesla', 'porsche', 'jaguar', 'land rover', 'volvo'];
+
+            const titleLower = title.toLowerCase();
+            for (const make of makes) {
+                if (titleLower.includes(make)) {
+                    return make.charAt(0).toUpperCase() + make.slice(1);
+                }
+            }
+            return null;
+        }
+
+        function applyFilters(event) {
+            if (event) event.preventDefault();
+            try {
+                const btn = document.querySelector('.btn-apply-filters');
+                if (btn) {
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<span class="material-icons rotating">sync</span> APPLYING...';
+                    btn.disabled = true;
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 500);
+                }
+
+                console.log("Applying filters...");
+
+                filteredInventory = allInventory.filter(vehicle => {
+                    // Safety helper
+                    const getVal = (id) => {
+                        const el = document.getElementById(id);
+                        return el ? el.value : '';
+                    };
+                    const getChecked = (id) => {
+                        const el = document.getElementById(id);
+                        return el ? el.checked : false;
+                    };
+
+                    // Helper to parse numeric values from potentially formatted strings
+                    const parseNumeric = (val) => {
+                        if (typeof val === 'number') return val;
+                        if (!val) return 0;
+                        if (typeof val === 'string') {
+                            // Remove '$', ',', 'mi', and whitespace
+                            const clean = val.replace(/[$,\s]|mi/gi, '');
+                            const num = parseFloat(clean);
+                            return isNaN(num) ? 0 : num;
+                        }
+                        return 0;
+                    };
+
+                    // Batch Filter
+                    const batchVal = getVal('filterBatch');
+                    if (batchVal && vehicle.batch_name !== batchVal) return false;
+
+                    // Make filter
+                    const makeVal = getVal('filterMake');
+                    if (makeVal && !vehicle.title.toLowerCase().includes(makeVal.toLowerCase())) return false;
+
+                    // Model filter
+                    const modelVal = getVal('filterModel');
+                    if (modelVal && !vehicle.title.toLowerCase().includes(modelVal.toLowerCase())) return false;
+
+                    // Trim filter
+                    const trimVal = getVal('filterTrim');
+                    if (trimVal && !vehicle.title.toLowerCase().includes(trimVal.toLowerCase())) return false;
+
+
+                    // Year filter
+                    const minYear = parseInt(getVal('filterYearMin'));
+                    const maxYear = parseInt(getVal('filterYearMax'));
+                    const vehicleYear = extractYear(vehicle.title);
+                    if (!isNaN(minYear) && vehicleYear < minYear) return false;
+                    if (!isNaN(maxYear) && vehicleYear > maxYear) return false;
+
+                    // Price filter
+                    const minPrice = parseInt(getVal('filterPriceMin'));
+                    const maxPrice = parseInt(getVal('filterPriceMax'));
+                    const vPrice = parseNumeric(vehicle.price);
+                    if (!isNaN(minPrice) && vPrice < minPrice) return false;
+                    if (!isNaN(maxPrice) && vPrice > maxPrice) return false;
+
+                    // Mileage filter
+                    const minMiles = parseInt(getVal('filterMileageMin'));
+                    const maxMiles = parseInt(getVal('filterMileageMax'));
+                    const vMiles = parseNumeric(vehicle.mileage);
+                    if (!isNaN(minMiles) && vMiles < minMiles) return false;
+                    if (!isNaN(maxMiles) && vMiles > maxMiles) return false;
+
+                    // DQM Score filter
+                    const minScore = parseInt(getVal('filterScoreMin'));
+                    const maxScore = parseInt(getVal('filterScoreMax'));
+                    const vScore = parseNumeric(vehicle.dealScore);
+                    if (!isNaN(minScore) && vScore < minScore) return false;
+                    if (!isNaN(maxScore) && vScore > maxScore) return false;
+
+                    // Location/Zip Filter
+                    // Note: Data often only has "City, State". We search for the input string in location/description.
+                    const zipVal = getVal('filterZip');
+                    if (zipVal) {
+                        const term = zipVal.trim().toLowerCase();
+                        const loc = (vehicle.location || '').toLowerCase();
+                        const desc = (vehicle.description || '').toLowerCase();
+                        // If the zip/text isn't found in location or description, filter it out
+                        if (!loc.includes(term) && !desc.includes(term)) return false;
+                    }
+
+                    // Photos filter
+                    if (getChecked('filterWithPhotos') && (!vehicle.images || vehicle.images.length === 0)) return false;
+
+                    // Price listed filter
+                    if (getChecked('filterWithPrice') && (!vehicle.price || vehicle.price === 0)) return false;
+
+                    // Clean title filter
+                    if (getChecked('filterCleanTitle')) {
+                        const desc = (vehicle.description || '').toLowerCase();
+                        if (desc.match(/salvage|rebuilt|branded/)) return false;
+                    }
+
+                    // Location/Radius Filter (Client-side approximation if needed, usually handled by server/batch)
+                    const radius = parseInt(getVal('filterRadius'));
+                    // Note: Radius filtering often requires lat/lon calc which might not be in 'vehicle' object here.
+                    // Assuming 'allInventory' is already limited by initial scrape, or we skip local radius calc for now.
+
+                    return true;
+                });
+
+                console.log(`Filtered down to ${filteredInventory.length} vehicles.`);
+
+                try {
+                    sortResults(); // This calls displayInventory via sortAndDisplay usually? No, sortResults calls sortAndDisplay.
+                } catch (e) {
+                    console.error("Sort failed:", e);
+                }
+
+                // updateDealQualityDisplay(); // Calls display? No.
+                try {
+                    updateDealQualityDisplay();
+                } catch (e) {
+                    console.error("Deal quality update failed:", e);
+                }
+
+                // Force display update
+                displayInventory(filteredInventory);
+
+            } catch (err) {
+                console.error("Error in applyFilters:", err);
+                alert("Error applying filters: " + err.message);
+            }
+        }
+
+        function formatPhoneNumber(phoneStr) {
+            if (!phoneStr || phoneStr === 'N/A') return 'N/A';
+            // Remove non-digits
+            const cleaned = ('' + phoneStr).replace(/\D/g, '');
+            // Check if it looks like a US number (10 digits)
+            const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+            if (match) {
+                return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+            }
+            return phoneStr;
+        }
+
+        function extractYear(title) {
+            const match = title.match(/\b(19\d{2}|20[0-2]\d)\b/);
+            return match ? parseInt(match[1]) : 0;
+        }
+
+        function sortResults() {
+            const sortBy = document.getElementById('sortBy').value;
+            let [field, order] = sortBy.split('-');
+
+            // Map dropdown fields to internal fields
+            if (field === 'score') field = 'dealScore';
+
+            currentSortField = field;
+            currentSortDir = order;
+            sortAndDisplay();
+        }
+
+
+
+        // Save functionality helper
+        function toggleSave(id, event) {
+            if (event) event.stopPropagation();
+            let saved = JSON.parse(localStorage.getItem('savedVehicles') || '[]');
+            if (saved.includes(id)) {
+                saved = saved.filter(i => i !== id);
+            } else {
+                saved.push(id);
+            }
+            localStorage.setItem('savedVehicles', JSON.stringify(saved));
+            updateFeaturedInventory(); // Re-render to update icon state
+        }
+
+        function isSaved(id) {
+            let saved = JSON.parse(localStorage.getItem('savedVehicles') || '[]');
+            return saved.includes(id);
+        }
+
+        function sortTable(field) {
+            if (currentSortField === field) {
+                currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortField = field;
+                currentSortDir = 'asc'; // Default to asc for new column, unless we want specifics
+                if (field === 'price' || field === 'mileage' || field === 'dealScore' || field === 'date') {
+                    currentSortDir = 'desc'; // Numbers usually better desc first? Actually maybe not.
+                }
+            }
+            sortAndDisplay();
+        }
+
+        function changePage(delta) {
+            const maxPage = Math.ceil(filteredInventory.length / itemsPerPage);
+            const newPage = currentPage + delta;
+            if (newPage >= 1 && newPage <= maxPage) {
+                currentPage = newPage;
+                displayInventory(filteredInventory);
+                // Scroll to top of table
+                document.querySelector('.inventory-table-container')?.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function sortAndDisplay() {
+            // Sort filteredInventory based on currentSortField
+            filteredInventory.sort((a, b) => {
+                let valA, valB;
+
+                // Helper to get value
+                const getVal = (item, f) => {
+                    if (f === 'dealScore') return item.dealScore || 0;
+                    if (f === 'price') return item.price || 0;
+                    if (f === 'mileage') return item.mileage || 0;
+                    if (f === 'year') return extractYear(item.title);
+                    if (f === 'make') return extractMake(item.title) || '';
+                    if (f === 'date') return item.processed_at || '';
+                    return item[f] || '';
+                };
+
+                valA = getVal(a, currentSortField);
+                valB = getVal(b, currentSortField);
+
+                if (typeof valA === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                    if (valA < valB) return currentSortDir === 'asc' ? -1 : 1;
+                    if (valA > valB) return currentSortDir === 'asc' ? 1 : -1;
+                    return 0;
+                } else {
+                    return currentSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+            });
+            currentPage = 1; // Reset to page 1 on sort
+            displayInventory(filteredInventory);
+        }
+
+        function displayInventory(vehicles) {
+            const container = document.getElementById('inventoryGrid'); // keeping ID for compatibility
+            const resultsCount = document.getElementById('resultsCount');
+
+            resultsCount.textContent = `Showing ${vehicles.length} of ${allInventory.length} vehicles`;
+
+            if (vehicles.length === 0) {
+                container.innerHTML = `
+                    <div class="loading-state">
+                        <span class="material-icons">search_off</span>
+                        <p>No vehicles match your filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Pagination Logic
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const pagedVehicles = vehicles.slice(startIdx, endIdx);
+            const totalPages = Math.ceil(vehicles.length / itemsPerPage);
+
+            // Sort indicator helper
+            const getArrow = (f) => currentSortField === f ? (currentSortDir === 'asc' ? '▲' : '▼') : '';
+
+            // Render Table Header with Batch Actions
+            let html = `
+            <div class="inventory-table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
+                            <th onclick="sortTable('make')" style="cursor:pointer">Brand ${getArrow('make')}</th>
+                            <th onclick="sortTable('model')" style="cursor:pointer">Model ${getArrow('model')}</th>
+                            <th onclick="sortTable('price')" style="cursor:pointer">Price ${getArrow('price')}</th>
+                            <th onclick="sortTable('mileage')" style="cursor:pointer">Mileage ${getArrow('mileage')}</th>
+                            <th>Accidents</th>
+                            <th onclick="sortTable('location')" style="cursor:pointer">Location ${getArrow('location')}</th>
+                            <th onclick="sortTable('date')" style="cursor:pointer">Date Sourced ${getArrow('date')}</th>
+                            <th onclick="sortTable('source')" style="cursor:pointer">Source ${getArrow('source')}</th>
+                            <th onclick="sortTable('dealScore')" style="cursor:pointer">DQM ${getArrow('dealScore')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // Render Rows
+            html += pagedVehicles.map(v => {
+                const year = extractYear(v.title);
+                const make = extractMake(v.title) || 'Unknown';
+                // Model is title without Year and Make
+                let model = v.title.replace(year, '').replace(make, '').trim();
+                if (model.length > 30) model = model.substring(0, 30) + '...';
+                if (!model) model = 'N/A';
+
+                const price = v.price ? '$' + v.price.toLocaleString() : 'Call';
+
+                // Mileage fallback logic
+                let miles = v.mileage || 0;
+                if (miles === 0 && v.description) {
+                    const mMatch = v.description.match(/(\d+)[kK]\s*miles/i);
+                    if (mMatch) miles = parseInt(mMatch[1]) * 1000;
+                }
+                const milesDisplay = miles ? miles.toLocaleString() : 'N/A';
+
+                // Accidents extraction
+                let accidents = 'N/A';
+                if (v.description) {
+                    const lowerDesc = v.description.toLowerCase();
+                    if (lowerDesc.includes('clean title')) accidents = 'Clean Title';
+                    else if (lowerDesc.includes('salvage title')) accidents = 'Salvage';
+                    else if (lowerDesc.includes('rebuilt title')) accidents = 'Rebuilt';
+                    else if (lowerDesc.includes('no accidents')) accidents = 'None reported';
+                }
+
+                // Location fallback
+                let location = v.location;
+                if ((!location || location === 'Unknown') && v.description) {
+                    const locMatch = v.description.match(/([A-Z][a-z]+(\s[A-Z][a-z]+)*,\s*[A-Z]{2})/);
+                    if (locMatch) location = locMatch[0];
+                }
+
+                // Phone
+                let phone = (v.phone_numbers && v.phone_numbers.length) ? v.phone_numbers[0] : 'N/A';
+                phone = formatPhoneNumber(phone);
+
+                // Email extraction
+                let email = 'N/A';
+                if (v.email) email = v.email;
+                else if (v.description) {
+                    const emailMatch = v.description.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/);
+                    if (emailMatch) email = emailMatch[0];
+                }
+
+                // Time
+                const date = v.processed_at ? new Date(v.processed_at).toLocaleString() : 'N/A';
+
+                // Score class
+                const score = v.dealScore || 0;
+                let scoreClass = 'dqm-low';
+                if (score >= 75) scoreClass = 'dqm-high';
+                else if (score >= 50) scoreClass = 'dqm-med';
+
+                // Source clean
+                let source = v.source ? v.source.replace('_', ' ') : 'Unknown';
+                if (source.toLowerCase().includes('facebook')) source = 'FB';
+                if (source.toLowerCase().includes('craigslist')) source = 'CL';
+
+                // Ensure ID is available
+                const id = v.id || '';
+
+                return `
+                <tr onclick="window.open('${v.listing_url}', '_blank')" style="cursor: pointer;">
+                    <td onclick="event.stopPropagation()" style="text-align: center;">
+                        <input type="checkbox" class="listing-check" value="${id}" onchange="updateDeleteBtn()">
+                    </td>
+                    <td>${make}</td>
+                    <td>${model}</td>
+                    <td>${price}</td>
+                    <td>${milesDisplay}</td>
+                    <td>${accidents}</td>
+                    <td>${location}</td>
+                    <td>${date}</td>
+                    <td><span class="source-badge">${source}</span></td>
+                    <td><span class="dqm-badge ${scoreClass}">${score}</span></td>
+                </tr>
+                `;
+            }).join('');
+
+            html += `
+                    </tbody>
+                </table>
+            </div>
+            `;
+
+            // Pagination Controls
+            if (totalPages > 1) {
+                html += `
+                <div class="pagination-controls" style="display:flex; justify-content:center; align-items:center; gap:20px; margin-top:20px;">
+                    <button class="btn btn-secondary" onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>
+                        <span class="material-icons" style="font-size:16px; vertical-align:middle;">chevron_left</span> Prev
+                    </button>
+                    <span style="color:#999; font-size:14px; font-weight:600;">Page ${currentPage} of ${totalPages}</span>
+                    <button class="btn btn-secondary" onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''}>
+                        Next <span class="material-icons" style="font-size:16px; vertical-align:middle;">chevron_right</span>
+                    </button>
+                </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // --- BULK ACTION HANDLERS ---
+
+        function toggleAll(headerCheckbox) {
+            const checkboxes = document.querySelectorAll('.listing-check');
+            checkboxes.forEach(cb => cb.checked = headerCheckbox.checked);
+            updateDeleteBtn();
+        }
+
+        function updateDeleteBtn() {
+            const selected = document.querySelectorAll('.listing-check:checked');
+            const count = selected.length;
+            const btn = document.getElementById('deleteBtn');
+            const label = document.getElementById('selectionCount');
+
+            if (count > 0) {
+                btn.disabled = false;
+                label.textContent = `${count} vehicle${count === 1 ? '' : 's'} selected`;
+            } else {
+                btn.disabled = true;
+                label.textContent = '0 vehicles selected';
+            }
+        }
+
+        // Global for delete ids
+        let itemsToDelete = [];
+
+        function deleteSelected() {
+            const selected = Array.from(document.querySelectorAll('.listing-check:checked'));
+            itemsToDelete = selected.map(cb => cb.value);
+
+            if (!itemsToDelete.length) return;
+
+            // Show custom modal
+            document.getElementById('deleteCount').innerText = itemsToDelete.length;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            itemsToDelete = [];
+        }
+
+        async function archiveListing(url, event) {
+            if (event) event.stopPropagation();
+            if (!confirm('Move this listing to the Tickle File?')) return;
+
+            try {
+                const response = await fetch('/api/update_status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url, status: 'tickle' })
+                });
+
+                if (response.ok) {
+                    // Remove from local inventory
+                    allInventory = allInventory.filter(v => v.listing_url !== url);
+                    applyFilters(); // Re-render grid
+                    updateFeaturedInventory(); // Re-render carousel
+
+                    // Show toast or alert?
+                    // alert('Moved to Tickle File');
+                } else {
+                    alert('Failed to archive listing');
+                }
+            } catch (error) {
+                console.error('Archive error:', error);
+                alert('Error archiving listing');
+            }
+        }
+
+        async function performDelete() {
+            const ids = [...itemsToDelete]; // Capture IDs before clearing
+            if (!ids.length && document.querySelectorAll('.listing-check:checked').length > 0) {
+                // Fallback: re-query if empty but checkboxes are checked
+                const selected = Array.from(document.querySelectorAll('.listing-check:checked'));
+                ids.push(...selected.map(cb => cb.value));
+            }
+            closeDeleteModal();
+
+            if (!ids.length) return;
+            if (!ids.length) return;
+
+            const btn = document.getElementById('deleteBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="material-icons spin">refresh</span> Deleting...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/listings/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: ids })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Refresh data
+                    await loadInventory(); // Reloads all data
+                } else {
+                    alert('Error deleting: ' + (data.error || 'Unknown error'));
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Failed to delete vehicles.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Keeping createVehicleCard locally just in case, but unused now
+        function createVehicleCard(vehicle) { return ''; }
+
+        function resetAllFilters() {
+            document.querySelectorAll('.filter-select').forEach(select => select.selectedIndex = 0);
+            document.querySelectorAll('.filter-input, .filter-input-small').forEach(input => input.value = '');
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+
+            filteredInventory = allInventory;
+            updateDealQualityDisplay();
+            displayInventory(filteredInventory);
+        }
+
+        function scrollCarousel(direction) {
+            const carousel = document.getElementById('inventoryCarousel');
+            const scrollAmount = 350;
+
+            if (direction === 'left') {
+                carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            } else {
+                carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            }
+        }
+
+        // Dashboard functions
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+
+                const statusIcon = document.getElementById('statusIcon');
+                const statusText = document.getElementById('statusText');
+                const startBtn = document.getElementById('startBtn');
+                const stopBtn = document.getElementById('stopBtn');
+
+                if (data.status === 'running') {
+                    statusIcon.className = 'status-icon running';
+                    statusIcon.innerHTML = '<span class="material-icons">check_circle</span>';
+                    statusText.textContent = 'Active - Scanning for vehicles';
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                } else {
+                    statusIcon.className = 'status-icon stopped';
+                    statusIcon.innerHTML = '<span class="material-icons">pause_circle</span>';
+                    statusText.textContent = 'Service idle';
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                }
+
+                document.getElementById('totalListings').textContent = data.total_listings || 0;
+                document.getElementById('lastRun').textContent = data.last_run || 'Never';
+            } catch (error) {
+                console.error('Error updating status:', error);
+            }
+        }
+
+        let notificationsData = [];
+
+        async function checkNotifications() {
+            try {
+                const res = await fetch('/api/notifications');
+                const data = await res.json();
+                notificationsData = data.items || [];
+
+                const badge = document.getElementById('badge');
+                if (data.count > 0) {
+                    badge.innerText = data.count;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                renderDropdown();
+            } catch (e) { }
+        }
+
+        function renderDropdown() {
+            const container = document.getElementById('dropdownContent');
+            if (notificationsData.length === 0) {
+                container.innerHTML = '<div style="padding:15px; color:#666; font-size:13px;">No reminders due.</div>';
+                return;
+            }
+
+            let html = '';
+            notificationsData.forEach(item => {
+                // Encode URL to pass as param
+                const encodedUrl = encodeURIComponent(item.url);
+                html += `
+                    <div class="dropdown-item" onclick="window.location.href='/tickle?highlight=${encodedUrl}'">
+                        <div class="dropdown-title">${item.title}</div>
+                        <div class="dropdown-meta">
+                            <span class="material-icons" style="font-size:12px; vertical-align:middle;">location_on</span> ${item.location}
+                        </div>
+                    </div>
+                 `;
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleDropdown() {
+            const dd = document.getElementById('notificationDropdown');
+            dd.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const wrapper = document.querySelector('.notification-wrapper');
+            if (wrapper && !wrapper.contains(event.target)) {
+                const dd = document.getElementById('notificationDropdown');
+                if (dd) dd.classList.remove('show');
+            }
+        });
+
+        async function refreshLogs() {
+            try {
+                const response = await fetch('/api/logs');
+                const data = await response.json();
+                document.getElementById('logsContent').textContent = data.logs || 'No activity yet';
+
+                const logsContent = document.getElementById('logsContent');
+                logsContent.scrollTop = logsContent.scrollHeight;
+            } catch (error) {
+                console.error('Error refreshing logs:', error);
+            }
+        }
+
+        async function startService() {
+            const btn = document.getElementById('startBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> STARTING...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/start', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    setTimeout(updateStatus, 1000);
+                    setTimeout(refreshLogs, 1500);
+                    setTimeout(loadInventory, 3000); // Refresh inventory after starting
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to start'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        async function stopService() {
+            const btn = document.getElementById('stopBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> STOPPING...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/stop', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    setTimeout(updateStatus, 1000);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to stop'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                btn.innerHTML = originalHTML;
+            }
+        }
+        // Spectator Logic
+        let spectatorInterval;
+
+        function openSpectator() {
+            const modal = document.getElementById('spectatorModal');
+            // Check if fallback to single feed exists (if HTML didn't update?), or use split
+            const imgFB = document.getElementById('spectatorImgFB');
+            const imgCL = document.getElementById('spectatorImgCL');
+
+            if (imgFB && imgCL) {
+                imgFB.src = "/video_feed";
+                imgCL.src = "/video_feed"; // Clone feed for now
+            } else {
+                // Fallback to old single ID if HTML update failed (safety)
+                const img = document.getElementById('spectatorImg');
+                if (img) img.src = "/video_feed";
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeSpectator() {
+            const modal = document.getElementById('spectatorModal');
+            modal.style.display = 'none';
+            clearInterval(spectatorInterval);
+        }
+    </script>
+</body>
+
+</html>

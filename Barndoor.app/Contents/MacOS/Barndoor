@@ -1,0 +1,37 @@
+#!/bin/bash
+# Barndoor macOS Application Launcher
+
+# Set project directory
+PROJECT_DIR="/Users/gabrielgaft/Desktop/Barndoor/project_barnfind"
+
+# Kill any existing Flask server
+pkill -f "python3 web_server.py" 2>/dev/null
+sleep 1
+
+# Start Flask server in background
+cd "$PROJECT_DIR"
+python3 web_server.py > /tmp/barndoor.log 2>&1 &
+SERVER_PID=$!
+
+# Wait for server to actually start (check if port 5050 is listening)
+echo "Starting Barndoor server..."
+for i in {1..15}; do
+    if lsof -i:5050 >/dev/null 2>&1; then
+        echo "Server started successfully!"
+        break
+    fi
+    sleep 1
+    echo "Waiting for server... ($i/15)"
+done
+
+# Check if server is actually running
+if ! lsof -i:5050 >/dev/null 2>&1; then
+    echo "ERROR: Server failed to start!"
+    echo "Check logs at /tmp/barndoor.log"
+    exit 1
+fi
+
+# Open in default browser
+open "http://localhost:5050"
+
+exit 0

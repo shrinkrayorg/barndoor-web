@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barndoor - Deal Quality Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #CC0000;
+            --dark-bg: #1a1a1a;
+            --darker-bg: #0d0d0d;
+            --text-light: #ffffff;
+            --text-gray: #b0b0b0;
+            --border-gray: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            overflow-y: scroll;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            padding-bottom: 80px;
+        }
+
+        /* Navigation - standardized fixed layout */
+        .navbar {
+            background: var(--dark-bg);
+            border-bottom: 1px solid var(--border-gray);
+            height: 80px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-light);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .logo:hover {
+            color: var(--primary-red);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+            padding: 10px 0;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary-red);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 120px auto 40px;
+            /* 80px offset for Navbar + 40px spacing */
+            padding: 0 40px;
+        }
+
+        .section-card {
+            background: var(--darker-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .section-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .section-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .section-header p {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-gray);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid var(--border-gray);
+            border-radius: 4px;
+            color: var(--text-light);
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid var(--border-gray);
+            border-radius: 4px;
+            color: var(--text-light);
+            font-family: 'SF Mono', 'Monaco', monospace;
+            font-size: 13px;
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+        }
+
+        .actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--darker-bg);
+            border-top: 1px solid var(--border-gray);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            z-index: 100;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #aa0000;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-gray);
+            color: var(--text-gray);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-light);
+            color: var(--text-light);
+        }
+    </style>
+</head>
+
+<style>
+    /* ... Existing Styles ... */
+    /* NOTIFICATIONS CSS */
+    .notification-dropdown {
+        position: absolute;
+        top: 60px;
+        right: 0;
+        width: 300px;
+        background: var(--darker-bg);
+        border: 1px solid var(--border-gray);
+        border-radius: 8px;
+        z-index: 2000;
+        display: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .notification-dropdown.show {
+        display: block;
+    }
+
+    .dropdown-header {
+        padding: 15px;
+        border-bottom: 1px solid var(--border-gray);
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .dropdown-item {
+        padding: 15px;
+        border-bottom: 1px solid var(--border-gray);
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .dropdown-item:hover {
+        background: #222;
+    }
+
+    .dropdown-item:last-child {
+        border-bottom: none;
+    }
+
+    .dropdown-title {
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .dropdown-meta {
+        color: var(--text-gray);
+        font-size: 12px;
+    }
+
+    @keyframes bellShake {
+        0% {
+            transform: rotate(0);
+        }
+
+        15% {
+            transform: rotate(15deg);
+        }
+
+        30% {
+            transform: rotate(-15deg);
+        }
+
+        45% {
+            transform: rotate(10deg);
+        }
+
+        60% {
+            transform: rotate(-10deg);
+        }
+
+        75% {
+            transform: rotate(5deg);
+        }
+
+        90% {
+            transform: rotate(-5deg);
+        }
+
+        100% {
+            transform: rotate(0);
+        }
+    }
+
+    .notification-bell:hover .material-icons {
+        color: var(--primary-red) !important;
+        animation: bellShake 0.6s ease-out both;
+    }
+
+    /* Navbar Styles from Index */
+    .navbar {
+        background: var(--darker-bg);
+        border-bottom: 1px solid var(--border-gray);
+        height: 80px;
+        width: 100%;
+        position: fixed;
+        top: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        padding: 0;
+    }
+
+    .nav-container {
+        max-width: 1400px;
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 40px;
+    }
+
+    .logo {
+        font-size: 24px;
+        font-weight: 800;
+        color: #fff;
+        text-decoration: none;
+        text-transform: uppercase;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 30px;
+        list-style: none;
+        align-items: center;
+    }
+
+    .nav-links a {
+        color: #b0b0b0;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+        color: #CC0000;
+    }
+</style>
+</head>
+
+<body>
+    <!-- Unified Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">BARNDOOR</a>
+            <div class="nav-links">
+                <a href="/">HOME</a>
+
+                <!-- Bell Notification -->
+                <div class="notification-wrapper" style="position: relative;">
+                    <div class="notification-bell" id="bellIcon" onclick="toggleDropdown()"
+                        style="cursor: pointer; display: flex; align-items: center; padding: 0 10px;">
+                        <span class="material-icons"
+                            style="color: var(--text-gray); transition: color 0.3s;">notifications</span>
+                        <span id="badge"
+                            style="position: absolute; top: -5px; right: 0px; background: var(--primary-red); color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; display: none;">0</span>
+                    </div>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="dropdown-header">Follow-up Reminders</div>
+                        <div id="dropdownContent"></div>
+                    </div>
+                </div>
+
+                <a href="/tickle">TICKLE FILE</a>
+                <a href="/settings" class="active">SETTINGS</a>
+                <a href="/portal">ACCESS PORTAL</a>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        // Notification Logic
+        async function checkNotifications() {
+            try {
+                const res = await fetch('/api/notifications');
+                const data = await res.json();
+                const badge = document.getElementById('badge');
+                if (data.count > 0) {
+                    badge.innerText = data.count;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+                renderDropdown(data.items || []);
+            } catch (e) { }
+        }
+        function renderDropdown(items) {
+            const container = document.getElementById('dropdownContent');
+            if (items.length === 0) {
+                container.innerHTML = '<div style="padding:15px; color:#666; font-size:13px;">No reminders due.</div>';
+                return;
+            }
+            let html = '';
+            items.forEach(item => {
+                const encodedUrl = encodeURIComponent(item.url);
+                html += `<div class="dropdown-item" onclick="window.location.href='/tickle?highlight=${encodedUrl}'">
+                        <div class="dropdown-title">${item.title}</div>
+                        <div class="dropdown-meta"><span class="material-icons" style="font-size:12px; vertical-align:middle;">location_on</span> ${item.location}</div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+        }
+        function toggleDropdown() { document.getElementById('notificationDropdown').classList.toggle('show'); }
+        document.addEventListener('click', function (e) {
+            const wrapper = document.querySelector('.notification-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) document.getElementById('notificationDropdown').classList.remove('show');
+        });
+        document.addEventListener('DOMContentLoaded', checkNotifications);
+    </script>
+
+    <!-- Old Header Removed -->
+    <div class="container" style="margin-top:40px;">
+        <!-- Location Settings -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2>Search Configuration</h2>
+                <p>Define your baseline market location and radius</p>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>City, State Label</label>
+                    <input type="text" id="cityState" placeholder="e.g. Glenview, IL">
+                </div>
+                <div class="form-group">
+                    <label>ZIP Code</label>
+                    <input type="text" id="zipCode" placeholder="60025">
+                </div>
+                <div class="form-group">
+                    <label>Default Radius (miles)</label>
+                    <input type="number" id="radius" placeholder="250">
+                </div>
+            </div>
+        </div>
+
+        <!-- Vehicle Value Tiers -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2>Vehicle Value Tiers</h2>
+                <p>Categorize makes/models to determine base value scores. Enter one per line or separated by commas.
+                </p>
+            </div>
+            <div class="form-group full-width">
+                <label>High Value (Tier 1)</label>
+                <textarea id="highValueMakes" placeholder="Toyota, Honda..."></textarea>
+                <p class="helper-text">These receive the highest score bonus (+40 pts)</p>
+            </div>
+            <div class="form-group full-width">
+                <label>Medium Value (Tier 2)</label>
+                <textarea id="mediumValueMakes" placeholder="Mazda, Hyundai..."></textarea>
+                <p class="helper-text">Moderate score bonus (+25 pts)</p>
+            </div>
+            <div class="form-group full-width">
+                <label>Low Value / Avoid (Tier 3)</label>
+                <textarea id="lowValueMakes" placeholder="Nissan Altima, Ford Focus..."></textarea>
+                <p class="helper-text">These receive a penalty unless they have very low mileage (+5 pts or penalty)</p>
+            </div>
+        </div>
+
+        <!-- Scoring Weights -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2>Scoring Weights</h2>
+                <p>Adjust how much each factor contributes to the total Deal Score (0-100)</p>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Pickup Truck Bonus</label>
+                    <input type="number" id="typePickup">
+                </div>
+                <div class="form-group">
+                    <label>Handicap/Access. Bonus</label>
+                    <input type="number" id="typeHandicap">
+                </div>
+                <div class="form-group">
+                    <label>Minivan Bonus</label>
+                    <input type="number" id="type_minivan" value="20">
+                </div>
+                <div class="form-group">
+                    <label>V8 Engine Bonus</label>
+                    <input type="number" id="engine_v8" value="15">
+                </div>
+                <div class="form-group">
+                    <label>Spanish Description Penalty (Negative)</label>
+                    <input type="number" id="spanish_description_penalty" value="-20">
+                    <div class="helper-text">Penalty for listings written in Spanish</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategy Guide (New) -->
+    <div class="section-card">
+        <div class="section-header" style="cursor: pointer;"
+            onclick="document.getElementById('strategyContent').classList.toggle('hidden')">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>📘 Lead Sourcing Guide</h2>
+                <span class="material-icons">expand_more</span>
+            </div>
+            <p>Buying Rules & Value Guidelines (2026)</p>
+        </div>
+        <div id="strategyContent" class="hidden"
+            style="margin-top: 20px; border-top: 1px solid #333; padding-top: 20px;">
+
+            <h3 style="color: #CC0000; margin-bottom: 15px;">Buying Rules & Setup</h3>
+            <ul style="list-style: disc; margin-left: 20px; color: #ddd; margin-bottom: 20px; line-height: 1.8;">
+                <li><strong>Territory:</strong> 250 miles around Glenview, IL (60025). Marketplace & Craigslist.</li>
+                <li><strong>Goal:</strong> Value at or UNDER Carfax Wholesale. (Run unlimited reports).</li>
+                <li><strong>Mileage/Age:</strong> No strict limits. Sweet spot is 2010+, <120k miles.</li>
+                <li><strong>Body:</strong> NO severe rust/holes on frame/rockers. Surface rust OK. Panel damage OK
+                    ($300-$500 fix).</li>
+                <li><strong>Title:</strong> NO Salvage or Branded Titles. Check Carfax.</li>
+                <li><strong>Mechanical:</strong> Engine/Trans swaps allowed if priced right ($1k-$4k cost).</li>
+            </ul>
+
+            <h3 style="color: #CC0000; margin-bottom: 15px;">Vehicle Values</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h4 style="color: #4CAF50; margin-bottom: 10px;">HIGH VALUE (Target)</h4>
+                    <ul style="list-style: none; color: #bbb; line-height: 1.6;">
+                        <li>✅ Toyota, Honda, Subaru</li>
+                        <li>✅ Pickups: Chevy, Ford, GMC</li>
+                        <li>✅ SUVS: Chevy, Ford, GMC</li>
+                        <li>✅ Minivans & Handicap Vans (High Value!)</li>
+                        <li>✅ 15-passenger vans (moderate miles)</li>
+                        <li>✅ V8 engines > V6 > I4</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #F44336; margin-bottom: 10px;">LOW VALUE (Avoid)</h4>
+                    <p style="font-size: 0.9em; color: #888;">(Unless 2010+ with <100k miles)</p>
+                            <ul style="list-style: none; color: #bbb; line-height: 1.6;">
+                                <li>❌ Nissan (Altima, Versa, Rogue, Leaf, etc)</li>
+                                <li>❌ Ford Cars (Focus, Fusion, Taurus, Escape)</li>
+                                <li>❌ Chevy Cars (Cruze, Malibu, Impala, Travese)</li>
+                                <li>❌ Dodge (Journey, Dart, Avenger)</li>
+                                <li>❌ Mitsubishi, Buick (Century/LeSabre), Kia/Hyundai</li>
+                                <li>❌ Jeep Compass/Patriot/Liberty</li>
+                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="loadSettings()">Reset to Saved</button>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Configuration</button>
+    </div>
+
+    <script>
+        let currentSettings = {};
+
+        document.addEventListener('DOMContentLoaded', loadSettings);
+
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                currentSettings = await response.json();
+
+                // Populate form
+                document.getElementById('cityState').value = currentSettings.location.city_state || '';
+                document.getElementById('zipCode').value = currentSettings.location.zip_code || '';
+                document.getElementById('radius').value = currentSettings.location.radius || 250;
+
+                document.getElementById('highValueMakes').value = (currentSettings.lists.high_value_makes || []).join(', ');
+                document.getElementById('mediumValueMakes').value = (currentSettings.lists.medium_value_makes || []).join(', ');
+                document.getElementById('lowValueMakes').value = (currentSettings.lists.low_value_makes || []).join(', ');
+
+                // Fix: Use correct IDs matching snake_case in JSON but camelCase or snake_case in HTML
+                // We standardized on: typePickup (HTML) -> type_pickup (JSON)
+                // Exception: type_minivan (HTML) -> type_minivan (JSON)
+                // Exception: engine_v8 (HTML) -> engine_v8 (JSON)
+
+                document.getElementById('typePickup').value = currentSettings.score_weights.type_pickup || 0;
+                document.getElementById('typeHandicap').value = currentSettings.score_weights.type_handicap || 0;
+
+                // Matches new HTML IDs
+                document.getElementById('type_minivan').value = currentSettings.score_weights.type_minivan || 20;
+                document.getElementById('engine_v8').value = currentSettings.score_weights.engine_v8 || 15;
+                document.getElementById('spanish_description_penalty').value = currentSettings.score_weights.spanish_description_penalty || -20;
+
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                alert('Failed to load settings');
+            }
+        }
+
+        async function saveSettings() {
+            try {
+                // Parse lists
+                const parseList = (text) => text.split(/[,\n]/).map(s => s.trim()).filter(s => s);
+
+                const newSettings = {
+                    ...currentSettings,
+                    location: {
+                        city_state: document.getElementById('cityState').value,
+                        zip_code: document.getElementById('zipCode').value,
+                        radius: parseInt(document.getElementById('radius').value) || 250
+                    },
+                    lists: {
+                        high_value_makes: parseList(document.getElementById('highValueMakes').value),
+                        medium_value_makes: parseList(document.getElementById('mediumValueMakes').value),
+                        low_value_makes: parseList(document.getElementById('lowValueMakes').value)
+                    },
+                    score_weights: {
+                        ...currentSettings.score_weights,
+                        type_pickup: parseInt(document.getElementById('typePickup').value) || 0,
+                        type_handicap: parseInt(document.getElementById('typeHandicap').value) || 0,
+                        type_minivan: parseInt(document.getElementById('type_minivan').value) || 0,
+                        engine_v8: parseInt(document.getElementById('engine_v8').value) || 0,
+                        spanish_description_penalty: parseInt(document.getElementById('spanish_description_penalty').value) || -20
+                    }
+                };
+
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newSettings)
+                });
+
+                if (response.ok) {
+                    alert('Configuration saved successfully!');
+                } else {
+                    throw new Error('Server returned error');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Failed to save settings: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

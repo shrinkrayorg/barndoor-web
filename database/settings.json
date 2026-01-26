@@ -1,0 +1,62 @@
+{
+    "location": {
+        "zip_code": "60025",
+        "radius": 250,
+        "city_state": "Glenview, IL"
+    },
+    "lists": {
+        "high_value_makes": [
+            "Toyota",
+            "Honda",
+            "Subaru",
+            "Chevy Silverado",
+            "Ford F-150",
+            "GMC Sierra",
+            "Toyota Tacoma",
+            "Toyota Tundra",
+            "Honda Odyssey",
+            "Toyota Sienna",
+            "Handicap Van",
+            "15 Passenger Van"
+        ],
+        "medium_value_makes": [
+            "jeep grand cherokee"
+        ],
+        "low_value_makes": [
+            "nissan",
+            "ford focus",
+            "ford fusion",
+            "ford taurus",
+            "ford escape",
+            "ford edge",
+            "ford explorer",
+            "chevy aveo",
+            "chevy traverse",
+            "chevy equinox",
+            "chevy impala",
+            "chevy malibu",
+            "chevy spark",
+            "chevy cruze",
+            "dodge journey",
+            "dodge dart",
+            "dodge avenger",
+            "mitsubishi",
+            "buick",
+            "pontiac",
+            "chrysler",
+            "fiat",
+            "smart"
+        ]
+    },
+    "score_weights": {
+        "type_pickup": 25,
+        "type_minivan": 20,
+        "type_handicap": 40,
+        "engine_v8": 15,
+        "transmission_manual": 10,
+        "year_2010_plus": 30,
+        "mileage_under_120k": 30,
+        "spanish_description_penalty": -20
+    },
+    "target_urls": "https://www.facebook.com/marketplace/chicago/search?sortBy=creation_time_descend&sellerType=individual&query=Vehicles&category_id=546583916084032&exact=false&referral_ui_component=category_menu_item"
+}

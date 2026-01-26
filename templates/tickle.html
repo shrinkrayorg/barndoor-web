@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barndoor - Tickle Sheet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        html {
+            overflow-y: scroll;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-red: #CC0000;
+            --dark-bg: #1a1a1a;
+            --darker-bg: #0d0d0d;
+            --text-light: #ffffff;
+            --text-gray: #b0b0b0;
+            --border-gray: #333333;
+            --success-green: #27ae60;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--darker-bg);
+            color: var(--text-light);
+            margin: 0;
+            padding-bottom: 60px;
+        }
+
+        /* Navbar (Standardized) */
+        .navbar {
+            background: var(--dark-bg);
+            border-bottom: 1px solid var(--border-gray);
+            height: 80px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-light);
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .logo:hover {
+            color: var(--primary-red);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+            /* Make sure list-style is consistent too */
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary-red);
+        }
+
+        /* Tickle Layout */
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 40px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-gray);
+            margin-bottom: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--dark-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            background: #2a2a2a;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .card-meta {
+            color: var(--text-gray);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .reminder-box {
+            background: rgba(204, 0, 0, 0.1);
+            border: 1px solid var(--primary-red);
+            color: var(--primary-red);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .btn-sold {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .btn-delete {
+            background: transparent;
+            border: 1px solid var(--border-gray);
+            color: var(--text-gray);
+        }
+
+        .btn-delete:hover {
+            border-color: var(--primary-red);
+            color: var(--primary-red);
+        }
+
+        /* Highlight Animation */
+        @keyframes highlightFade {
+            0% {
+                background-color: rgba(255, 215, 0, 0.3);
+                border-color: #ffd700;
+            }
+
+            100% {
+                background-color: var(--dark-bg);
+                border-color: var(--border-gray);
+            }
+        }
+
+        .highlight-effect {
+            animation: highlightFade 5s ease-out forwards;
+        }
+
+        /* Notification CSS Injected Here */
+        .notification-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            width: 300px;
+            background: var(--darker-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            z-index: 2000;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .notification-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-gray);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .dropdown-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-gray);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: #222;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .dropdown-meta {
+            color: var(--text-gray);
+            font-size: 12px;
+        }
+
+        @keyframes bellShake {
+            0% {
+                transform: rotate(0);
+            }
+
+            15% {
+                transform: rotate(15deg);
+            }
+
+            30% {
+                transform: rotate(-15deg);
+            }
+
+            45% {
+                transform: rotate(10deg);
+            }
+
+            60% {
+                transform: rotate(-10deg);
+            }
+
+            75% {
+                transform: rotate(5deg);
+            }
+
+            90% {
+                transform: rotate(-5deg);
+            }
+
+            100% {
+                transform: rotate(0);
+            }
+        }
+
+        .notification-bell:hover .material-icons {
+            color: var(--primary-red) !important;
+            animation: bellShake 0.6s ease-out both;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">BARNDOOR</a>
+            <div class="nav-links">
+                <a href="/">HOME</a>
+
+                <!-- Bell Notification -->
+                <div class="notification-wrapper" style="position: relative;">
+                    <div class="notification-bell" id="bellIcon" onclick="toggleDropdown()"
+                        style="cursor: pointer; display: flex; align-items: center; padding: 0 10px;">
+                        <span class="material-icons"
+                            style="color: var(--text-gray); transition: color 0.3s;">notifications</span>
+                        <span id="badge"
+                            style="position: absolute; top: -5px; right: 0px; background: var(--primary-red); color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; display: none;">0</span>
+                    </div>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="dropdown-header">Follow-up Reminders</div>
+                        <div id="dropdownContent"></div>
+                    </div>
+                </div>
+
+                <a href="/tickle" class="active">TICKLE FILE</a>
+                <a href="/settings">SETTINGS</a>
+                <a href="/portal">ACCESS PORTAL</a>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        // Notification Logic
+        async function checkNotifications() {
+            try {
+                const res = await fetch('/api/notifications');
+                const data = await res.json();
+                const badge = document.getElementById('badge');
+                if (data.count > 0) {
+                    badge.innerText = data.count;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+                renderDropdown(data.items || []);
+            } catch (e) { }
+        }
+        function renderDropdown(items) {
+            const container = document.getElementById('dropdownContent');
+            if (items.length === 0) {
+                container.innerHTML = '<div style="padding:15px; color:#666; font-size:13px;">No reminders due.</div>';
+                return;
+            }
+            let html = '';
+            items.forEach(item => {
+                const encodedUrl = encodeURIComponent(item.url);
+                html += `<div class="dropdown-item" onclick="window.location.href='/tickle?highlight=${encodedUrl}'">
+                        <div class="dropdown-title">${item.title}</div>
+                        <div class="dropdown-meta"><span class="material-icons" style="font-size:12px; vertical-align:middle;">location_on</span> ${item.location}</div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+        }
+        function toggleDropdown() { document.getElementById('notificationDropdown').classList.toggle('show'); }
+        document.addEventListener('click', function (e) {
+            const wrapper = document.querySelector('.notification-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) document.getElementById('notificationDropdown').classList.remove('show');
+        });
+        document.addEventListener('DOMContentLoaded', checkNotifications);
+    </script>
+
+    <div class="container">
+        <h1>Tickle File</h1>
+        <p class="subtitle">Managing archived listings and follow-up reminders.</p>
+
+        <div id="tickleGrid" class="grid">
+            <!-- Items injected here -->
+        </div>
+    </div>
+
+    <script>
+        async function loadTickleItems() {
+            const response = await fetch('/api/listings?status=archived');
+            const data = await response.json();
+            const grid = document.getElementById('tickleGrid');
+            grid.innerHTML = '';
+
+            if (data.listings.length === 0) {
+                grid.innerHTML = '<p style="color: grey;">No archived listings found.</p>';
+                return;
+            }
+
+            data.listings.forEach(item => {
+                const followUpDate = new Date(item.archived_at);
+                followUpDate.setDate(followUpDate.getDate() + 7); // +7 days
+
+                const isDue = new Date() > followUpDate;
+                const statusHtml = isDue
+                    ? `<div class="reminder-box"><span class="material-icons" style="font-size:16px">notifications_active</span> Follow-up Due!</div>`
+                    : `<div class="reminder-box" style="border-color: #555; color: #aaa;"><span class="material-icons" style="font-size:16px">schedule</span> Follow up on ${followUpDate.toLocaleDateString()}</div>`;
+
+                const html = `
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-title">${item.title}</div>
+                            <div class="card-meta">$${item.price.toLocaleString()} • ${item.location}</div>
+                            ${statusHtml}
+                            <div class="actions">
+                                <button class="btn btn-sold" onclick="markSold('${item.listing_url}')">Mark Sold</button>
+                                <button class="btn btn-delete" onclick="deleteListing('${item.listing_url}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += html;
+            });
+        }
+
+        async function markSold(url) {
+            if (!confirm('Mark this vehicle as Sold? It will be moved to waste/sold history.')) return;
+            await fetch('/api/update_status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url, status: 'sold' })
+            });
+            loadTickleItems();
+        }
+
+        async function deleteListing(url) {
+            if (!confirm('Permanently delete this listing?')) return;
+            // Reuse update_status or create delete endpoint. For now, we'll just 'waste' it or actually delete it.
+            // User said "separate section prepared for deletion, like a Waste/Sold section".
+            // We'll treat sold as waste for now.
+            await fetch('/api/update_status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url, status: 'deleted' })
+            });
+            loadTickleItems();
+        }
+
+        loadTickleItems();
+    </script>
+</body>
+
+</html>
