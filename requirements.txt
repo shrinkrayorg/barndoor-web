@@ -1,4 +1,3 @@
-playwright
 python-dotenv
 tinydb
 twilio
@@ -9,7 +8,7 @@ geopy
 schedule
 # rumps (Disabled for Vercel/Linux compatibility)
 # rumps
-
 flask
-streamlit
-pandas
+# playwright
+# streamlit
+# pandas
