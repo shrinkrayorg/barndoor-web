@@ -13,7 +13,10 @@ from datetime import datetime
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from dotenv import load_dotenv
-from tinydb import TinyDB, Query
+from pymongo import MongoClient
+from bson import ObjectId
+from datetime import datetime
+import certifi
 
 load_dotenv()
 
@@ -22,11 +25,27 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.secret_key = 'barndoor-secret-key-change-this'
 
 PROJECT_DIR = Path(__file__).parent
-DB_PATH = PROJECT_DIR / "database" / "ledger.json"
+# DB_PATH = PROJECT_DIR / "database" / "ledger.json" # Legacy
 SETTINGS_PATH = PROJECT_DIR / "database" / "settings.json"
 USERS_PATH = PROJECT_DIR / "database" / "users.json"
 LOG_PATH = PROJECT_DIR / "barnfind.log"
 PID_FILE = PROJECT_DIR / "barnfind.pid"
+
+# MongoDB Connection
+MONGO_URI = os.getenv('MONGO_URI')
+mongo_client = None
+mongo_db = None
+
+if MONGO_URI:
+    try:
+        mongo_client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
+        mongo_db = mongo_client['barndoor']
+        # Send a ping to confirm a successful connection
+        mongo_client.admin.command('ping')
+        print("✅ Connected to MongoDB!")
+    except Exception as e:
+        print(f"❌ MongoDB Connection Failed: {e}")
+
 
 def get_users():
     if not USERS_PATH.exists():
@@ -346,14 +365,8 @@ def get_status():
             'status': 'running' if running else 'stopped'
         }
         
-        if DB_PATH.exists():
-            with open(DB_PATH, 'r') as f:
-                data = json.load(f)
-                listings = data.get('listings', {})
-                # Count all listings
-                # listings is a dict of id -> listing
-                total = len(listings)
-                stats['total_listings'] = total
+        if mongo_db:
+             stats['total_listings'] = mongo_db.listings.count_documents({})
         
         # Get last run from logs
         if LOG_PATH.exists():
@@ -466,37 +479,30 @@ def tickle_page():
 
 @app.route('/api/listings')
 def get_listings():
-    """
-    Get listings filtered by status.
-    Uses direct JSON read to support read-only environments (e.g., Vercel).
-    """
+    """Get listings filtered by status from MongoDB."""
     status_filter = request.args.get('status')
     
     try:
-        # Check if file exists
-        if not DB_PATH.exists():
-            return jsonify({'listings': [], 'total': 0})
+        if not mongo_db:
+             # Fallback or empty if no DB connection
+             return jsonify({'listings': [], 'total': 0})
 
-        # Read JSON directly (bypassing TinyDB's potential write-lock/mode issues)
-        with open(DB_PATH, 'r') as f:
-            data = json.load(f)
+        query = {}
+        if status_filter:
+            query['status'] = status_filter
+            
+        # Sort by most recent? Default natural order or add sort
+        cursor = mongo_db.listings.find(query)
         
-        # 'listings' is the table name used in TinyDB
-        listings_map = data.get('listings', {})
         results = []
-        
-        for doc_id, listing in listings_map.items():
-            # Inject ID and default status
-            listing['id'] = str(doc_id)
-            if 'status' not in listing:
-                listing['status'] = 'active'
-                
-            # Filter
-            if status_filter:
-                if listing.get('status') == status_filter:
-                    results.append(listing)
-            else:
-                results.append(listing)
+        for doc in cursor:
+            # Inject string ID for frontend (use _id)
+            doc['id'] = str(doc['_id'])
+            del doc['_id']
+            
+            if 'status' not in doc:
+                doc['status'] = 'active'
+            results.append(doc)
                 
         return jsonify({'listings': results, 'total': len(results)})
     except Exception as e:
@@ -506,7 +512,7 @@ def get_listings():
 
 @app.route('/api/listings/delete', methods=['POST'])
 def delete_listings():
-    """Bulk soft-delete listings by ID or URL."""
+    """Bulk soft-delete listings by ID or URL (MongoDB)."""
     try:
         payload = request.json
         ids_to_delete = payload.get('ids', []) 
@@ -514,35 +520,39 @@ def delete_listings():
         if not ids_to_delete:
              return jsonify({'success': True, 'count': 0})
              
-        db = TinyDB(DB_PATH)
-        listings_table = db.table('listings')
+        if not mongo_db:
+             return jsonify({'error': 'No Database Connection'}), 500
+        
         deleted_count = 0
         
         for identifier in ids_to_delete:
             id_str = str(identifier)
-            Listing = Query()
+            res = None
             
-            # 1. Try by doc_id (numeric string)
-            target_doc_id = None
-            if id_str.isdigit():
-                target_doc_id = int(id_str)
-                if not listings_table.contains(doc_id=target_doc_id):
-                    target_doc_id = None
-            
-            # 2. Try by URL fallback
-            if target_doc_id is None:
-                results = listings_table.search(Listing.listing_url == id_str)
-                if results:
-                    target_doc_id = results[0].doc_id
-            
-            if target_doc_id is not None:
-                listings_table.update(
-                    {'status': 'deleted', 'deleted_at': datetime.now().isoformat()},
-                    doc_ids=[target_doc_id]
+            # 1. Try by ObjectId
+            if ObjectId.is_valid(id_str):
+                res = mongo_db.listings.update_one(
+                    {'_id': ObjectId(id_str)},
+                    {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
                 )
+            
+            # 2. Try by 'original_id' (legacy migration ID)
+            if not res or res.modified_count == 0:
+                 res = mongo_db.listings.update_one(
+                     {'original_id': id_str},
+                     {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
+                 )
+                 
+            # 3. Try by URL fallback
+            if not res or res.modified_count == 0:
+                res = mongo_db.listings.update_one(
+                    {'listing_url': id_str},
+                    {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
+                )
+            
+            if res and res.modified_count > 0:
                 deleted_count += 1
         
-        db.close()
         return jsonify({'success': True, 'count': deleted_count})
             
     except Exception as e:
@@ -552,7 +562,7 @@ def delete_listings():
 
 @app.route('/api/listings/bulk_status', methods=['POST'])
 def bulk_update_status():
-    """Update status for multiple listings by ID."""
+    """Update status for multiple listings by ID (MongoDB)."""
     try:
         payload = request.json
         ids_to_update = payload.get('ids', [])
@@ -561,22 +571,34 @@ def bulk_update_status():
         if not ids_to_update or not new_status:
             return jsonify({'success': True, 'count': 0})
             
-        db = TinyDB(DB_PATH)
-        listings_table = db.table('listings')
+        if not mongo_db:
+             return jsonify({'error': 'No Database Connection'}), 500
+             
         updated_count = 0
         
+        update_data = {'status': new_status}
+        if new_status == 'tickle':
+            update_data['tickle_at'] = datetime.now().isoformat()
+            
         for id_str in ids_to_update:
-            if str(id_str).isdigit():
-                doc_id = int(id_str)
-                if listings_table.contains(doc_id=doc_id):
-                    update_data = {'status': new_status}
-                    if new_status == 'tickle':
-                        update_data['tickle_at'] = datetime.now().isoformat()
-                    
-                    listings_table.update(update_data, doc_ids=[doc_id])
-                    updated_count += 1
+             res = None
+             # Try ObjectId
+             if ObjectId.is_valid(id_str):
+                 res = mongo_db.listings.update_one(
+                     {'_id': ObjectId(id_str)},
+                     {'$set': update_data}
+                 )
+            
+             # Try original_id
+             if not res or res.modified_count == 0:
+                 res = mongo_db.listings.update_one(
+                     {'original_id': str(id_str)},
+                     {'$set': update_data}
+                 )
+                 
+             if res and res.modified_count > 0:
+                 updated_count += 1
         
-        db.close()
         return jsonify({'success': True, 'count': updated_count})
             
     except Exception as e:
@@ -586,36 +608,28 @@ def bulk_update_status():
 
 @app.route('/api/update_status', methods=['POST'])
 def update_status():
-    """Update listing status (archive, sold, deleted)."""
+    """Update listing status (archive, sold, deleted) via URL (MongoDB)."""
     try:
         payload = request.json
         url = payload.get('url')
         new_status = payload.get('status')
         
-        if not DB_PATH.exists():
-            return jsonify({'error': 'DB not found'}), 404
+        if not mongo_db:
+             return jsonify({'error': 'No Database Connection'}), 500
             
-        with open(DB_PATH, 'r+') as f:
-            data = json.load(f)
-            updated = False
-            
-            # Search and update
-            listings = data.get('listings', {})
-            for listing in listings.values():
-                if listing.get('listing_url') == url:
-                    listing['status'] = new_status
-                    if new_status == 'tickle': # User requested "Tickle File"
-                        listing['tickle_at'] = datetime.now().isoformat()
-                    updated = True
-                    break
-            
-            if updated:
-                f.seek(0)
-                json.dump(data, f, indent=4)
-                f.truncate()
-                return jsonify({'success': True})
-            else:
-                return jsonify({'error': 'Listing not found'}), 404
+        update_data = {'status': new_status}
+        if new_status == 'tickle': # User requested "Tickle File"
+            update_data['tickle_at'] = datetime.now().isoformat()
+
+        res = mongo_db.listings.update_one(
+            {'listing_url': url},
+            {'$set': update_data}
+        )
+        
+        if res.modified_count > 0:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'error': 'Listing not found'}), 404
                 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -623,30 +637,33 @@ def update_status():
 
 @app.route('/api/notifications')
 def get_notifications():
-    """Check for due tickle reminders and return details."""
+    """Check for due tickle reminders and return details (MongoDB)."""
     try:
-        if not DB_PATH.exists():
+        if not mongo_db:
             return jsonify({'count': 0, 'items': []})
             
-        with open(DB_PATH, 'r') as f:
-            data = json.load(f)
-            
+        # Find listings with status 'tickle'
+        cursor = mongo_db.listings.find({'status': 'tickle'})
+        
         due_items = []
         now = datetime.now()
         
-        listings_map = data.get('listings', {})
-        for listing in listings_map.values():
-            # Use 'tickle' status and 'tickle_at' timestamp
-            if listing.get('status') == 'tickle' and listing.get('tickle_at'):
-                tickle_date = datetime.fromisoformat(listing['tickle_at'])
-                # Check if exactly one week (7 days) has passed
-                if (now - tickle_date).days >= 7:
-                    due_items.append({
-                        'title': listing.get('title', 'Unknown Vehicle'),
-                        'location': listing.get('location', 'Unknown Location'),
-                        'url': listing.get('listing_url'),
-                        'tickle_at': listing.get('tickle_at')
-                    })
+        for listing in cursor:
+            if listing.get('tickle_at'):
+                try:
+                    tickle_date = datetime.fromisoformat(listing['tickle_at'])
+                    # Check if exactly one week (7 days) has passed
+                    if (now - tickle_date).days >= 7:
+                        due_items.append({
+                            'title': listing.get('title', 'Unknown Vehicle'),
+                            'location': listing.get('location', 'Unknown Location'),
+                            'url': listing.get('listing_url'),
+                            'tickle_at': listing.get('tickle_at')
+                        })
+                except:
+                    continue
+                        
+        return jsonify({'count': len(due_items), 'items': due_items})
                         
         return jsonify({'count': len(due_items), 'items': due_items})
     except Exception as e:

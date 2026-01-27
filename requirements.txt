@@ -1,5 +1,8 @@
 python-dotenv
 tinydb
+pymongo
+dnspython
+certifi
 twilio
 sendgrid
 requests
