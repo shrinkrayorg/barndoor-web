@@ -466,28 +466,39 @@ def tickle_page():
 
 @app.route('/api/listings')
 def get_listings():
-    """Get listings filtered by status."""
+    """
+    Get listings filtered by status.
+    Uses direct JSON read to support read-only environments (e.g., Vercel).
+    """
     status_filter = request.args.get('status')
     
     try:
-        db = TinyDB(DB_PATH)
-        listings_table = db.table('listings')
+        # Check if file exists
+        if not DB_PATH.exists():
+            return jsonify({'listings': [], 'total': 0})
+
+        # Read JSON directly (bypassing TinyDB's potential write-lock/mode issues)
+        with open(DB_PATH, 'r') as f:
+            data = json.load(f)
         
-        # Query listings
-        if status_filter:
-            Listing = Query()
-            all_listings = listings_table.search(Listing.status == status_filter)
-        else:
-            all_listings = listings_table.all()
-            
-        # Inject IDs as string (doc_id)
-        for listing in all_listings:
-            listing['id'] = str(listing.doc_id)
+        # 'listings' is the table name used in TinyDB
+        listings_map = data.get('listings', {})
+        results = []
+        
+        for doc_id, listing in listings_map.items():
+            # Inject ID and default status
+            listing['id'] = str(doc_id)
             if 'status' not in listing:
                 listing['status'] = 'active'
                 
-        db.close()
-        return jsonify({'listings': all_listings, 'total': len(all_listings)})
+            # Filter
+            if status_filter:
+                if listing.get('status') == status_filter:
+                    results.append(listing)
+            else:
+                results.append(listing)
+                
+        return jsonify({'listings': results, 'total': len(results)})
     except Exception as e:
         print(f"Error serving listings: {e}") 
         return jsonify({'error': str(e)}), 500
