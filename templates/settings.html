@@ -409,7 +409,43 @@
 
                 <a href="/tickle">TICKLE FILE</a>
                 <a href="/settings" class="active">SETTINGS</a>
+                {% if session.get('role') == 'admin' %}
+                <a href="/admin/users">USERS</a>
+                {% endif %}
                 <a href="/portal">ACCESS PORTAL</a>
+
+                <!-- Profile Dropdown -->
+                <div class="profile-wrapper">
+                    <div class="profile-btn" onclick="toggleProfileDropdown()"
+                        style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-gray); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-gray); margin-left:10px;">
+                        <span class="material-icons">person</span>
+                    </div>
+                    <div class="profile-dropdown" id="profileDropdown"
+                        style="position: absolute; top: 100%; right: 0; margin-top: 15px; background: var(--dark-bg); border: 1px solid var(--border-gray); border-radius: 8px; width: 240px; display: none; flex-direction: column; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); z-index: 1001; padding: 10px 0;">
+                        <div class="dropdown-user-info"
+                            style="padding: 15px 20px; border-bottom: 1px solid var(--border-gray); margin-bottom: 8px;">
+                            <span class="dropdown-user-name"
+                                style="display: block; font-weight: 700; font-size: 14px; color: white;">{{
+                                session.get('user_name', 'User') }}</span>
+                            <span class="dropdown-user-role"
+                                style="display: block; font-size: 11px; color: var(--text-gray); text-transform: uppercase;">{{
+                                session.get('role', 'User') }}</span>
+                            <span class="dropdown-user-role"
+                                style="text-transform: none; font-size: 10px; color: var(--text-gray);">{{
+                                session.get('user_email', '') }}</span>
+                        </div>
+                        <a href="/profile"
+                            style="padding: 12px 20px; color: var(--text-gray); text-decoration: none; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 12px;">
+                            <span class="material-icons" style="font-size: 18px;">person</span>
+                            My Profile
+                        </a>
+                        <a href="/logout" class="logout-btn"
+                            style="padding: 12px 20px; color: var(--primary-red); text-decoration: none; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--border-gray); margin-top: 8px;">
+                            <span class="material-icons" style="font-size: 18px;">logout</span>
+                            Log Out
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -446,10 +482,25 @@
             });
             container.innerHTML = html;
         }
-        function toggleDropdown() { document.getElementById('notificationDropdown').classList.toggle('show'); }
+        function toggleDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            const profileDropdown = document.getElementById('profileDropdown');
+            if (profileDropdown) profileDropdown.classList.remove('show');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            if (notificationDropdown) notificationDropdown.classList.remove('show');
+            dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
+        }
+
         document.addEventListener('click', function (e) {
             const wrapper = document.querySelector('.notification-wrapper');
+            const profileWrapper = document.querySelector('.profile-wrapper');
             if (wrapper && !wrapper.contains(e.target)) document.getElementById('notificationDropdown').classList.remove('show');
+            if (profileWrapper && !profileWrapper.contains(e.target)) document.getElementById('profileDropdown').style.display = 'none';
         });
         document.addEventListener('DOMContentLoaded', checkNotifications);
     </script>

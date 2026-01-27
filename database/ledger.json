@@ -31,7 +31,10 @@
                     "batch_name": "Batch Nana-2147",
                     "price": 1200
                 }
-            ]
+            ],
+            "status": "active",
+            "tickle_at": "2026-01-26T00:15:18.627755",
+            "deleted_at": "2026-01-27T00:39:54.581410"
         },
         "31": {
             "title": "2011 Honda odyssey EX-L w/Navigation & RES Minivan 4D",
@@ -76,74 +79,10 @@
                     "price": 3200
                 }
             ],
-            "last_seen": "2026-01-24T23:24:37.276018"
-        },
-        "32": {
-            "title": "2014 Ford explorer XLT Sport SUV 4D",
-            "price": 1500,
-            "mileage": 132556,
-            "location": "Unknown",
-            "description": "\u00a0\nFind friends\nMarketplace\nBrowse all\nNotifications\nInbox\nMarketplace access\nBuying\nSelling\nCreate new listing\nLocation\nChicago, Illinois\n\u00a0\n \u00b7 Within 40 mi\nCategories\nVehicles\nProperty Rentals\nApparel\nClassifieds\nElectronics\nEntertainment\nFamily\nFree Stuff\nGarden & Outdoor\nHobbies\nHome Goods\nHome Improvement Supplies\nHome Sales\nMusical Instruments\nOffice Supplies\nPet Supplies\nSporting Goods\nToys & Games\nBuy and sell groups\n2014 Ford explorer XLT Sport SUV 4D\n$1,500\nListed a day ago in Waukegan, IL\nMessage\nAbout this vehicle\nDriven 132,556 miles\nAutomatic transmission\nExterior color: White \u00b7 Interior color: Beige\nFuel type: Gasoline\n1 owner\nThis vehicle is paid off\nClean title\n\nThis vehicle has no significant damage or problems.\n\nSeller's description\nOnly $1500 down payment! \ud83e\udd73\ud83d\ude98\n\nNo credit? \ud83e\udd79\nOnly 3 months into your new job? \ud83e\udd37\ud83c\udffb\u200d\u2642\ufe0f\nBad credit? \ud83d\ude14... See more\nWaukegan, IL\nLocation is approximate\nSeller information\nSeller details\nGerardo Calleja\nJoined Facebook in 2014\nSend seller a message\nSend\nToday's picks\nChicago\n\u00a0\n \u00b7 40 mi\n$2,500\n2012 Dodge grand caravan\nChicago, IL\n$61,700\n2012 Monaco Dynasty 45 palace rv diesel pusher motorhome -\nChicago, IL\n$6,000\n2016 Freightliner Cascadia\nPlainfield, IL\n$85\nOven\nArlington Heights, IL\n$30\nS\u2019mores Cookies\nBridgeview, IL\nJust listed\n$700\nWalnut Pull-out Table. Vintage. Converts from cabinet to large table. Extra leaves store inside. Pad\nMorton Grove, IL\n$1,200\nConquest 84\nLake Zurich, IL\n$10\nPlywood\nElgin, IL\n$2,700\nOmega Moonswatch collection plus others\nAddison, IL\n$140\nPC (PICK UP ONLY)\nChicago, IL\n$6,999\n2010 Dodge Wheelchair accessible handicap\nJoliet, IL\n95K miles\n$3,000\n2016 Dodge grand caravan R/T\nChicago, IL\n158K miles\n$1,299\n2008 Dodge caravan Sport Minivan 4D\nChicago, IL\n160K miles\n$1,500\n2017 Honda civic EX Hatchback 4D\nMcHenry, IL\n99K miles\n$2,990\n2011 Dodge grand caravan passenger SXT 35th Anniversary Edition Minivan 4D\nMorton Grove, IL\n201K miles\n$2,000\n2002 Dodge caravan passenger Minivan\nChicago, IL\n159K miles\nFREE\n2013 dodge caravan\nWarrenville, IL\n$1,600\n2011 Dodge caravan passenger\nArlington Heights, IL\n222K miles\n$5,200\n2015 Dodge grand caravan\nChicago, IL\n110K miles\n$2,500\n2018 Honda civic EX Hatchback 4D\nJoliet, IL\n127K miles \u00b7 Dealership",
-            "images": [
-                "https://scontent-dfw5-3.xx.fbcdn.net/v/t39.30808-6/617676474_4432771327009870_3519381115691669578_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=108&ccb=1-7&_nc_sid=454cf4&_nc_ohc=TQMCfgdYkR8Q7kNvwG03qk3&_nc_oc=Adlxs07-YNap7o9gbC-Ya3wEHK190bIX3q7ME_eyRDS5_QEtIotcewkIDxCZGqWBUKn3C8aT6H-9KfsY9PH8DYFq&_nc_zt=23&_nc_ht=scontent-dfw5-3.xx&_nc_gid=cED9ozIjk0_Qq17_n9Qw3A&oh=00_Afp6GMpN223xeVYGGMYzicgGbd96JaFNh3Ejy-AYUF0D4g&oe=697B7CF4",
-                "https://scontent-dfw5-3.xx.fbcdn.net/v/t39.30808-6/617676474_4432771327009870_3519381115691669578_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=108&ccb=1-7&_nc_sid=454cf4&_nc_ohc=TQMCfgdYkR8Q7kNvwG03qk3&_nc_oc=Adlxs07-YNap7o9gbC-Ya3wEHK190bIX3q7ME_eyRDS5_QEtIotcewkIDxCZGqWBUKn3C8aT6H-9KfsY9PH8DYFq&_nc_zt=23&_nc_ht=scontent-dfw5-3.xx&_nc_gid=cED9ozIjk0_Qq17_n9Qw3A&oh=00_Afp6GMpN223xeVYGGMYzicgGbd96JaFNh3Ejy-AYUF0D4g&oe=697B7CF4",
-                "https://scontent-dfw5-3.xx.fbcdn.net/v/t39.30808-6/617676474_4432771327009870_3519381115691669578_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=108&ccb=1-7&_nc_sid=454cf4&_nc_ohc=TQMCfgdYkR8Q7kNvwG03qk3&_nc_oc=Adlxs07-YNap7o9gbC-Ya3wEHK190bIX3q7ME_eyRDS5_QEtIotcewkIDxCZGqWBUKn3C8aT6H-9KfsY9PH8DYFq&_nc_zt=23&_nc_ht=scontent-dfw5-3.xx&_nc_gid=cED9ozIjk0_Qq17_n9Qw3A&oh=00_Afp6GMpN223xeVYGGMYzicgGbd96JaFNh3Ejy-AYUF0D4g&oe=697B7CF4",
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/621224518_4432766087010394_8548004171523418223_n.jpg?stp=cp6_dst-jpegr_s960x960_tt6&_nc_cat=110&ccb=1-7&_nc_sid=946e27&_nc_ohc=m-zoU5HVpxEQ7kNvwGYqUCr&_nc_oc=AdnSgEVB4V0-SwjuT2ogfyCi-KAsAqIpQsM1o3G0ledvD3grNaSlZSnGJRS_dLHvFndz1PIGkVC8YgQ2sfAsHgjh&_nc_zt=23&se=-1&_nc_ht=scontent-dfw5-1.xx&_nc_gid=cED9ozIjk0_Qq17_n9Qw3A&oh=00_AfpKSA_MgkycMUePqAJPOb0plJJBZUqNWw4aW0Xys_B9-Q&oe=697B55C1",
-                "https://scontent-dfw5-2.xx.fbcdn.net/v/t39.30808-6/621410168_4432766240343712_24752470955874540_n.jpg?stp=cp6_dst-jpegr_s960x960_tt6&_nc_cat=102&ccb=1-7&_nc_sid=946e27&_nc_ohc=VwdqrvUnprYQ7kNvwGaKueC&_nc_oc=AdnrRCVwpHsEB7X40ZhIyGxBqlFpdtsv2XD_sS7kvmVPhLoMfj63H8q7hmM2D8dAQlq1yyHvopkHcwk16i26nMTP&_nc_zt=23&se=-1&_nc_ht=scontent-dfw5-2.xx&_nc_gid=cED9ozIjk0_Qq17_n9Qw3A&oh=00_AfrW0YVmD_E3Up5hpihpMXbDuRzEsxqSvd-GbW5D9QzF_w&oe=697B5B95"
-            ],
-            "listing_url": "https://www.facebook.com/marketplace/item/1654267752399277/",
-            "source": "facebook_marketplace",
-            "batch_id": "20260124214725",
-            "batch_name": "Batch Nana-2147",
-            "score": 120,
-            "tags": [
-                "tier1_make",
-                "handicap_access"
-            ],
-            "vet_status": "approved",
-            "phone_numbers": [],
-            "processed_at": "2026-01-24T21:50:58.492169",
-            "batch_history": [
-                {
-                    "batch_id": "20260124214725",
-                    "batch_name": "Batch Nana-2147",
-                    "price": 1500
-                }
-            ]
-        },
-        "33": {
-            "title": "2000 Hyundai tiburon Coupe 2D",
-            "price": 1000,
-            "mileage": 129878,
-            "location": "Unknown",
-            "description": "\u00a0\nFind friends\nMarketplace\nBrowse all\nNotifications\nInbox\nMarketplace access\nBuying\nSelling\nCreate new listing\nLocation\nChicago, Illinois\n\u00a0\n \u00b7 Within 40 mi\nCategories\nVehicles\nProperty Rentals\nApparel\nClassifieds\nElectronics\nEntertainment\nFamily\nFree Stuff\nGarden & Outdoor\nHobbies\nHome Goods\nHome Improvement Supplies\nHome Sales\nMusical Instruments\nOffice Supplies\nPet Supplies\nSporting Goods\nToys & Games\nBuy and sell groups\n2000 Hyundai tiburon Coupe 2D\n$1,000\nListed a day ago in Berwyn, IL\nMessage\nAbout this vehicle\nDriven 129,878 miles\nAutomatic transmission\nExterior color: Yellow \u00b7 Interior color: Black\nFuel type: Gasoline\nSeller's description\nCar needs work. Currently runs and has been in an accident. Willing to negotiate price in order to g... See more\nBerwyn, IL\nLocation is approximate\nSeller information\nSeller details\nErika Lopez\nJoined Facebook in 2026\nSend seller a message\nSend\nToday's picks\nChicago\n\u00a0\n \u00b7 40 mi\n$2,500\n2012 Dodge grand caravan\nChicago, IL\n$61,700\n2012 Monaco Dynasty 45 palace rv diesel pusher motorhome -\nChicago, IL\n$6,000\n2016 Freightliner Cascadia\nPlainfield, IL\n$85\nOven\nArlington Heights, IL\n$30\nS\u2019mores Cookies\nBridgeview, IL\nJust listed\n$700\nWalnut Pull-out Table. Vintage. Converts from cabinet to large table. Extra leaves store inside. Pad\nMorton Grove, IL\n$1,200\nConquest 84\nLake Zurich, IL\n$10\nPlywood\nElgin, IL\n$2,700\nOmega Moonswatch collection plus others\nAddison, IL\n$140\nPC (PICK UP ONLY)\nChicago, IL\n$6,999\n2010 Dodge Wheelchair accessible handicap\nJoliet, IL\n95K miles\n$3,000\n2016 Dodge grand caravan R/T\nChicago, IL\n158K miles\n$1,299\n2008 Dodge caravan Sport Minivan 4D\nChicago, IL\n160K miles\n$1,500\n2017 Honda civic EX Hatchback 4D\nMcHenry, IL\n99K miles\n$2,990\n2011 Dodge grand caravan passenger SXT 35th Anniversary Edition Minivan 4D\nMorton Grove, IL\n201K miles\n$2,000\n2002 Dodge caravan passenger Minivan\nChicago, IL\n159K miles\nFREE\n2013 dodge caravan\nWarrenville, IL\n$1,600\n2011 Dodge caravan passenger\nArlington Heights, IL\n222K miles\n$5,200\n2015 Dodge grand caravan\nChicago, IL\n110K miles\n$2,500\n2018 Honda civic EX Hatchback 4D\nJoliet, IL\n127K miles \u00b7 Dealership",
-            "images": [
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/617358143_122101141383227355_33080082039343144_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=111&ccb=1-7&_nc_sid=454cf4&_nc_ohc=aKsZzN1hMBoQ7kNvwFkrx5V&_nc_oc=AdlLQQbXUvDSMyhddA-EKeHqVJK31m_qePJdfv7GZlCZRVeES3abh5W1ljoRVtfVhLV1E6l08TbelbMTX9FT1HKy&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=kgzJNKtLmLRv1HQgmXr-jw&oh=00_AfoRlWf_zZsziK68HuvDxFs9eKG4EBxPRNbRKwWBMINECQ&oe=697B6839",
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/617358143_122101141383227355_33080082039343144_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=111&ccb=1-7&_nc_sid=454cf4&_nc_ohc=aKsZzN1hMBoQ7kNvwFkrx5V&_nc_oc=AdlLQQbXUvDSMyhddA-EKeHqVJK31m_qePJdfv7GZlCZRVeES3abh5W1ljoRVtfVhLV1E6l08TbelbMTX9FT1HKy&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=kgzJNKtLmLRv1HQgmXr-jw&oh=00_AfoRlWf_zZsziK68HuvDxFs9eKG4EBxPRNbRKwWBMINECQ&oe=697B6839",
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/617358143_122101141383227355_33080082039343144_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=111&ccb=1-7&_nc_sid=454cf4&_nc_ohc=aKsZzN1hMBoQ7kNvwFkrx5V&_nc_oc=AdlLQQbXUvDSMyhddA-EKeHqVJK31m_qePJdfv7GZlCZRVeES3abh5W1ljoRVtfVhLV1E6l08TbelbMTX9FT1HKy&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=kgzJNKtLmLRv1HQgmXr-jw&oh=00_AfoRlWf_zZsziK68HuvDxFs9eKG4EBxPRNbRKwWBMINECQ&oe=697B6839",
-                "https://scontent-dfw6-1.xx.fbcdn.net/v/t39.30808-6/621221595_122101135269227355_8676902230620554738_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=103&ccb=1-7&_nc_sid=946e27&_nc_ohc=4ovAPlFQU80Q7kNvwFryyNg&_nc_oc=AdlQWHPYcVYP4_iibJUzosCC6U0JulTSFSN1OWaC8CzOAYeIP5OCP1Xa3oz5P0LnTcrJXlAx3NoZtVwPuarvV6Xf&_nc_zt=23&_nc_ht=scontent-dfw6-1.xx&_nc_gid=kgzJNKtLmLRv1HQgmXr-jw&oh=00_AfpJV7ceD63nFIW03BX5tGJ2TiRJShl_YsHE_xVKkyf9Kw&oe=697B6194",
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/622225973_122101135371227355_5401655568567578267_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=111&ccb=1-7&_nc_sid=946e27&_nc_ohc=fwXT8R7Wx3IQ7kNvwEQVHz6&_nc_oc=AdnPRZ2UFl06Nv5egHWZgMx3Oaw_m_sK441WOBvusNlF1zwhzJsdSm67REgGn4WBj9kzA1XsjV2r2I5ROhmbylWd&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=kgzJNKtLmLRv1HQgmXr-jw&oh=00_AfrR4IgYFMY2PBlGAJiKvFjWF57oOJ66X6rgNp25DBm2kA&oe=697B67AB"
-            ],
-            "listing_url": "https://www.facebook.com/marketplace/item/25485398497747156/",
-            "source": "facebook_marketplace",
-            "batch_id": "20260124214725",
-            "batch_name": "Batch Nana-2147",
-            "score": 140,
-            "tags": [
-                "tier1_make",
-                "minivan_bonus",
-                "handicap_access"
-            ],
-            "vet_status": "approved",
-            "phone_numbers": [],
-            "processed_at": "2026-01-24T21:50:58.492737",
-            "batch_history": [
-                {
-                    "batch_id": "20260124214725",
-                    "batch_name": "Batch Nana-2147",
-                    "price": 1000
-                }
-            ]
+            "last_seen": "2026-01-24T23:24:37.276018",
+            "status": "active",
+            "tickle_at": "2026-01-25T21:33:56.527880",
+            "deleted_at": "2026-01-27T00:39:54.584782"
         },
         "34": {
             "title": "2002 Toyota highlander LE Sport Utility 4D",
@@ -235,186 +174,9 @@
                     "batch_name": "Batch Nana-2147",
                     "price": 2200
                 }
-            ]
-        },
-        "36": {
-            "title": "2009 GMC acadia limited",
-            "price": 4000,
-            "mileage": 136000,
-            "location": "Unknown",
-            "description": "\u00a0\nFind friends\nMarketplace\nBrowse all\nNotifications\nInbox\nMarketplace access\nBuying\nSelling\nCreate new listing\nLocation\nChicago, Illinois\n\u00a0\n \u00b7 Within 40 mi\nCategories\nVehicles\nProperty Rentals\nApparel\nClassifieds\nElectronics\nEntertainment\nFamily\nFree Stuff\nGarden & Outdoor\nHobbies\nHome Goods\nHome Improvement Supplies\nHome Sales\nMusical Instruments\nOffice Supplies\nPet Supplies\nSporting Goods\nToys & Games\nBuy and sell groups\n2009 GMC acadia limited\n$4,000\nListed a day ago in Chicago, IL\nMessage\nAbout this vehicle\nDriven 136,000 miles\nAutomatic transmission\nExterior color: Blue \u00b7 Interior color: Black\nFuel type: Gasoline\n2 owners\nSeller's description\nGet ready for your next adventure with this spacious and versatile 2009 GMC Acadia! Perfect for fami... See more\nChicago, IL\nLocation is approximate\nSeller information\nSeller details\nIsaac Pantoja\nJoined Facebook in 2013\nSend seller a message\nSend\nToday's picks\nChicago\n\u00a0\n \u00b7 40 mi\n$2,500\n2012 Dodge grand caravan\nChicago, IL\n$61,700\n2012 Monaco Dynasty 45 palace rv diesel pusher motorhome -\nChicago, IL\n$6,999\n2010 Dodge Wheelchair accessible handicap\nJoliet, IL\n95K miles\n$3,500\n2013 Dodge grand caravan se minvan 4d\nWestmont, IL\n175K miles\nFREE\n2013 dodge caravan\nWarrenville, IL\n$1,500\n2017 Honda civic EX Hatchback 4D\nMcHenry, IL\n99K miles\n$3,000\n2016 Dodge grand caravan R/T\nChicago, IL\n158K miles\n$1,299\n2008 Dodge caravan Sport Minivan 4D\nChicago, IL\n160K miles\n$2,990\n2011 Dodge grand caravan passenger SXT 35th Anniversary Edition Minivan 4D\nMorton Grove, IL\n201K miles\n$2,000\n2002 Dodge caravan passenger Minivan\nChicago, IL\n159K miles\n$1,600\n2011 Dodge caravan passenger\nArlington Heights, IL\n222K miles\n$5,200\n2015 Dodge grand caravan\nChicago, IL\n110K miles\n$2,500\n2018 Honda civic EX Hatchback 4D\nJoliet, IL\n127K miles \u00b7 Dealership\n$1,500\n2001 Dodge grand caravan passenger\nChicago, IL\n142K miles\n$4,999\n2017 Dodge caravan passenger SXT Minivan 4D\nSchaumburg, IL\n143K miles\n$6,500\n2017 Dodge grand caravan Minivan\nGlen Ellyn, IL\n132K miles\n$1,800\n2008 Dodge grand caravan Minivan\nLake Villa, IL\n267K miles\n$2,400\n1999 Honda civic DX Hatchback 2D\nHobart, IN\n157K miles\n$8,000\n2018 Dodge grand caravan passenger SE Minivan\nPark Forest, IL\n186K miles\n$2,500\n2007 Honda civic CX Hatchback 2D\nHammond, IN\n14K miles",
-            "images": [
-                "https://scontent-dfw6-1.xx.fbcdn.net/v/t39.30808-6/619517544_3107311729463578_4696790479523454324_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=101&ccb=1-7&_nc_sid=454cf4&_nc_ohc=WrJQLDhR3H4Q7kNvwGx5OBu&_nc_oc=Adl-gjwb1dXLNHbdZEWD9KcBEc_pYVhcWM4m_-h7oDy3bX5REgy6rHZfu27Ks4jK1Mqxfy9_6I1GCtY6c1isXVQ-&_nc_zt=23&_nc_ht=scontent-dfw6-1.xx&_nc_gid=FVTb1hdV1PJ4rIRp73WxDw&oh=00_AfprvS48X7QDFOB0Htqj1BkA74RhQ52JQHduhK_tbezThQ&oe=697B6E79",
-                "https://scontent-dfw6-1.xx.fbcdn.net/v/t39.30808-6/619517544_3107311729463578_4696790479523454324_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=101&ccb=1-7&_nc_sid=454cf4&_nc_ohc=WrJQLDhR3H4Q7kNvwGx5OBu&_nc_oc=Adl-gjwb1dXLNHbdZEWD9KcBEc_pYVhcWM4m_-h7oDy3bX5REgy6rHZfu27Ks4jK1Mqxfy9_6I1GCtY6c1isXVQ-&_nc_zt=23&_nc_ht=scontent-dfw6-1.xx&_nc_gid=FVTb1hdV1PJ4rIRp73WxDw&oh=00_AfprvS48X7QDFOB0Htqj1BkA74RhQ52JQHduhK_tbezThQ&oe=697B6E79",
-                "https://scontent-dfw6-1.xx.fbcdn.net/v/t39.30808-6/619517544_3107311729463578_4696790479523454324_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=101&ccb=1-7&_nc_sid=454cf4&_nc_ohc=WrJQLDhR3H4Q7kNvwGx5OBu&_nc_oc=Adl-gjwb1dXLNHbdZEWD9KcBEc_pYVhcWM4m_-h7oDy3bX5REgy6rHZfu27Ks4jK1Mqxfy9_6I1GCtY6c1isXVQ-&_nc_zt=23&_nc_ht=scontent-dfw6-1.xx&_nc_gid=FVTb1hdV1PJ4rIRp73WxDw&oh=00_AfprvS48X7QDFOB0Htqj1BkA74RhQ52JQHduhK_tbezThQ&oe=697B6E79",
-                "https://scontent-dfw6-1.xx.fbcdn.net/v/t39.30808-6/621234141_3107293452798739_4295202438328075886_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=101&ccb=1-7&_nc_sid=946e27&_nc_ohc=4l1aNrFnmFYQ7kNvwHn1DaU&_nc_oc=AdladPs_nnwrH6i449KVskzLQ6aBId5Z-ExC6_NwmCjpGVNSzfR17jts3nS-5UslcDkdhd0A-DObi3SLnEccb1Zb&_nc_zt=23&_nc_ht=scontent-dfw6-1.xx&_nc_gid=FVTb1hdV1PJ4rIRp73WxDw&oh=00_Afo-zu82hNgnGC5IFRBbHoONotQgtT1KLMexYnFshNbiuQ&oe=697B5042",
-                "https://scontent-dfw5-2.xx.fbcdn.net/v/t39.30808-6/619654586_3107293396132078_491543589828785029_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=106&ccb=1-7&_nc_sid=946e27&_nc_ohc=LlmuIt5CwIwQ7kNvwHpwpOy&_nc_oc=AdlKLG3p80dxzMq71Ag02iP-j8ojQFYi0iNRm42sjryRJBO74zJQYJNDerGgE9zZc5Pgqr4TWPIAoHWUeo67RRUi&_nc_zt=23&_nc_ht=scontent-dfw5-2.xx&_nc_gid=FVTb1hdV1PJ4rIRp73WxDw&oh=00_Afrs8K2wFWU0GA2_G9HFRg2lOviiXLzBr5pc7wH4FvG0mQ&oe=697B7578"
             ],
-            "listing_url": "https://www.facebook.com/marketplace/item/899983302504752/",
-            "source": "facebook_marketplace",
-            "batch_id": "20260124232035",
-            "batch_name": "Batch Hanna-2320",
-            "score": 140,
-            "tags": [
-                "tier1_make",
-                "minivan_bonus",
-                "handicap_access"
-            ],
-            "vet_status": "approved",
-            "phone_numbers": [],
-            "processed_at": "2026-01-24T21:50:58.495236",
-            "batch_history": [
-                {
-                    "batch_id": "20260124214725",
-                    "batch_name": "Batch Nana-2147",
-                    "price": 4000
-                },
-                {
-                    "batch_id": "20260124221043",
-                    "batch_name": "Batch Marco-2210",
-                    "price": 4000
-                },
-                {
-                    "batch_id": "20260124223816",
-                    "batch_name": "Batch Ike-2238",
-                    "price": 4000
-                },
-                {
-                    "batch_id": "20260124225235",
-                    "batch_name": "Batch Bertha-2252",
-                    "price": 4000
-                },
-                {
-                    "batch_id": "20260124230639",
-                    "batch_name": "Batch Dolly-2306",
-                    "price": 4000
-                },
-                {
-                    "batch_id": "20260124232035",
-                    "batch_name": "Batch Hanna-2320",
-                    "price": 4000
-                }
-            ],
-            "last_seen": "2026-01-24T23:24:37.285410"
-        },
-        "37": {
-            "title": "2007 Nissan murano SL Sport Utility 4D",
-            "price": 2900,
-            "mileage": 170000,
-            "location": "Unknown",
-            "description": "\u00a0\nFind friends\nMarketplace\nBrowse all\nNotifications\nInbox\nMarketplace access\nBuying\nSelling\nCreate new listing\nLocation\nChicago, Illinois\n\u00a0\n \u00b7 Within 40 mi\nCategories\nVehicles\nProperty Rentals\nApparel\nClassifieds\nElectronics\nEntertainment\nFamily\nFree Stuff\nGarden & Outdoor\nHobbies\nHome Goods\nHome Improvement Supplies\nHome Sales\nMusical Instruments\nOffice Supplies\nPet Supplies\nSporting Goods\nToys & Games\nBuy and sell groups\n2007 Nissan murano SL Sport Utility 4D\n$2,900\nDealership\n\u00a0\n \u00b7 Listed a day ago in Chicago, IL\nMessage\nAbout this vehicle\nDriven 170,000 miles\nAutomatic transmission\nExterior color: Grey \u00b7 Interior color: Black\nFuel type: Gasoline\n17.0 MPG city \u00b7 23.0 MPG highway \u00b7 19.0 MPG combined\n2 owners\nThis vehicle is paid off\nClean title\n\nThis vehicle has no significant damage or problems.\n\nSeller's description\nAWD,LISTA PARA LA NIEVE \ud83c\udf28\ufe0f, T\u00cdTULO LIMPIO CORRE MUY BIEN \ud83d\udd34\ud83d\udd34 \nSee translation\nSeller information\nPedro Santana\n(35)\nJoined Facebook in 2020\nBusiness Details\nThis seller says they're listing on behalf of a business.\nNa\n4737 S Pulaski Rd\nChicago, Illinois 60632-4113\nGet directions\n(708) 690-3530\nSend seller a message\nSend\nToday's picks\nChicago\n\u00a0\n \u00b7 40 mi\n$2,500\n2012 Dodge grand caravan\nChicago, IL\n$61,700\n2012 Monaco Dynasty 45 palace rv diesel pusher motorhome -\nChicago, IL\n$6,999\n2010 Dodge Wheelchair accessible handicap\nJoliet, IL\n95K miles\n$3,500\n2013 Dodge grand caravan se minvan 4d\nWestmont, IL\n175K miles\nFREE\n2013 dodge caravan\nWarrenville, IL\n$1,500\n2017 Honda civic EX Hatchback 4D\nMcHenry, IL\n99K miles\n$3,000\n2016 Dodge grand caravan R/T\nChicago, IL\n158K miles\n$1,299\n2008 Dodge caravan Sport Minivan 4D\nChicago, IL\n160K miles\n$2,990\n2011 Dodge grand caravan passenger SXT 35th Anniversary Edition Minivan 4D\nMorton Grove, IL\n201K miles\n$2,000\n2002 Dodge caravan passenger Minivan\nChicago, IL\n159K miles\n$1,600\n2011 Dodge caravan passenger\nArlington Heights, IL\n222K miles\n$5,200\n2015 Dodge grand caravan\nChicago, IL\n110K miles\n$2,500\n2018 Honda civic EX Hatchback 4D\nJoliet, IL\n127K miles \u00b7 Dealership\n$1,500\n2001 Dodge grand caravan passenger\nChicago, IL\n142K miles\n$4,999\n2017 Dodge caravan passenger SXT Minivan 4D\nSchaumburg, IL\n143K miles\n$6,500\n2017 Dodge grand caravan Minivan\nGlen Ellyn, IL\n132K miles\n$1,800\n2008 Dodge grand caravan Minivan\nLake Villa, IL\n267K miles\n$2,400\n1999 Honda civic DX Hatchback 2D\nHobart, IN\n157K miles\n$8,000\n2018 Dodge grand caravan passenger SE Minivan\nPark Forest, IL\n186K miles\n$2,500\n2007 Honda civic CX Hatchback 2D\nHammond, IN\n14K miles",
-            "images": [
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/619218557_1420367783205136_5591641078788649076_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=110&ccb=1-7&_nc_sid=454cf4&_nc_ohc=gXcR_wEZkRAQ7kNvwEaJF-y&_nc_oc=AdmE-dKU-MgCRQFfkjFhKC9El6tyUdmCxKtYe4xXU0_vMuITkQsfx_TkyeMVdHOYCXsaIt9urMvuMdVEabnRzyjY&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=TBkcJ2jU-lwWLNxOR89z-g&oh=00_AfpWEGrGlM8WwQcBvijpsvLoLaiXWCtqv3cdA8fP-C_lug&oe=697B50C7",
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/619218557_1420367783205136_5591641078788649076_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=110&ccb=1-7&_nc_sid=454cf4&_nc_ohc=gXcR_wEZkRAQ7kNvwEaJF-y&_nc_oc=AdmE-dKU-MgCRQFfkjFhKC9El6tyUdmCxKtYe4xXU0_vMuITkQsfx_TkyeMVdHOYCXsaIt9urMvuMdVEabnRzyjY&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=TBkcJ2jU-lwWLNxOR89z-g&oh=00_AfpWEGrGlM8WwQcBvijpsvLoLaiXWCtqv3cdA8fP-C_lug&oe=697B50C7",
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/619218557_1420367783205136_5591641078788649076_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=110&ccb=1-7&_nc_sid=454cf4&_nc_ohc=gXcR_wEZkRAQ7kNvwEaJF-y&_nc_oc=AdmE-dKU-MgCRQFfkjFhKC9El6tyUdmCxKtYe4xXU0_vMuITkQsfx_TkyeMVdHOYCXsaIt9urMvuMdVEabnRzyjY&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=TBkcJ2jU-lwWLNxOR89z-g&oh=00_AfpWEGrGlM8WwQcBvijpsvLoLaiXWCtqv3cdA8fP-C_lug&oe=697B50C7",
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/620017540_1420365866538661_6493041978179058231_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=107&ccb=1-7&_nc_sid=946e27&_nc_ohc=vpz-FDcHrcYQ7kNvwFil3he&_nc_oc=AdnfkZ6N9aKNbgEvOWJ30bUyzxBf5Sd5PEbsJqxJv7uP56S1jQGHa31lGHXIYfkk25Odhr7SD_Ce1e2_WsULMkO3&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=TBkcJ2jU-lwWLNxOR89z-g&oh=00_AfpzdoU7sziqlxyItBp8w8RMLIqmvekT1i4riZ4xUGR-EA&oe=697B7499",
-                "https://scontent-dfw6-1.xx.fbcdn.net/v/t39.30808-6/621199840_1420365923205322_7188898234799041624_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=103&ccb=1-7&_nc_sid=946e27&_nc_ohc=MvhMQqQAS2UQ7kNvwFY4KDN&_nc_oc=Admke-ulYWOKzOkBL91aRpGGF5OZ1hyQbRh5emeQ_KnWpuUl7vyHG62jHBOzfIhpAd1HMMPJtlwc7m7n5n1Z_x1z&_nc_zt=23&_nc_ht=scontent-dfw6-1.xx&_nc_gid=TBkcJ2jU-lwWLNxOR89z-g&oh=00_Afqzs1sJLXxpfBYKbPfttP1HTrU-GqIC9ayq23aw2ZiEkQ&oe=697B5BC9"
-            ],
-            "listing_url": "https://www.facebook.com/marketplace/item/1392581198531784/",
-            "source": "facebook_marketplace",
-            "batch_id": "20260124222431",
-            "batch_name": "Batch Edouard-2224",
-            "score": 140,
-            "tags": [
-                "tier1_make",
-                "minivan_bonus",
-                "handicap_access"
-            ],
-            "vet_status": "approved",
-            "phone_numbers": [
-                "(708) 690-3530"
-            ],
-            "processed_at": "2026-01-24T21:50:58.495992",
-            "batch_history": [
-                {
-                    "batch_id": "20260124214725",
-                    "batch_name": "Batch Nana-2147",
-                    "price": 2900
-                },
-                {
-                    "batch_id": "20260124215726",
-                    "batch_name": "Batch Hanna-2157",
-                    "price": 2900
-                },
-                {
-                    "batch_id": "20260124221043",
-                    "batch_name": "Batch Marco-2210",
-                    "price": 2900
-                },
-                {
-                    "batch_id": "20260124222431",
-                    "batch_name": "Batch Edouard-2224",
-                    "price": 2900
-                }
-            ],
-            "last_seen": "2026-01-24T22:28:15.547732"
-        },
-        "38": {
-            "title": "2005 Chevrolet tahoe LT Sport Utility 4D",
-            "price": 3850,
-            "mileage": 167000,
-            "location": "Unknown",
-            "description": "\u00a0\nFind friends\nMarketplace\nBrowse all\nNotifications\nInbox\nMarketplace access\nBuying\nSelling\nCreate new listing\nLocation\nChicago, Illinois\n\u00a0\n \u00b7 Within 40 mi\nCategories\nVehicles\nProperty Rentals\nApparel\nClassifieds\nElectronics\nEntertainment\nFamily\nFree Stuff\nGarden & Outdoor\nHobbies\nHome Goods\nHome Improvement Supplies\nHome Sales\nMusical Instruments\nOffice Supplies\nPet Supplies\nSporting Goods\nToys & Games\nBuy and sell groups\n2005 Chevrolet tahoe LT Sport Utility 4D\n$3,850\nListed a day ago in Chicago, IL\nMessage\nAbout this vehicle\nDriven 167,000 miles\nAutomatic transmission\nExterior color: Burgundy \u00b7 Interior color:\nFuel type: Gasoline\n13.0 MPG city \u00b7 18.0 MPG highway \u00b7 15.0 MPG combined\n1 owner\nThis vehicle is paid off\nSeller's description\nSelling my dad\u2019s Chevrolet 2005  Tahoe LT FJB edition 4X4  Limited one owner 167,000 highway miles r... See more\nChicago, IL\nLocation is approximate\nSeller information\nSeller details\nMark Williams\nJoined Facebook in 2025\nSend seller a message\nSend\nToday's picks\nChicago\n\u00a0\n \u00b7 40 mi\nJust listed\n$4,250\nChevy Hi Top Conversion Van\nHomewood, IL\n$6,500\n2001 Mercedes-Benz c-class C 320 Sedan 4D\nNaperville, IL\n47K miles\nJust listed\n$5,700\n2012 Jeep liberty Artic Edition 4x4\nChicago, IL\n98K miles\n$109,995\n2025 Chevrolet silverado 3500hd high country\nManhattan, IL\n2.3K miles\nJust listed\n$3,600\n2006 Toyota rav4\nGilberts, IL\n250K miles\n$6,500\n2007 Chevrolet impala LT Sedan 4D\nLong Grove, IL\n76K miles\n$12,900\n2021 Toyota camry hybrid SE Sedan 4D\nTinley Park, IL\n213K miles\nJust listed\n$2,800\n2011 Kia sportage\nStreamwood, IL\n150K miles\n$7,800\n2013 Cadillac srx Premium Collection Sport Utility 4D\nCalumet City, IL\n134K miles\n$2,500\n2001 Jeep grand cherokee Sport Utility 4D\nHammond, IN\n190K miles\n$3,500\n1978 Chevrolet malibu 2 Door\nChicago, IL\n1.2K miles\n$379,999\n2026 Mclaren 750 s\nGlenview, IL\n1.7K miles\nJust listed\n$7,900\n2019 Lincoln MKT\nNaperville, IL\n184K miles\n$7,900\n2003 Chevrolet silverado 1500\nChicago, IL\n116K miles\n$8,700\n2015 Acura rdx SH-AWD Technology Pkg Sport Utility 4D\nChicago, IL\n78K miles\nJust listed\n$2,450\nRust Free Classic! 91 Chevy 2500 fresh from California!\nBartlett, IL\n$5,500\n2016 Ford escape AWD\nChicago, IL\n107K miles\n$13,000\n1978 Chevrolet corvette\nJoliet, IL\n51K miles\nJust listed\n$5,600\nToyota Corolla S. 2015\nChicago, IL\n$3,500\n2017 Chevrolet cruze\nChicago, IL\n136K miles",
-            "images": [
-                "https://scontent-dfw5-3.xx.fbcdn.net/v/t39.30808-6/618159559_122168161130782977_233914991072313603_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=108&ccb=1-7&_nc_sid=454cf4&_nc_ohc=Kkx_-fbN_hUQ7kNvwF0cCMV&_nc_oc=Adn9QHFXHPEVTc2opmOSWCPEYTnWVQrsqD42mP9QeRkde19Z0xtyNJGfdIDvjMSplcqmGZVXH2arG40ZJMuxewgH&_nc_zt=23&_nc_ht=scontent-dfw5-3.xx&_nc_gid=QAKcqO8m-Xzjnl1D77D6tQ&oh=00_AfqaSpPlawJK5LEkZnnjXRUNMulsWDK4aEH-jvZ8fwkr5w&oe=697B75E7",
-                "https://scontent-dfw5-3.xx.fbcdn.net/v/t39.30808-6/618159559_122168161130782977_233914991072313603_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=108&ccb=1-7&_nc_sid=454cf4&_nc_ohc=Kkx_-fbN_hUQ7kNvwF0cCMV&_nc_oc=Adn9QHFXHPEVTc2opmOSWCPEYTnWVQrsqD42mP9QeRkde19Z0xtyNJGfdIDvjMSplcqmGZVXH2arG40ZJMuxewgH&_nc_zt=23&_nc_ht=scontent-dfw5-3.xx&_nc_gid=QAKcqO8m-Xzjnl1D77D6tQ&oh=00_AfqaSpPlawJK5LEkZnnjXRUNMulsWDK4aEH-jvZ8fwkr5w&oe=697B75E7",
-                "https://scontent-dfw5-3.xx.fbcdn.net/v/t39.30808-6/618159559_122168161130782977_233914991072313603_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=108&ccb=1-7&_nc_sid=454cf4&_nc_ohc=Kkx_-fbN_hUQ7kNvwF0cCMV&_nc_oc=Adn9QHFXHPEVTc2opmOSWCPEYTnWVQrsqD42mP9QeRkde19Z0xtyNJGfdIDvjMSplcqmGZVXH2arG40ZJMuxewgH&_nc_zt=23&_nc_ht=scontent-dfw5-3.xx&_nc_gid=QAKcqO8m-Xzjnl1D77D6tQ&oh=00_AfqaSpPlawJK5LEkZnnjXRUNMulsWDK4aEH-jvZ8fwkr5w&oe=697B75E7",
-                "https://scontent-dfw5-2.xx.fbcdn.net/v/t39.30808-6/619216081_122168157848782977_8370408561889802586_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=100&ccb=1-7&_nc_sid=946e27&_nc_ohc=NfD2VzfNl1YQ7kNvwEcfkHb&_nc_oc=AdlpfwZLQyGpH_Z-glnqLqGZ0pvZlaTbuwKDsEMygzzmWEPygWWo6fJKd79VUCMYRjUjt-qhKKdT6faidlAMCCH5&_nc_zt=23&_nc_ht=scontent-dfw5-2.xx&_nc_gid=QAKcqO8m-Xzjnl1D77D6tQ&oh=00_AfoS4waaXUHyaNZx6fWn4MvZd282T7xMfL88aEeuy-rbzw&oe=697B4E54",
-                "https://scontent-dfw5-3.xx.fbcdn.net/v/t39.30808-6/620003070_122168158274782977_3333296958850753866_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=108&ccb=1-7&_nc_sid=946e27&_nc_ohc=OvB8hhp-HwkQ7kNvwHXQ36X&_nc_oc=AdlvtZ-4buANdaDMvz4W2w-fLoiYv5hg6h7Wys5wbAt-PWsBh8Ksftl-l9uINyweWzaS9vAphvLJHHSIIYCvIFZC&_nc_zt=23&_nc_ht=scontent-dfw5-3.xx&_nc_gid=QAKcqO8m-Xzjnl1D77D6tQ&oh=00_AfrP3sel3j1P9uEXe6aEGVptcgIVie8gEhz2HkCYyECHEA&oe=697B62BB"
-            ],
-            "listing_url": "https://www.facebook.com/marketplace/item/914829357608608/",
-            "source": "facebook_marketplace",
-            "batch_id": "20260124214725",
-            "batch_name": "Batch Nana-2147",
-            "score": 110,
-            "tags": [
-                "tier1_make",
-                "minivan_bonus"
-            ],
-            "vet_status": "approved",
-            "phone_numbers": [],
-            "processed_at": "2026-01-24T21:50:58.496808",
-            "batch_history": [
-                {
-                    "batch_id": "20260124214725",
-                    "batch_name": "Batch Nana-2147",
-                    "price": 3850
-                }
-            ]
-        },
-        "39": {
-            "title": "2002 Nissan pathfinder Le",
-            "price": 2600,
-            "mileage": 142000,
-            "location": "Unknown",
-            "description": "\u00a0\nFind friends\nMarketplace\nBrowse all\nNotifications\nInbox\nMarketplace access\nBuying\nSelling\nCreate new listing\nLocation\nChicago, Illinois\n\u00a0\n \u00b7 Within 40 mi\nCategories\nVehicles\nProperty Rentals\nApparel\nClassifieds\nElectronics\nEntertainment\nFamily\nFree Stuff\nGarden & Outdoor\nHobbies\nHome Goods\nHome Improvement Supplies\nHome Sales\nMusical Instruments\nOffice Supplies\nPet Supplies\nSporting Goods\nToys & Games\nBuy and sell groups\n0:07 / 0:43\n2002 Nissan pathfinder Le\n$2,600\nListed a day ago in Chicago, IL\nMessage\nAbout this vehicle\nDriven 142,000 miles\nAutomatic transmission\nExterior color: Grey \u00b7 Interior color: Grey\nFuel type: Gasoline\n1 owner\nThis vehicle is paid off\nClean title\n\nThis vehicle has no significant damage or problems.\n\nSeller's description\nNo problema mecanico titulo limpio \u2705\ufe0f  \nSee translation\nChicago, IL\nLocation is approximate\nSeller information\nSeller details\n\u0645\u064a\u063a\u064a\u0644. \u0627\u0644\u062a\u0627\u0635\u064a\u0644.\n(36)\nVery Responsive on Marketplace\nJoined Facebook in 2023\nSend seller a message\nSend\nToday's picks\nChicago\n\u00a0\n \u00b7 40 mi\n$2,500\n2012 Dodge grand caravan\nChicago, IL\n$61,700\n2012 Monaco Dynasty 45 palace rv diesel pusher motorhome -\nChicago, IL\n$6,999\n2010 Dodge Wheelchair accessible handicap\nJoliet, IL\n95K miles\n$3,500\n2013 Dodge grand caravan se minvan 4d\nWestmont, IL\n175K miles\nFREE\n2013 dodge caravan\nWarrenville, IL\n$1,500\n2017 Honda civic EX Hatchback 4D\nMcHenry, IL\n99K miles\n$3,000\n2016 Dodge grand caravan R/T\nChicago, IL\n158K miles\n$1,299\n2008 Dodge caravan Sport Minivan 4D\nChicago, IL\n160K miles\n$2,990\n2011 Dodge grand caravan passenger SXT 35th Anniversary Edition Minivan 4D\nMorton Grove, IL\n201K miles\n$2,000\n2002 Dodge caravan passenger Minivan\nChicago, IL\n159K miles\n$1,600\n2011 Dodge caravan passenger\nArlington Heights, IL\n222K miles\n$5,200\n2015 Dodge grand caravan\nChicago, IL\n110K miles\n$2,500\n2018 Honda civic EX Hatchback 4D\nJoliet, IL\n127K miles \u00b7 Dealership\n$1,500\n2001 Dodge grand caravan passenger\nChicago, IL\n142K miles\n$4,999\n2017 Dodge caravan passenger SXT Minivan 4D\nSchaumburg, IL\n143K miles\n$6,500\n2017 Dodge grand caravan Minivan\nGlen Ellyn, IL\n132K miles\n$1,800\n2008 Dodge grand caravan Minivan\nLake Villa, IL\n267K miles\n$2,400\n1999 Honda civic DX Hatchback 2D\nHobart, IN\n157K miles\n$8,000\n2018 Dodge grand caravan passenger SE Minivan\nPark Forest, IL\n186K miles\n$2,500\n2007 Honda civic CX Hatchback 2D\nHammond, IN\n14K miles",
-            "images": [
-                "https://video-dfw5-1.xx.fbcdn.net/o1/v/t2/f2/m366/AQNTL0_QZagEcCkJJXzWOEPxpEt28rICv14Jx2bykaowwk6Thtph7tDvivyJU4jee01y0zJ6t4q_L29clyVDP1kDMbAY8WYbpF3-99n4in5vSA.mp4?_nc_cat=105&_nc_sid=5e9851&_nc_ht=video-dfw5-1.xx.fbcdn.net&_nc_ohc=Wy4yeMBCBEUQ7kNvwEiJFUZ&efg=eyJ2ZW5jb2RlX3RhZyI6Inhwdl9wcm9ncmVzc2l2ZS5GQUNFQk9PSy4uQzMuNzIwLmRhc2hfaDI2NC1iYXNpYy1nZW4yXzcyMHAiLCJ4cHZfYXNzZXRfaWQiOjg4MzcyNTAyNzc0NTAyNywiYXNzZXRfYWdlX2RheXMiOjEsInZpX3VzZWNhc2VfaWQiOjEwNDkyLCJkdXJhdGlvbl9zIjo0MiwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9&ccb=17-1&vs=c008858dc83ee09c&_nc_vs=HBksFQIYRWZiX2VwaGVtZXJhbC8wNzQwQzg4NDg0RTcxNzMxNjc0NUZCQjMzNTZFRThCQ19tdF8xX3ZpZGVvX2Rhc2hpbml0Lm1wNBUAAsgBEgAVAhhAZmJfcGVybWFuZW50L0MzNEQ1OTcwODMwNjk4MkM1ODc5N0NDODRENzhEOTg5X2F1ZGlvX2Rhc2hpbml0Lm1wNBUCAsgBEgAoABgAGwKIB3VzZV9vaWwBMRJwcm9ncmVzc2l2ZV9yZWNpcGUBMRUAACaG9NzFyO-RAxUCKAJDMywXQEVd0vGp--cYGWRhc2hfaDI2NC1iYXNpYy1nZW4yXzcyMHARAHUCZfijAQA&_nc_gid=bwQGZLSUbt1q4uAUyVwxug&_nc_zt=28&oh=00_AfqPUnsQFn1EQ9anRDKemSffax-xKPra750H3ksBHv0-_g&oe=697B731F&bitrate=2925307&tag=dash_h264-basic-gen2_720p",
-                "https://scontent-dfw5-2.xx.fbcdn.net/v/t15.5256-10/621201596_2111976526299144_1093511266583516859_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=102&ccb=1-7&_nc_sid=d4195b&_nc_ohc=IP9b63cT6GoQ7kNvwFvI2iw&_nc_oc=Adn4dcs6bBsLeXMDfmcflGN1ItOE4TDmAvbl5ucpnv-CtkNEwWhrBnzk28iPKYVQaL244oiR0Ip4lrHmf0bSbB7Q&_nc_zt=23&_nc_ht=scontent-dfw5-2.xx&_nc_gid=bwQGZLSUbt1q4uAUyVwxug&oh=00_AfouWBbgvEsRVRAQ8jtun3e8ijTN6jR3pRSsGPhdPyDTAA&oe=697B6215",
-                "https://scontent-dfw6-1.xx.fbcdn.net/v/t39.30808-6/616937991_122287786880016476_8481999533926175498_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=103&ccb=1-7&_nc_sid=454cf4&_nc_ohc=VpOmuNekc6UQ7kNvwEKC_Nh&_nc_oc=AdmwZAj02WL3Xflb68tpxrQVsXg5R7N8HNbh-IY6O-VOxQOAoo6NMQe8dkQR78yq8Sc9kTbifbSSnYeAzOr2ZGr4&_nc_zt=23&_nc_ht=scontent-dfw6-1.xx&_nc_gid=bwQGZLSUbt1q4uAUyVwxug&oh=00_AfqFdIM5jrha-BQoI0debeosOzUi3jfhfvOOc6hlhl_S9g&oe=697B5C90",
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/619816443_122287785074016476_6980501602082993867_n.jpg?stp=cp6_dst-jpegr_s960x960_tt6&_nc_cat=110&ccb=1-7&_nc_sid=946e27&_nc_ohc=phKUvro859cQ7kNvwGIkmlU&_nc_oc=AdmfOTKDjQQcPyoC2IQA319bhzi4EF6bYDatrE78Sn9BVNLH5LSDxQnMS4Bzi5_mlW36SlYI5ReMpWwxsWiJzcF2&_nc_zt=23&se=-1&_nc_ht=scontent-dfw5-1.xx&_nc_gid=bwQGZLSUbt1q4uAUyVwxug&oh=00_Afp8fZ1XHyC-Vjay8FKobMipYhPpByflfzf7pSew96NK_Q&oe=697B7802",
-                "https://scontent-dfw5-2.xx.fbcdn.net/v/t39.30808-6/619870089_122287785122016476_9032591931207689071_n.jpg?stp=cp6_dst-jpegr_s960x960_tt6&_nc_cat=104&ccb=1-7&_nc_sid=946e27&_nc_ohc=cOG5yRgbkQMQ7kNvwFpFxcq&_nc_oc=AdkF1m24oYNp4ozV0FIjJNmP5pDAO1YDb0Qts69saGTd9Jj5wcSOVlpIyHX3ISEz5OTqTM5VqHaDtc7rvw_jJcec&_nc_zt=23&se=-1&_nc_ht=scontent-dfw5-2.xx&_nc_gid=bwQGZLSUbt1q4uAUyVwxug&oh=00_AfqwIRScam33Xn66YCVbGoOhxL1TVcNNOWcWjgZ3R5RLCw&oe=697B4D36"
-            ],
-            "listing_url": "https://www.facebook.com/marketplace/item/1632269554716492/",
-            "source": "facebook_marketplace",
-            "batch_id": "20260124214725",
-            "batch_name": "Batch Nana-2147",
-            "score": 140,
-            "tags": [
-                "tier1_make",
-                "minivan_bonus",
-                "handicap_access"
-            ],
-            "vet_status": "approved",
-            "phone_numbers": [],
-            "processed_at": "2026-01-24T21:50:58.497916",
-            "batch_history": [
-                {
-                    "batch_id": "20260124214725",
-                    "batch_name": "Batch Nana-2147",
-                    "price": 2600
-                }
-            ]
+            "status": "tickle",
+            "tickle_at": "2026-01-26T00:43:46.994697"
         },
         "40": {
             "title": "2003 Honda accord DX Sedan 4D",
@@ -584,7 +346,10 @@
                     "price": 2000
                 }
             ],
-            "last_seen": "2026-01-24T23:10:35.546829"
+            "last_seen": "2026-01-24T23:10:35.546829",
+            "status": "active",
+            "tickle_at": "2026-01-26T23:43:01.688351",
+            "deleted_at": "2026-01-27T00:19:19.411680"
         },
         "43": {
             "title": "2008 Chrysler aspen",
@@ -689,7 +454,9 @@
                     "price": 250
                 }
             ],
-            "last_seen": "2026-01-24T23:24:37.324400"
+            "last_seen": "2026-01-24T23:24:37.324400",
+            "status": "tickle",
+            "tickle_at": "2026-01-26T01:07:57.255858"
         },
         "45": {
             "title": "2013 Cadillac xts",
@@ -805,60 +572,6 @@
                 }
             ]
         },
-        "48": {
-            "title": "2009 Ford escape",
-            "price": 2300,
-            "mileage": 199000,
-            "location": "Unknown",
-            "description": "\u00a0\nFind friends\nMarketplace\nBrowse all\nNotifications\nInbox\nMarketplace access\nBuying\nSelling\nCreate new listing\nLocation\nChicago, Illinois\n\u00a0\n \u00b7 Within 250 mi\nCategories\nVehicles\nProperty Rentals\nApparel\nClassifieds\nElectronics\nEntertainment\nFamily\nFree Stuff\nGarden & Outdoor\nHobbies\nHome Goods\nHome Improvement Supplies\nHome Sales\nMusical Instruments\nOffice Supplies\nPet Supplies\nSporting Goods\nToys & Games\nBuy and sell groups\n2009 Ford escape\n$2,300\nListed a day ago in Chicago, IL\nMessage\nAbout this vehicle\nDriven 199,000 miles\nAutomatic transmission\nExterior color: Silver \u00b7 Interior color: Black\nFuel type: Gasoline\n1 owner\nThis vehicle is paid off\nClean title\n\nThis vehicle has no significant damage or problems.\n\nSeller's description\nCheap affordable realiable heater works come get it any questions inbox me  \nChicago, IL\nLocation is approximate\nSeller information\nSeller details\nRose Guerra\n(222)\nJoined Facebook in 2008\nSend seller a message\nSend\nToday's picks\nChicago\n\u00a0\n \u00b7 250 mi\nJust listed\n$2,450\nRust Free Classic! 91 Chevy 2500 fresh from California!\nBartlett, IL\n$5,500\n2016 Ford escape AWD\nChicago, IL\n107K miles\n$13,000\n1978 Chevrolet corvette\nJoliet, IL\n51K miles\n$3,500\n2017 Chevrolet cruze\nChicago, IL\n136K miles\n$50\nCarry on (2 pc)\nBerwyn, IL\n$3,400\n70 horsepower diesel cushman plow machine 1990\u2019s model\nGriffith, IN\n$50\nKitchen island on wheels\nSchaumburg, IL\n$3,500\nDodge Dakota 4 x 4 pickup truck\nChicago, IL\n$1,800\n2007 Jeep liberty Limited Sport Utility 4D\nChicago, IL\n170K miles\n$2,800\nYamaha Gas Golf Cart\nCary, IL\n$7,600\n2013 Toyota sienna LE Minivan 4D\nChicago, IL\n86K miles\n$1,600\nGolf Cart\nLowell, IN\n$7,800\n2016 Honda odyssey EX-L Minivan 4D\nCicero, IL\n135K miles\n$7,600\n2016 Honda odyssey Touring Minivan 4D\nChicago, IL\n87K miles\n$850\nATV\nSkokie, IL\n$140\nTune your piano!\nChicago, IL\n$319,000\n3 Beds 3 Baths - House\nRochelle, IL\n$1,500\n2017 Honda civic EX Hatchback 4D\nMcHenry, IL\n99K miles\n$2,500\n2018 Honda civic EX Hatchback 4D\nJoliet, IL\n127K miles \u00b7 Dealership\n$5,200\n2015 Dodge grand caravan\nChicago, IL\n110K miles\n$70\nHome decor statues\nChicago, IL\nJust listed\n$17,500\n2017 Honda Odyssey \u00b7 EX Minivan 4D\nRochester, MN\n$500\nTool and Die Shop Closing Machines for sale\nGrafton, WI\n$4,000$4,700\n2006 Chevrolet Silverado\nChicago, IL\n$2,950\n2009 Honda Odyssey \u00b7 EX Minivan 4D\nChicago, IL\n$25,900\n2024 Honda Odyssey \u00b7 EX-L Minivan 4D\nBurlington, WI\n$1,275\nShipping containers\nGlendale Heights, IL\n$9,000\n1985 Harley-Davidson fxwg\nChicago, IL\n$40\nCanvas Prints\nNorridge, IL\n$6,890\n2011 Honda Odyssey \u00b7 Touring Elite Minivan 4D\nDowners Grove, IL\nJust listed\n$3,000\n1999 Jeep Cherokee \u00b7 Sport 4D\nLafayette, IN",
-            "images": [
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/621677032_10239557063294688_3966923443454665447_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=107&ccb=1-7&_nc_sid=454cf4&_nc_ohc=pSOkPPzTKzIQ7kNvwGXIdj2&_nc_oc=AdnmGOMw-gTkiaMnQ_8emud8pWun9NxJZFszx_c1HKNPQAmqEv35DK_rFUOV5db6KJyQ1BEy2letWwHoer9cO-Oc&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=H66h2z_sv3eA3PQrdcMVfQ&oh=00_Afrgcu-Idbzub6DzUly_wPMscBexT5uviIBVQQMmCMrC_w&oe=697B76AB",
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/621677032_10239557063294688_3966923443454665447_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=107&ccb=1-7&_nc_sid=454cf4&_nc_ohc=pSOkPPzTKzIQ7kNvwGXIdj2&_nc_oc=AdnmGOMw-gTkiaMnQ_8emud8pWun9NxJZFszx_c1HKNPQAmqEv35DK_rFUOV5db6KJyQ1BEy2letWwHoer9cO-Oc&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=H66h2z_sv3eA3PQrdcMVfQ&oh=00_Afrgcu-Idbzub6DzUly_wPMscBexT5uviIBVQQMmCMrC_w&oe=697B76AB",
-                "https://scontent-dfw5-1.xx.fbcdn.net/v/t39.30808-6/621677032_10239557063294688_3966923443454665447_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=107&ccb=1-7&_nc_sid=454cf4&_nc_ohc=pSOkPPzTKzIQ7kNvwGXIdj2&_nc_oc=AdnmGOMw-gTkiaMnQ_8emud8pWun9NxJZFszx_c1HKNPQAmqEv35DK_rFUOV5db6KJyQ1BEy2letWwHoer9cO-Oc&_nc_zt=23&_nc_ht=scontent-dfw5-1.xx&_nc_gid=H66h2z_sv3eA3PQrdcMVfQ&oh=00_Afrgcu-Idbzub6DzUly_wPMscBexT5uviIBVQQMmCMrC_w&oe=697B76AB",
-                "https://scontent-dfw6-1.xx.fbcdn.net/v/t39.30808-6/621191658_10239557026373765_6137073706201460343_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=103&ccb=1-7&_nc_sid=946e27&_nc_ohc=xL2KOeO45XoQ7kNvwHGsfO5&_nc_oc=Adlu_sHuTfGYLOFLDJ4H-Zw_0A5IfQ009UBYwHDprDq1SRAMMz6oltZoCfLehdOJXjjbLo897bt7derPVcFfh9_9&_nc_zt=23&_nc_ht=scontent-dfw6-1.xx&_nc_gid=H66h2z_sv3eA3PQrdcMVfQ&oh=00_AfrxBw1OKi-YDh4O9QkDqAi_Ki2HkMf2aqr29G9E3ByoKA&oe=697B7E52",
-                "https://scontent-dfw6-1.xx.fbcdn.net/v/t39.30808-6/621181889_10239557026933779_7161206981430403907_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=103&ccb=1-7&_nc_sid=946e27&_nc_ohc=rAjwXeJ3PjkQ7kNvwEBmdHh&_nc_oc=AdmbELVsEmnwqh3jz6U_Zt9DscgjpYZyhvTf2LVMbiKayqmlaZK_vypryhbC8nTK_TexysSGfAjFdyO5vbqlkb03&_nc_zt=23&_nc_ht=scontent-dfw6-1.xx&_nc_gid=H66h2z_sv3eA3PQrdcMVfQ&oh=00_AfosTi0eNDeAQq0uY7jVWzpVGN0rHyYjiha0JQnqq24SJw&oe=697B620D"
-            ],
-            "listing_url": "https://www.facebook.com/marketplace/item/1260275812872043/",
-            "source": "facebook_marketplace",
-            "batch_id": "20260124232035",
-            "batch_name": "Batch Hanna-2320",
-            "score": 140,
-            "tags": [
-                "tier1_make",
-                "pickup_bonus"
-            ],
-            "vet_status": "approved",
-            "phone_numbers": [],
-            "processed_at": "2026-01-24T22:14:30.880087",
-            "batch_history": [
-                {
-                    "batch_id": "20260124221043",
-                    "batch_name": "Batch Marco-2210",
-                    "price": 2300
-                },
-                {
-                    "batch_id": "20260124223816",
-                    "batch_name": "Batch Ike-2238",
-                    "price": 2300
-                },
-                {
-                    "batch_id": "20260124225235",
-                    "batch_name": "Batch Bertha-2252",
-                    "price": 2300
-                },
-                {
-                    "batch_id": "20260124230639",
-                    "batch_name": "Batch Dolly-2306",
-                    "price": 2300
-                },
-                {
-                    "batch_id": "20260124232035",
-                    "batch_name": "Batch Hanna-2320",
-                    "price": 2300
-                }
-            ],
-            "last_seen": "2026-01-24T23:24:37.281220"
-        },
         "49": {
             "title": "2023 Chrysler 300 s",
             "price": 500,
@@ -902,7 +615,9 @@
                     "price": 500
                 }
             ],
-            "last_seen": "2026-01-24T23:24:37.294764"
+            "last_seen": "2026-01-24T23:24:37.294764",
+            "status": "tickle",
+            "tickle_at": "2026-01-26T01:06:31.217311"
         },
         "50": {
             "title": "2007 Dodge ram 1500 quad cab SLT Pickup 4D 6 1/3 ft",

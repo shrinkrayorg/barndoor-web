@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barndoor Admin - User Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #CC0000;
+            --dark-bg: #1a1a1a;
+            --darker-bg: #0d0d0d;
+            --text-light: #ffffff;
+            --text-gray: #b0b0b0;
+            --border-gray: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--darker-bg);
+            color: var(--text-light);
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .back-link {
+            color: var(--text-gray);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+
+        .user-card {
+            background: var(--dark-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .user-card:hover {
+            transform: translateY(-2px);
+            border-color: #444;
+        }
+
+        .user-info h3 {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .user-info p {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 12px;
+        }
+
+        .status-pending {
+            background: #f59e0b;
+            color: black;
+        }
+
+        .status-approved {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-denied {
+            background: #ef4444;
+            color: white;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-approve {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #059669;
+        }
+
+        .btn-deny {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-gray);
+            border: 1px solid var(--border-gray);
+        }
+
+        .btn-deny:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 100px 0;
+            color: var(--text-gray);
+        }
+
+        .empty-state .material-icons {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .navbar {
+            background: var(--dark-bg);
+            border-bottom: 1px solid var(--border-gray);
+            height: 80px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary-red);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Unified Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">BARNDOOR</a>
+            <div class="nav-links">
+                <a href="/">HOME</a>
+                <a href="/tickle">TICKLE FILE</a>
+                <a href="/settings">SETTINGS</a>
+                <a href="/admin/users" class="active">USERS</a>
+                <a href="/portal">ACCESS PORTAL</a>
+
+                <!-- Profile Dropdown -->
+                <div class="profile-wrapper" style="position: relative; margin-left: 10px;">
+                    <div class="profile-btn" onclick="toggleProfileDropdown()"
+                        style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-gray); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-gray);">
+                        <span class="material-icons">person</span>
+                    </div>
+                    <div class="profile-dropdown" id="profileDropdown"
+                        style="position: absolute; top: 100%; right: 0; margin-top: 15px; background: var(--dark-bg); border: 1px solid var(--border-gray); border-radius: 8px; width: 240px; display: none; flex-direction: column; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); z-index: 1001; padding: 10px 0;">
+                        <div class="dropdown-user-info"
+                            style="padding: 15px 20px; border-bottom: 1px solid var(--border-gray); margin-bottom: 8px;">
+                            <span class="dropdown-user-name"
+                                style="display: block; font-weight: 700; font-size: 14px; color: white;">{{
+                                session.get('user_name', 'User') }}</span>
+                            <span class="dropdown-user-role"
+                                style="display: block; font-size: 11px; color: var(--text-gray); text-transform: uppercase;">{{
+                                session.get('role', 'User') }}</span>
+                            <span class="dropdown-user-role"
+                                style="text-transform: none; font-size: 10px; color: var(--text-gray);">{{
+                                session.get('user_email', '') }}</span>
+                        </div>
+                        <a href="/profile"
+                            style="padding: 12px 20px; color: var(--text-gray); text-decoration: none; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 12px;">
+                            <span class="material-icons" style="font-size: 18px;">person</span>
+                            My Profile
+                        </a>
+                        <a href="/logout" class="logout-btn"
+                            style="padding: 12px 20px; color: var(--primary-red); text-decoration: none; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--border-gray); margin-top: 8px;">
+                            <span class="material-icons" style="font-size: 18px;">logout</span>
+                            Log Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="header" style="margin-top: 120px;">
+        <div>
+            <h1>User Management</h1>
+            <p style="color: var(--text-gray); margin-top: 8px;">Review and manage access requests for Barndoor.me</p>
+        </div>
+        <div><!-- Empty for spacing --></div>
+    </div>
+
+    <div id="userList">
+        <!-- Users will be loaded here -->
+        <div class="empty-state">
+            <span class="material-icons">hourglass_empty</span>
+            <p>Loading access requests...</p>
+        </div>
+    </div>
+
+    <script>
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+                const container = document.getElementById('userList');
+
+                if (data.users.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="material-icons">people_outline</span>
+                            <p>No user requests found.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Sort users: pending first
+                const sortedUsers = data.users.sort((a, b) => {
+                    if (a.status === 'pending' && b.status !== 'pending') return -1;
+                    if (a.status !== 'pending' && b.status === 'pending') return 1;
+                    return 0;
+                });
+
+                container.innerHTML = sortedUsers.map(user => `
+                    <div class="user-card">
+                        <div class="user-info">
+                            <div style="display: flex; align-items: center;">
+                                <h3>${user.full_name}</h3>
+                                <span class="status-badge status-${user.status}">${user.status}</span>
+                            </div>
+                            <p>${user.email}</p>
+                            <p style="font-size: 11px; margin-top: 4px;">Requested: ${new Date(user.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <div class="actions">
+                            ${user.status === 'pending' ? `
+                                <button class="btn btn-approve" onclick="updateStatus('${user.email}', 'approved')">
+                                    <span class="material-icons" style="font-size: 18px;">check</span>
+                                    Approve
+                                </button>
+                                <button class="btn btn-deny" onclick="updateStatus('${user.email}', 'denied')">
+                                    <span class="material-icons" style="font-size: 18px;">close</span>
+                                    Deny
+                                </button>
+                            ` : `
+                                <span style="color: var(--text-gray); font-size: 12px; font-weight: 600; text-transform: uppercase;">
+                                    Processed
+                                </span>
+                            `}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        async function updateStatus(email, status) {
+            if (!confirm(`Are you sure you want to ${status} this user?`)) return;
+
+            try {
+                const response = await fetch('/api/users/status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, status })
+                });
+
+                if (response.ok) {
+                    loadUsers();
+                } else {
+                    alert('Error updating user status');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.style.display = (dropdown.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        document.addEventListener('click', function (e) {
+            const profileWrapper = document.querySelector('.profile-wrapper');
+            if (profileWrapper && !profileWrapper.contains(e.target)) {
+                document.getElementById('profileDropdown').style.display = 'none';
+            }
+        });
+
+        // Initial load
+        loadUsers();
+    </script>
+</body>
+
+</html>

@@ -135,6 +135,10 @@ def run_pipeline():
     check_and_rotate_session()
     print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 Starting Pipeline Run...")
     
+    # Initialize database locally to ensure fresh read/write (avoid cache issues with web server)
+    db = TinyDB('database/ledger.json')
+    listings_table = db.table('listings')
+    
     try:
         # === STEP 1: HUNT ===
         print("🔍 Phase 1: HUNTING")
@@ -199,8 +203,6 @@ def run_pipeline():
             
             # Check if listing already exists (by partial URL match)
             Listing = Query()
-            # Search where listing_url starts with the clean base
-            # TinyDB doesn't have a 'startswith' easily, so we rely on the clean_url match if we saved it clean previously
             existing_results = listings_table.search(Listing.listing_url == clean_url)
             
             if not existing_results:
@@ -214,11 +216,9 @@ def run_pipeline():
                 print(f"  ✓ Saved: {listing.get('title', 'Unknown')}")
             else:
                 # Update existing listing
-                # Add current batch to history
                 existing_item = existing_results[0]
                 history = existing_item.get('batch_history', [])
                 
-                # Avoid duplicate batch entries if running same batch twice
                 current_batch_id = listing.get('batch_id')
                 if not any(h.get('batch_id') == current_batch_id for h in history):
                     history.append({
@@ -227,12 +227,11 @@ def run_pipeline():
                         'price': listing.get('price')
                     })
                 
-                # specific fields to update (don't overwrite everything, keep original found_at)
                 update_data = {
-                    'price': listing.get('price'), # Update price if changed
+                    'price': listing.get('price'),
                     'score': listing.get('score'),
                     'last_seen': datetime.now().isoformat(),
-                    'batch_id': current_batch_id,       # Update 'most recent' batch
+                    'batch_id': current_batch_id,
                     'batch_name': listing.get('batch_name'),
                     'batch_history': history
                 }
@@ -244,19 +243,9 @@ def run_pipeline():
         print("\n📢 STEP 4: Processing notifications...")
         herald.execute(processed_listings)
         
-        # Summary
-        print("\n" + "=" * 60)
-        print("PIPELINE SUMMARY")
-        print("=" * 60)
-        print(f"Total listings collected: {len(raw_listings)}")
-        print(f"Listings approved: {len(processed_listings)}")
-        print(f"Daily digest count: {len(herald.get_daily_digest())}")
-        print(f"Total in database: {len(listings_table)}")
-        
-    except Exception as e:
-        print(f"\n❌ Error during pipeline execution: {e}")
-        import traceback
-        traceback.print_exc()
+    finally:
+        db.close()
+        print("   🔒 DB Closed for this run.")
 
 
 def send_daily_digest():

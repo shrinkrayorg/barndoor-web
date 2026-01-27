@@ -14,6 +14,7 @@
             --primary-red: #d32f2f;
             --primary-dark: #1a1a1a;
             --accent-green: #00e676;
+            --veteran-green: #4caf50;
         }
 
         * {
@@ -33,6 +34,7 @@
         .hero-container {
             position: relative;
             height: 100vh;
+            height: 100vh;
             width: 100%;
             background-image: url('https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
             /* Classic Car Placeholder */
@@ -40,8 +42,11 @@
             background-position: center;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
+            justify-content: space-between;
+            /* Push content and footer apart */
+            padding-top: 100px;
+            /* Space for top bar */
         }
 
         .overlay {
@@ -61,6 +66,12 @@
             text-align: center;
             max-width: 800px;
             padding: 0 20px;
+            flex-grow: 1;
+            /* Allow content to take available space */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* Center it vertically in its space */
         }
 
         /* Navbar style top bar */
@@ -172,6 +183,7 @@
             transition: all 0.3s ease;
             text-decoration: none;
             border: none;
+            text-align: center;
         }
 
         .btn-primary {
@@ -198,25 +210,60 @@
             transform: translateY(-2px);
         }
 
-        .login-form-container {
+        .btn-veteran {
+            background: var(--veteran-green);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-veteran:hover {
+            background: #43a047;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
+        }
+
+        .login-form-container.active,
+        .signup-form-container.active,
+        .modal-card.active {
+            display: block;
+        }
+
+        .login-form-container,
+        .signup-form-container,
+        .modal-card {
             display: none;
-            /* Hidden by default */
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
             padding: 40px;
             border-radius: 12px;
-            width: 100%;
+            width: 90%;
             max-width: 400px;
             z-index: 20;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             animation: fadeIn 0.3s ease;
         }
 
-        .login-form-container.active {
-            display: block;
+        .status-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
         }
 
         .form-header {
@@ -238,6 +285,7 @@
 
         .input-group {
             margin-bottom: 20px;
+            position: relative;
         }
 
         .input-group label {
@@ -251,6 +299,8 @@
         .input-group input {
             width: 100%;
             padding: 12px;
+            padding-right: 40px;
+            /* Space for eye icon */
             border: 1px solid #ddd;
             border-radius: 6px;
             font-family: 'Inter', sans-serif;
@@ -261,6 +311,20 @@
         .input-group input:focus {
             outline: none;
             border-color: var(--primary-red);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            /* Adjust based on label height */
+            color: #999;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .password-toggle:hover {
+            color: #333;
         }
 
         .close-btn {
@@ -304,6 +368,48 @@
                 transform: translate(-50%, -50%);
             }
         }
+
+        .honor-footer {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            z-index: 5;
+            padding-bottom: 40px;
+            /* Add padding instead of absolute positioning */
+        }
+
+        .honor-plaque {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+            text-align: center;
+        }
+
+        .honor-plaque:hover {
+            opacity: 1;
+        }
+
+        .plaque-icon {
+            font-size: 32px;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(45deg, #ffd700, #ffa000);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .plaque-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+        }
     </style>
 </head>
 
@@ -315,67 +421,320 @@
         <!-- Top Navigation -->
         <nav class="top-bar">
             <div class="logo">
-                <span class="live-badge">LIVE</span>
                 <span class="brand-name">BARNDOOR</span>
+                <span class="live-badge">LIVE</span>
             </div>
-            <div class="nav-links">
-                <a href="#" class="nav-link active">HOME</a>
-                <a href="#" class="nav-link">TICKLE FILE</a>
-                <a href="#" class="nav-link">SETTINGS</a>
-                <a href="#" class="nav-link">ACCESS PORTAL</a>
-            </div>
+            <!-- Navigation removed -->
+            <div></div>
         </nav>
 
         <!-- Main Content -->
         <div class="content">
-            <h1>DISCOVER HIDDEN<br>TREASURES</h1>
-            <p class="subtitle">Premium classic car finder across the heartland</p>
+            <!-- Main Content -->
+            <div class="content">
+                <h1>SELL YOUR<br>VEHICLE</h1>
+                <p class="subtitle">Illinois's premium buyer. We beat written corporate offers by $500 on qualifying
+                    Trucks, SUVs, and high-value imports and $1000 for our Community Heroes listed below.</p>
 
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="showLogin()">LOGIN TO DASHBOARD</button>
-                <button class="btn btn-secondary" onclick="requestAccess()">REQUEST ACCESS</button>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="showLogin()">LOGIN TO DASHBOARD</button>
+                    <a href="/veterans" class="btn btn-veteran"
+                        style="display: inline-flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.2; height: auto; padding: 12px 32px;">
+                        <span style="white-space: nowrap;">VETERANS AND COMMUNITY HEROES</span>
+                        <span style="font-size: 0.9em; margin-top: 4px;">ENTER HERE</span>
+                    </a>
+                    <button class="btn btn-secondary" onclick="requestAccess()">REQUEST ACCESS</button>
+                </div>
+            </div>
+
+            <!-- Honor Plaques Footer -->
+            <div class="honor-footer">
+                <div class="honor-plaque">
+                    <span class="material-icons plaque-icon">military_tech</span>
+                    <span class="plaque-text">HONORING OUR<br>VETERANS</span>
+                </div>
+                <div class="honor-plaque">
+                    <span class="material-icons plaque-icon">local_police</span>
+                    <span class="plaque-text">BACKING OUR<br>FIRST RESPONDERS</span>
+                </div>
+                <div class="honor-plaque">
+                    <span class="material-icons plaque-icon">account_balance</span>
+                    <span class="plaque-text">REWARDING OUR<br>CIVIL SERVANTS</span>
+                </div>
+                <div class="honor-plaque">
+                    <span class="material-icons plaque-icon">school</span>
+                    <span class="plaque-text">EMPOWERING<br>TEACHERS & STUDENTS</span>
+                </div>
+                <div class="honor-plaque">
+                    <span class="material-icons plaque-icon">medical_services</span>
+                    <span class="plaque-text">VALUING<br>HOSPITAL WORKERS</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Login Modal -->
-    <div class="backdrop" id="backdrop" onclick="hideLogin()"></div>
-    <div class="login-form-container" id="loginForm">
-        <button class="close-btn" onclick="hideLogin()">
-            <span class="material-icons">close</span>
-        </button>
-        <div class="form-header">
-            <h2>Welcome Back</h2>
-            <p>Enter your credentials to access the barn.</p>
+        <!-- Login Modal -->
+        <div class="backdrop" id="backdrop" onclick="hideModals()"></div>
+        <div class="login-form-container" id="loginForm">
+            <button class="close-btn" onclick="hideModals()">
+                <span class="material-icons">close</span>
+            </button>
+            <div class="form-header">
+                <h2>Welcome Back</h2>
+                <p>Enter your credentials to access the barn.</p>
+            </div>
+
+            {% if error %}
+            <div class="status-message error-message">{{ error }}</div>
+            {% endif %}
+
+            {% if message %}
+            <div class="status-message success-message">{{ message }}</div>
+            {% endif %}
+
+            <form action="/login" method="POST">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" name="username" placeholder="e.g. name@company.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" name="password" id="loginPassword" placeholder="••••••••" required>
+                    <span class="material-icons password-toggle"
+                        onclick="togglePassword('loginPassword', this)">visibility_off</span>
+                </div>
+                <div style="text-align: right; margin-bottom: 24px; margin-top: -12px;">
+                    <a href="#" onclick="showForgot()"
+                        style="color: #666; font-size: 12px; text-decoration: none; font-weight: 500;">Forgot
+                        Password?</a>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">UNLOCK SYSTEM</button>
+            </form>
         </div>
-        <form action="/login" method="POST">
-            <div class="input-group">
-                <label>Access ID</label>
-                <input type="text" name="username" placeholder="e.g. hunter2" required>
+
+        <!-- Signup Modal -->
+        <div class="signup-form-container" id="signupForm">
+            <button class="close-btn" onclick="hideModals()">
+                <span class="material-icons">close</span>
+            </button>
+            <div class="form-header">
+                <h2>Request Access</h2>
+                <p>Join the heartland's premium finder network.</p>
             </div>
-            <div class="input-group">
-                <label>Security Key</label>
-                <input type="password" name="password" placeholder="••••••••" required>
+            <form action="/signup" method="POST" onsubmit="return validateSignup()">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" placeholder="e.g. name@company.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" name="password" id="signupPassword" placeholder="••••••••" required>
+                    <span class="material-icons password-toggle"
+                        onclick="togglePassword('signupPassword', this)">visibility_off</span>
+                </div>
+                <div class="input-group">
+                    <label>Confirm Password</label>
+                    <input type="password" name="confirm_password" id="confirmPassword" placeholder="••••••••" required>
+                    <span class="material-icons password-toggle"
+                        onclick="togglePassword('confirmPassword', this)">visibility_off</span>
+                    <div id="passwordError"
+                        style="display:none; color: #d32f2f; font-size: 12px; margin-top: 8px; font-weight: 500;">
+                        Passwords
+                        do not match</div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="signupSubmit" style="width: 100%;">SUBMIT
+                    REQUEST</button>
+            </form>
+        </div>
+
+        <!-- Forgot Password Modal -->
+        <div id="forgotForm" class="modal-card">
+            <button class="close-btn" onclick="hideModals()">
+                <span class="material-icons">close</span>
+            </button>
+            <div class="modal-header">
+                <h2>Reset Password</h2>
+                <p>Enter your email to receive a reset code.</p>
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%;">UNLOCK SYSTEM</button>
-        </form>
-    </div>
 
-    <script>
-        function showLogin() {
-            document.getElementById('backdrop').classList.add('active');
-            document.getElementById('loginForm').classList.add('active');
-        }
+            <!-- Step 1: Email -->
+            <div id="forgotStep1">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="forgotEmail" placeholder="e.g. name@company.com" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="sendResetCode()" style="width: 100%;">SEND RESET
+                    CODE</button>
+                <div id="forgotMsg1" style="margin-top: 10px; font-size: 13px; text-align: center;"></div>
+            </div>
 
-        function hideLogin() {
-            document.getElementById('backdrop').classList.remove('active');
-            document.getElementById('loginForm').classList.remove('active');
-        }
+            <!-- Step 2: Code & New Password -->
+            <div id="forgotStep2" style="display:none;">
+                <div class="input-group">
+                    <label>Reset Code</label>
+                    <input type="text" id="resetCode" placeholder="123456" maxlength="6"
+                        style="letter-spacing: 5px; text-align: center;">
+                </div>
+                <div class="input-group">
+                    <label>New Password</label>
+                    <input type="password" id="newResetPass" placeholder="••••••••">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="confirmReset()" style="width: 100%;">UPDATE
+                    PASSWORD</button>
+                <div id="forgotMsg2" style="margin-top: 10px; font-size: 13px; text-align: center;"></div>
+            </div>
+        </div>
 
-        function requestAccess() {
-            window.location.href = "mailto:access@barndoor.com?subject=Request Access to Barndoor";
-        }
-    </script>
+        <script>
+            window.onload = function () {
+                {% if signup_mode %}
+                showSignup();
+                {% elif error or message %}
+                showLogin();
+                {% endif %}
+
+                // Real-time password validation
+                const p1 = document.getElementById('signupPassword');
+                const p2 = document.getElementById('confirmPassword');
+                const err = document.getElementById('passwordError');
+                const btn = document.getElementById('signupSubmit');
+
+                function checkPasswords() {
+                    if (p2.value.length > 0 && p1.value !== p2.value) {
+                        err.style.display = 'block';
+                        // btn.disabled = true; // Optional: disable button
+                        // btn.style.opacity = '0.7';
+                    } else {
+                        err.style.display = 'none';
+                        // btn.disabled = false;
+                        // btn.style.opacity = '1';
+                    }
+                }
+
+                p1.addEventListener('input', checkPasswords);
+                p2.addEventListener('input', checkPasswords);
+            };
+
+            function showLogin() {
+                hideModals();
+                document.getElementById('backdrop').classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            }
+
+            function showSignup() {
+                hideModals();
+                document.getElementById('backdrop').classList.add('active');
+                document.getElementById('signupForm').classList.add('active');
+            }
+
+            function showForgot() {
+                hideModals();
+                document.getElementById('backdrop').classList.add('active');
+                document.getElementById('forgotForm').classList.add('active');
+                // Reset state
+                document.getElementById('forgotStep1').style.display = 'block';
+                document.getElementById('forgotStep2').style.display = 'none';
+                document.getElementById('forgotEmail').value = '';
+                document.getElementById('resetCode').value = '';
+                document.getElementById('newResetPass').value = '';
+                document.getElementById('forgotMsg1').innerText = '';
+            }
+
+            function hideModals() {
+                document.getElementById('backdrop').classList.remove('active');
+                document.getElementById('loginForm').classList.remove('active');
+                document.getElementById('signupForm').classList.remove('active');
+                document.getElementById('forgotForm').classList.remove('active');
+            }
+
+            function requestAccess() {
+                showSignup();
+            }
+
+            function togglePassword(inputId, icon) {
+                const input = document.getElementById(inputId);
+                if (input.type === "password") {
+                    input.type = "text";
+                    icon.textContent = "visibility";
+                } else {
+                    input.type = "password";
+                    icon.textContent = "visibility_off";
+                }
+            }
+
+            function validateSignup() {
+                const p1 = document.getElementById('signupPassword').value;
+                const p2 = document.getElementById('confirmPassword').value;
+                if (p1 !== p2) {
+                    // Shake effect or just focus?
+                    document.getElementById('passwordError').style.display = 'block';
+                    document.getElementById('confirmPassword').focus();
+                    return false;
+                }
+                return true;
+            }
+
+            async function sendResetCode() {
+                const email = document.getElementById('forgotEmail').value;
+                const msg = document.getElementById('forgotMsg1');
+                if (!email) return;
+
+                msg.innerText = "Sending...";
+                msg.style.color = "#666";
+
+                try {
+                    const res = await fetch('/api/auth/forgot', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+
+                    // Always success UI
+                    document.getElementById('forgotStep1').style.display = 'none';
+                    document.getElementById('forgotStep2').style.display = 'block';
+                    msg.innerText = "";
+                } catch (e) {
+                    msg.innerText = "Error connecting to server";
+                    msg.style.color = "red";
+                }
+            }
+
+            async function confirmReset() {
+                const email = document.getElementById('forgotEmail').value;
+                const code = document.getElementById('resetCode').value;
+                const password = document.getElementById('newResetPass').value;
+                const msg = document.getElementById('forgotMsg2');
+
+                if (!code || !password) {
+                    msg.innerText = "Please fill all fields";
+                    msg.style.color = "red";
+                    return;
+                }
+
+                msg.innerText = "Verifying...";
+                msg.style.color = "#666";
+
+                try {
+                    const res = await fetch('/api/auth/reset', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, code, password })
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        alert("Password updated! Please login.");
+                        showLogin();
+                    } else {
+                        msg.innerText = data.error || "Reset failed";
+                        msg.style.color = "red";
+                    }
+                } catch (e) {
+                    msg.innerText = "Error connecting to server";
+                    msg.style.color = "red";
+                }
+            }
+        </script>
 </body>
 
 </html>

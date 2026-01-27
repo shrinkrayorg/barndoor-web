@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barndoor - Veterans Program</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #d32f2f;
+            --primary-dark: #1a1a1a;
+            --accent-gold: #FFD700;
+            --military-green: #33691e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f1110;
+            color: white;
+            min-height: 100vh;
+        }
+
+        /* Patriotic Header */
+        .hero-section {
+            position: relative;
+            height: 60vh;
+            width: 100%;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1579965342575-16428a7c8881?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            border-bottom: 4px solid var(--accent-gold);
+        }
+
+        .flag-icon {
+            font-size: 48px;
+            margin-bottom: 24px;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 56px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #ffffff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .guarantee-badge {
+            background: rgba(51, 105, 30, 0.9);
+            border: 1px solid var(--accent-gold);
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .guarantee-text {
+            font-weight: 700;
+            color: var(--accent-gold);
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mission-text {
+            max-width: 700px;
+            margin: 24px auto 0;
+            font-size: 18px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Form Section */
+        .container {
+            max-width: 800px;
+            margin: -60px auto 60px;
+            position: relative;
+            z-index: 10;
+            padding: 0 20px;
+        }
+
+        .form-card {
+            background: #1e1e1e;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
+        }
+
+        .form-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            color: white;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #333;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input,
+        select,
+        textarea {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            padding: 14px;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            background: #333;
+        }
+
+        .file-upload {
+            border: 2px dashed #444;
+            padding: 32px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-upload:hover {
+            border-color: var(--accent-gold);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .submit-btn {
+            background: var(--military-green);
+            color: white;
+            border: none;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 24px;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background: #4caf50;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .nav-back {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 16px;
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Success Message Overlay */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            /* Flex when active */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            color: var(--accent-gold);
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="/" class="nav-back">
+        <span class="material-icons">arrow_back</span>
+        BACK TO HOME
+    </a>
+
+    <div class="hero-section">
+        <span class="material-icons flag-icon">stars</span>
+        <h1>Honoring Our Heroes</h1>
+        <p class="mission-text">
+            We honor our patriots for all they have risked for our country.
+            We are looking for vehicles that match our criteria and we promise to pay more.
+        </p>
+
+        <div class="guarantee-badge">
+            <span class="material-icons">verified_user</span>
+            <span class="guarantee-text">$500 Better Offer Guarantee</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <form class="form-card" id="veteranForm" onsubmit="submitForm(event)">
+            <h2 class="form-title">Submit Your Vehicle</h2>
+
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Make</label>
+                    <input type="text" name="make" placeholder="e.g. Honda" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Model</label>
+                    <input type="text" name="model" placeholder="e.g. Civic" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Year</label>
+                    <input type="number" name="year" placeholder="e.g. 2018" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Color</label>
+                    <input type="text" name="color" placeholder="e.g. Silver">
+                </div>
+
+                <div class="input-group">
+                    <label>Mileage</label>
+                    <input type="number" name="mileage" placeholder="e.g. 85000" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Condition (1-10)</label>
+                    <select name="condition">
+                        <option value="10">10 - Like New</option>
+                        <option value="9">9 - Excellent</option>
+                        <option value="8">8 - Very Good</option>
+                        <option value="7">7 - Good</option>
+                        <option value="6">6 - Fair</option>
+                        <option value="5">5 - Average</option>
+                        <option value="4">4 - Below Average</option>
+                        <option value="3">3 - Needs Work</option>
+                        <option value="2">2 - Rough</option>
+                        <option value="1">1 - Parts Car</option>
+                    </select>
+                </div>
+
+                <div class="full-width input-group">
+                    <label>Vehicle Photos</label>
+                    <div class="file-upload" onclick="document.getElementById('photoInput').click()">
+                        <span class="material-icons" style="font-size: 32px; color: #666;">add_a_photo</span>
+                        <p style="color: #888; margin-top: 8px;">Click to upload photos</p>
+                        <input type="file" id="photoInput" name="photos" multiple hidden
+                            onchange="updateFileCount(this, 'vehicle')">
+                        <div id="fileCount_vehicle"
+                            style="color: var(--accent-gold); margin-top: 8px; font-weight: 500;"></div>
+                    </div>
+                </div>
+
+                <div class="full-width input-group">
+                    <label>Competitor Offer (CarMax, Carvana, etc.)</label>
+                    <div class="file-upload" onclick="document.getElementById('offerInput').click()">
+                        <span class="material-icons" style="font-size: 32px; color: #666;">request_quote</span>
+                        <p style="color: #888; margin-top: 8px;">Click to upload offer photo/screenshot</p>
+                        <input type="file" id="offerInput" name="offer_photo" hidden
+                            onchange="updateFileCount(this, 'offer')">
+                        <div id="fileCount_offer" style="color: var(--accent-gold); margin-top: 8px; font-weight: 500;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="full-width" style="border-top: 1px solid #333; margin: 16px 0;"></div>
+
+                <div class="full-width input-group">
+                    <label>Your Name</label>
+                    <input type="text" name="owner_name" placeholder="Full Name" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" name="owner_email" placeholder="name@example.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input type="tel" name="owner_phone" placeholder="(555) 123-4567" required>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">SUBMIT FOR REVIEW</button>
+        </form>
+    </div>
+
+    <div class="success-overlay" id="successOverlay">
+        <span class="material-icons success-icon">check_circle</span>
+        <h1 style="font-size: 32px;">Submission Received</h1>
+        <p style="color: #ccc; margin-top: 16px; max-width: 500px; line-height: 1.5;">
+            Thank you for your service. We are reviewing your vehicle details and will follow up shortly via email if it
+            aligns with our criteria.
+        </p>
+        <a href="/" class="btn"
+            style="margin-top: 32px; color: white; border: 1px solid white; padding: 12px 24px; border-radius: 4px; text-decoration: none;">RETURN
+            HOME</a>
+    </div>
+
+    <script>
+        function updateFileCount(input, type) {
+            const count = input.files.length;
+            const text = count > 0 ? `${count} file(s) selected` : '';
+            document.getElementById(`fileCount_${type}`).innerText = text;
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+            const form = e.target;
+            const btn = form.querySelector('.submit-btn');
+
+            // Basic UI Feedback
+            btn.innerText = "SENDING...";
+            btn.style.opacity = "0.7";
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/api/submit_veteran_vehicle', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    document.getElementById('successOverlay').style.display = 'flex';
+                } else {
+                    alert('There was an error submitting the form. Please try again.');
+                    btn.innerText = "SUBMIT FOR REVIEW";
+                    btn.style.opacity = "1";
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error. Please try again.');
+                btn.innerText = "SUBMIT FOR REVIEW";
+                btn.style.opacity = "1";
+            }
+        }
+    </script>
+</body>
+
+</html>

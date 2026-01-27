@@ -66,26 +66,36 @@
 
         /* Spectator Button in Nav */
         .nav-spectator-btn {
-            background: linear-gradient(135deg, #00f260 0%, #0575e6 100%);
-            color: white;
+            background: #00e676;
+            color: #000;
             border: none;
-            border-radius: 6px;
-            padding: 8px 16px;
+            border-radius: 4px;
+            padding: 6px 16px;
             display: flex;
             align-items: center;
             gap: 8px;
             cursor: pointer;
             margin-right: 20px;
-            /* Space between btn and logo */
-            font-weight: 700;
-            font-size: 12px;
-            box-shadow: 0 2px 10px rgba(5, 117, 230, 0.3);
+            font-weight: 800;
+            font-size: 14px;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        .nav-spectator-btn::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background: black;
+            border-radius: 50%;
         }
 
         .nav-spectator-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(5, 117, 230, 0.5);
+            background: var(--primary-red);
+            color: white;
+            /* transform: none; - explicit removal of bounce */
         }
 
         .logo {
@@ -120,6 +130,7 @@
             padding: 10px 0;
         }
 
+        .nav-link:hover,
         .nav-links a:hover,
         .nav-links a.active {
             color: var(--primary-red);
@@ -131,6 +142,205 @@
             gap: 8px;
             color: var(--text-light);
             font-size: 14px;
+        }
+
+        /* Profile Dropdown Styles */
+        .profile-wrapper {
+            position: relative;
+            margin-left: 10px;
+        }
+
+        .profile-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-gray);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-gray);
+        }
+
+        .profile-btn:hover {
+            color: white;
+            border-color: var(--primary-red);
+            background: rgba(204, 0, 0, 0.1);
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 15px;
+            background: var(--dark-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            width: 240px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            padding: 10px 0;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .profile-dropdown.show {
+            display: flex;
+        }
+
+        .dropdown-user-info {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-gray);
+            margin-bottom: 8px;
+        }
+
+        .dropdown-user-name {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dropdown-user-role {
+            display: block;
+            font-size: 11px;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .profile-dropdown a {
+            padding: 12px 20px;
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-dropdown a:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary-red);
+        }
+
+        .profile-dropdown .logout-btn {
+            color: var(--primary-red);
+            border-top: 1px solid var(--border-gray);
+            margin-top: 8px;
+        }
+
+        /* --- New Button Styles --- */
+        .btn-archive-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 0 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            cursor: pointer;
+            height: 36px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            opacity: 1;
+        }
+
+        .btn-archive-action:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-archive-action:disabled {
+            opacity: 0.5;
+            cursor: default;
+            pointer-events: none;
+            background: #007AFF;
+            /* Reset background */
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-unarchive-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 0 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            cursor: pointer;
+            height: 36px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            opacity: 1;
+        }
+
+        .btn-unarchive-action:hover {
+            background: #219150;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-unarchive-action:disabled {
+            opacity: 0.5;
+            cursor: default;
+            pointer-events: none;
+            background: #27ae60;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-delete-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #FF9500;
+            color: white;
+            border: none;
+            padding: 0 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            cursor: pointer;
+            height: 36px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            opacity: 1;
+        }
+
+        .btn-delete-action:hover {
+            background: #E08400;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
+        }
+
+        .btn-delete-action:disabled {
+            opacity: 0.5;
+            cursor: default;
+            pointer-events: none;
+            background: #FF9500;
+            transform: none;
+            box-shadow: none;
         }
 
         /* Hero Section */
@@ -295,8 +505,9 @@
         .inventory-layout {
             display: grid;
             grid-template-columns: 320px 1fr;
-            max-width: 1600px;
-            margin: 0 auto;
+            width: 100%;
+            /* Fill screen */
+            margin: 0;
         }
 
         /* Filter Sidebar */
@@ -716,7 +927,8 @@
         /* Main Content Area */
         .inventory-main {
             flex: 1;
-            padding: 16px 40px 40px 40px;
+            padding: 16px 20px 40px 20px;
+            /* Reduced side padding from 40px to 20px */
             /* Added top padding per user request for small space */
             background: #f5f5f5;
         }
@@ -1163,6 +1375,7 @@
             margin-bottom: 0;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
             height: 42px;
@@ -1604,6 +1817,48 @@
             animation: bellShake 0.6s ease-out both;
         }
 
+        @keyframes beaconGlow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(204, 0, 0, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(204, 0, 0, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(204, 0, 0, 0);
+            }
+        }
+
+        .bell-beacon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            animation: beaconGlow 2s infinite;
+            pointer-events: none;
+            display: none;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: 0px;
+            background: #000;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 10px;
+            border: 2px solid var(--dark-bg);
+            display: none;
+            z-index: 2;
+        }
+
         /* Table View Styles */
         .inventory-table-container {
             overflow-x: auto;
@@ -1617,7 +1872,10 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
-            color: #ccc;
+            color: #ffffff;
+            background-color: #1a1a1a;
+            /* Explicit dark background */
+            /* Explicit White */
             min-width: 1200px;
             /* Force scroll on small screens */
         }
@@ -1645,6 +1903,8 @@
             border-bottom: 1px solid #333;
             vertical-align: middle;
             white-space: nowrap;
+            color: #e0e0e0;
+            /* Off-white for readability */
         }
 
         .inventory-table tr:hover {
@@ -1693,39 +1953,66 @@
     <nav class="navbar">
         <div class="nav-container">
             <div style="display: flex; align-items: center;">
-                <!-- LIVE VIEW BUTTON (Left of Logo) -->
-                <button class="nav-spectator-btn" onclick="openSpectator()">
-                    <span class="material-icons" style="font-size: 16px;">visibility</span>
+                <a href="/" class="logo">Barndoor</a>
+                <!-- LIVE VIEW BUTTON (Right of Logo) -->
+                <button class="nav-spectator-btn" onclick="openSpectator()" style="margin-left: 12px;">
                     LIVE
                 </button>
-                <a href="#" class="logo">Barndoor</a>
             </div>
 
             <ul class="nav-links">
-                <a href="/" class="active">HOME</a>
+
 
                 <!-- Bell Notification -->
                 <div class="notification-wrapper" style="position: relative;">
                     <div class="notification-bell" id="bellIcon" onclick="toggleDropdown()"
-                        style="cursor: pointer; display: flex; align-items: center; padding: 0 10px;">
+                        style="cursor: pointer; display: flex; align-items: center; padding: 0 10px; position: relative;">
+                        <div id="bellBeacon" class="bell-beacon"></div>
                         <span class="material-icons"
-                            style="color: var(--text-gray); transition: color 0.3s;">notifications</span>
-                        <span id="badge"
-                            style="position: absolute; top: -5px; right: 0px; background: var(--primary-red); color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; display: none;">0</span>
+                            style="color: var(--text-gray); transition: color 0.3s; position: relative; z-index: 1;">notifications</span>
+                        <span id="badge" class="notification-badge">0</span>
                     </div>
                     <div class="notification-dropdown" id="notificationDropdown">
                         <div class="dropdown-header">Notifications</div>
                         <div id="dropdownContent"></div>
                     </div>
                 </div>
-
-                <a href="/tickle">TICKLE FILE</a>
-                <a href="/settings">SETTINGS</a>
+                <a href="/" class="nav-link {% if mode != 'tickle' %}active{% endif %}">HOME</a>
+                <a href="/tickle" class="nav-link {% if mode == 'tickle' %}active{% endif %}">TICKLE FILE</a>
+                <a href="/settings" class="nav-link">SETTINGS</a>
+                {% if session.get('role') == 'admin' %}
+                <a href="/admin/users" class="admin-link">USERS</a>
+                {% endif %}
                 <a href="/portal" class="admin-link">ACCESS PORTAL</a>
+
+                <!-- Profile Dropdown -->
+                <div class="profile-wrapper">
+                    <div class="profile-btn" onclick="toggleProfileDropdown()">
+                        <span style="font-weight: 700; font-size: 18px;">{{ session.get('user_name', 'User')[0].upper()
+                            }}</span>
+                    </div>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="dropdown-user-info">
+                            <span class="dropdown-user-name">{{ session.get('user_name', 'User') }}</span>
+                            <span class="dropdown-user-role">{{ session.get('role', 'User') }}</span>
+                            <span class="dropdown-user-role" style="text-transform: none; font-size: 10px;">{{
+                                session.get('user_email', '') }}</span>
+                        </div>
+                        <a href="/profile">
+                            <span class="material-icons" style="font-size: 18px;">person</span>
+                            My Profile
+                        </a>
+                        <a href="/logout" class="logout-btn">
+                            <span class="material-icons" style="font-size: 18px;">logout</span>
+                            Log Out
+                        </a>
+                    </div>
+                </div>
             </ul>
         </div>
     </nav>
 
+    {% if mode != 'tickle' %}
     <!-- Hero -->
     <div class="hero">
         <div class="hero-overlay"></div>
@@ -1755,9 +2042,10 @@
             </div>
         </div>
     </section>
+    {% endif %}
 
     <!-- Inventory Browser Section -->
-    <section id="inventory" class="inventory-section">
+    <section id="inventory" class="inventory-section" {% if mode=='tickle' %}style="margin-top: 80px;" {% endif %}>
         <div class="inventory-layout">
             <!-- Left Sidebar - Filters -->
             <aside class="filter-sidebar">
@@ -2059,66 +2347,78 @@
             <!-- Main Content - Results -->
             <main class="inventory-main">
                 <div class="inventory-header"
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0px; gap: 20px;">
-                    <div class="results-info" style="flex: 1; min-width: 0;">
-                        <h2 style="margin-bottom: 0px; font-size: 18px;">SEARCH RESULTS</h2>
+                    style="display: flex; align-items: center; margin-bottom: 0px; gap: 20px;">
+                    <div class="results-info" style="min-width: 0;">
+                        <h2 style="margin-bottom: 0px; font-size: 18px;" id="pageTitleH2">
+                            {% if mode == 'tickle' %}TICKLE RESULTS{% else %}SEARCH RESULTS{% endif %}
+                        </h2>
                         <p id="resultsCount"
                             style="margin-bottom:0px; line-height: 1.2; font-size: 12px; margin-top: 2px;">Loading
                             inventory...</p>
                     </div>
 
-                    <!-- Center Badges Container -->
-                    <div class="badges-container"
-                        style="display: flex; align-items: center; gap: 12px; justify-content: center;">
-                        <!-- Total Inventory Badge -->
-                        <div class="total-vehicles-banner"
-                            style="margin: 0; padding: 6px 16px; height: 36px; box-shadow: none; animation: none; flex-direction: row; gap: 12px; min-width: auto; background: linear-gradient(135deg, var(--primary-red) 0%, #aa0000 100%); border-radius: 6px;">
-                            <div class="banner-icon"
-                                style="width: 24px; height: 24px; background: rgba(255,255,255,0.2);">
-                                <span class="material-icons" style="font-size: 16px;">directions_car</span>
-                            </div>
-                            <div class="banner-info" style="display: flex; align-items: center; gap: 8px;">
-                                <div class="banner-label" style="font-size: 11px; margin: 0; white-space: nowrap;">TOTAL
-                                    INVENTORY</div>
-                                <div class="banner-count" id="totalVehicleCount" style="font-size: 16px; margin: 0;">0
-                                </div>
-                            </div>
+                    <!-- Total Inventory Badge -->
+                    <div class="total-vehicles-banner"
+                        style="margin: 0; padding: 0 16px; height: 36px; box-shadow: none; animation: none; flex-direction: row; gap: 8px; min-width: auto; background: linear-gradient(135deg, var(--primary-red) 0%, #aa0000 100%); border-radius: 6px; display: flex; align-items: center;">
+                        <div class="banner-icon"
+                            style="width: 20px; height: 20px; background: rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; border-radius:4px;">
+                            <span class="material-icons" style="font-size: 14px;">directions_car</span>
                         </div>
-
-                        <!-- Deal Quality Badge -->
-                        <div class="deal-quality-banner"
-                            style="margin: 0; padding: 6px 16px; height: 36px; display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, var(--primary-red) 0%, #aa0000 100%); border-radius: 6px;">
-                            <div class="banner-icon"
-                                style="width: 24px; height: 24px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; border-radius: 4px;">
-                                <span class="material-icons" style="font-size: 16px; color: #ffcc00;">stars</span>
+                        <div class="banner-info" style="display: flex; align-items: center; gap: 6px;">
+                            <div class="banner-label" style="font-size: 10px; margin: 0; white-space: nowrap;">TOTAL
                             </div>
-                            <div class="banner-info" style="display: flex; align-items: center; gap: 10px;">
-                                <div class="banner-label"
-                                    style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; white-space: nowrap;">
-                                    DEAL QUALITY</div>
-                                <div class="quality-bar-container"
-                                    style="display: flex; align-items: center; gap: 8px; padding: 0; margin: 0;">
-                                    <div class="quality-bar"
-                                        style="width: 60px; height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; box-shadow: none;">
-                                        <div class="quality-fill" id="qualityFill"
-                                            style="width: 0%; height: 100%; background: #00ff00;"></div>
-                                    </div>
-                                    <div class="quality-percentage" id="qualityPercentage"
-                                        style="font-size: 14px; font-weight: 800; color: white;">0%</div>
+                            <div class="banner-count" id="totalVehicleCount"
+                                style="font-size: 14px; margin: 0; font-weight:800;">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Deal Quality Badge -->
+                    <div class="deal-quality-banner"
+                        style="margin: 0; padding: 0 16px; height: 36px; display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--primary-red) 0%, #aa0000 100%); border-radius: 6px;">
+                        <div class="banner-icon"
+                            style="width: 20px; height: 20px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; border-radius: 4px;">
+                            <span class="material-icons" style="font-size: 14px; color: #ffcc00;">stars</span>
+                        </div>
+                        <div class="banner-info" style="display: flex; align-items: center; gap: 8px;">
+                            <div class="banner-label"
+                                style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; white-space: nowrap;">
+                                QUALITY</div>
+                            <div class="quality-bar-container"
+                                style="display: flex; align-items: center; gap: 6px; padding: 0; margin: 0;">
+                                <div class="quality-bar"
+                                    style="width: 40px; height: 6px; background: rgba(0,0,0,0.3); border-radius: 3px; overflow: hidden; box-shadow: none;">
+                                    <div class="quality-fill" id="qualityFill"
+                                        style="width: 0%; height: 100%; background: #00ff00;"></div>
                                 </div>
+                                <div class="quality-percentage" id="qualityPercentage"
+                                    style="font-size: 12px; font-weight: 800; color: white;">0%</div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bulk-actions"
-                        style="flex: 1; display: flex; align-items: center; gap: 15px; min-width: 0; justify-content: flex-end;">
-                        <button class="btn btn-danger" onclick="deleteSelected()" id="deleteBtn" disabled
-                            style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 12px; height: 32px;">
-                            <span class="material-icons" style="font-size: 16px;">delete</span> DELETE SELECTED
-                        </button>
-                        <span id="selectionCount" style="color: #666; font-size: 13px; font-weight: 500;">0
-                            selected</span>
-                    </div>
+                    <!-- Archive Button -->
+                    {% if mode == 'tickle' %}
+                    <button onclick="unarchiveSelectedListings()" id="btnUnarchive" disabled
+                        class="btn-unarchive-action">
+                        <span class="material-icons" style="font-size: 16px;">unarchive</span>
+                        UNARCHIVE
+                    </button>
+                    {% else %}
+                    <button onclick="archiveSelectedListings()" id="btnArchive" disabled class="btn-archive-action">
+                        <span class="material-icons" style="font-size: 16px;">archive</span>
+                        ARCHIVE
+                    </button>
+                    {% endif %}
+
+                    <!-- Delete Button -->
+                    <button class="btn-delete-action" onclick="deleteSelected()" id="deleteBtn" disabled>
+                        <span class="material-icons" style="font-size: 16px;">delete</span> DELETE SELECTED
+                    </button>
+
+                    <!-- Selection Count (Far Right) -->
+                    <span id="selectionCount"
+                        style="color: #666; font-size: 11px; font-weight: 500; white-space: nowrap; margin-left: auto;">0
+                        selected</span>
                 </div>
 
                 <div class="inventory-grid" id="inventoryGrid">
@@ -2128,6 +2428,58 @@
                         <p>Loading vehicles...</p>
                     </div>
                 </div>
+
+                <!-- Permanent Deletion Section (Tickle mode only) -->
+                <div id="deletedInventorySection"
+                    style="display: none; margin-top: 60px; border-top: 2px dashed #333; padding-top: 40px;">
+
+                    <div class="results-header"
+                        style="display: flex; align-items: center; margin-bottom: 15px; gap: 20px;">
+                        <div class="results-info" style="min-width: 0;">
+                            <h2 style="margin-bottom: 0px; font-size: 18px; color: #FF3B30; font-weight: 800;">
+                                DELETION RESULTS
+                            </h2>
+                            <p id="deletedResultsCount"
+                                style="margin-bottom:0px; line-height: 1.2; font-size: 12px; margin-top: 2px; color: #999;">
+                                Items appearing here will be purged in 30 days
+                            </p>
+                        </div>
+
+                        <!-- Total Deleted Badge -->
+                        <div class="total-vehicles-banner"
+                            style="margin: 0; padding: 0 16px; height: 36px; box-shadow: none; animation: none; flex-direction: row; gap: 8px; min-width: auto; background: linear-gradient(135deg, #FF3B30 0%, #aa0000 100%); border-radius: 6px; display: flex; align-items: center;">
+                            <div class="banner-icon"
+                                style="width: 20px; height: 20px; background: rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; border-radius:4px;">
+                                <span class="material-icons" style="font-size: 14px;">delete_sweep</span>
+                            </div>
+                            <div class="banner-info" style="display: flex; align-items: center; gap: 6px;">
+                                <div class="banner-label" style="font-size: 10px; margin: 0; white-space: nowrap;">TOTAL
+                                </div>
+                                <div class="banner-count" id="totalDeletedCount"
+                                    style="font-size: 14px; margin: 0; font-weight:800;">0</div>
+                            </div>
+                        </div>
+
+                        <!-- Restore Selected Button -->
+                        <button onclick="restoreSelectedDeleted()" id="btnRestoreSelected" disabled
+                            class="btn-unarchive-action"
+                            style="background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);">
+                            <span class="material-icons" style="font-size: 16px;">settings_backup_restore</span>
+                            RESTORE SELECTED
+                        </button>
+
+                        <!-- Selection Count -->
+                        <span id="deletedSelectionCount"
+                            style="color: #666; font-size: 11px; font-weight: 500; white-space: nowrap; margin-left: auto;">0
+                            selected</span>
+                    </div>
+
+                    <div id="deletedInventoryGrid" style="margin-top: 0px;">
+                        <!-- Deleted items table will load here -->
+                    </div>
+                </div>
+
+
             </main>
         </div>
     </section>
@@ -2141,18 +2493,13 @@
             <div class="feed-container">
                 <div class="feed-box">
                     <h4 style="color:#aaa; text-align:center; margin-bottom:5px;">FACEBOOK (Active)</h4>
-                    <!-- 
-                        We use a query parameter 'source=facebook' to hint to the backend 
-                        which buffer to stream, or simply show the same feed if single-threaded.
-                        For now, assuming the backend serves the *current* ghost view at /video_feed.
-                    -->
-                    <img id="spectatorImgFB" class="spectator-video" src="" alt="Facebook Feed"
-                        style="width:100%; height:auto;">
+                    <img id="spectatorImgFB" src="/static/fb_logo.png" alt="Facebook Feed"
+                        style="width:80px; height:80px; margin: 20px auto; display: block; object-fit: contain;">
                 </div>
                 <div class="feed-box">
                     <h4 style="color:#aaa; text-align:center; margin-bottom:5px;">CRAIGSLIST (Active)</h4>
-                    <img id="spectatorImgCL" class="spectator-video" src="" alt="Craigslist Feed"
-                        style="width:100%; height:auto;">
+                    <img id="spectatorImgCL" src="/static/cl_logo.png" alt="Craigslist Feed"
+                        style="width:80px; height:80px; margin: 20px auto; display: block; object-fit: contain;">
                 </div>
             </div>
             <br>
@@ -2182,6 +2529,7 @@
     </div>
 
     <!-- Dashboard Section -->
+    {% if mode != 'tickle' %}
     <section id="dashboard" class="dashboard-section">
         <div class="container">
             <!-- Service Status -->
@@ -2243,9 +2591,23 @@
             </div>
         </div>
     </section>
+    {% endif %}
 
     <script>
         let autoRefreshInterval;
+
+        function startAutoRefresh() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = setInterval(() => {
+                updateStatus();
+                refreshLogs();
+            }, 5000);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
         let allInventory = [];
         let filteredInventory = [];
         let dealSettings = {};
@@ -2253,6 +2615,7 @@
         const itemsPerPage = 50;
         let currentSortField = 'dealScore';
         let currentSortDir = 'desc';
+        const selectedListingIds = new Set(); // Added missing variable
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', async function () {
@@ -2298,15 +2661,22 @@
             refreshLogs();
 
             // Auto-refresh every 5 seconds
-            autoRefreshInterval = setInterval(() => {
-                updateStatus();
-                refreshLogs();
-            }, 5000);
+            startAutoRefresh();
         });
+
+        const CURRENT_MODE = '{{ mode }}';
 
         async function loadInventory() {
             try {
-                const response = await fetch('/api/listings');
+                // Determine API endpoint based on mode
+                let url = '/api/listings';
+                if (CURRENT_MODE === 'tickle') {
+                    url += '?status=tickle';
+                } else {
+                    url += '?status=active'; // Explicit active for main dash
+                }
+
+                const response = await fetch(url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now());
                 const data = await response.json();
                 allInventory = data.listings || [];
 
@@ -2335,9 +2705,39 @@
                     <div class="loading-state">
                         <span class="material-icons">error_outline</span>
                         <p>Failed to load: ${error.message}</p>
-                        <p style="font-size:12px; margin-top:5px;">Endpoint: /api/listings</p>
                     </div>
                 `;
+            }
+
+            // Load Deleted Items if in Tickle Mode
+            if (CURRENT_MODE === 'tickle') {
+                try {
+                    console.log('Fetching deleted items for waste bin...');
+                    const delResponse = await fetch('/api/listings?status=deleted&_t=' + Date.now());
+                    const delData = await delResponse.json();
+                    let deletedListings = delData.listings || [];
+
+                    console.log('Received deleted items:', deletedListings.length);
+
+                    // Calculate deal quality score for deleted vehicles
+                    deletedListings = deletedListings.map(vehicle => {
+                        vehicle.dealScore = calculateDealQuality(vehicle, dealSettings);
+                        return vehicle;
+                    });
+
+                    const section = document.getElementById('deletedInventorySection');
+                    if (section) section.style.display = 'block';
+
+                    const totalDelBadge = document.getElementById('totalDeletedCount');
+                    if (totalDelBadge) totalDelBadge.innerText = deletedListings.length;
+
+                    renderDeletedInventory(deletedListings);
+                } catch (e) {
+                    console.error('Error loading deleted items:', e);
+                }
+            } else {
+                const section = document.getElementById('deletedInventorySection');
+                if (section) section.style.display = 'none';
             }
         }
 
@@ -2347,6 +2747,8 @@
             const top10 = sortedByScore.slice(0, 10);
 
             const carousel = document.getElementById('inventoryCarousel');
+            if (!carousel) return;
+
             if (top10.length === 0) {
                 carousel.innerHTML = '<div style="padding:40px; color:#666; text-align:center;">No featured vehicles found</div>';
                 return;
@@ -2396,10 +2798,17 @@
                         </div>
                     </div>
                     <div class="car-actions">
+                        {% if mode == 'tickle' %}
+                        <button class="archive-btn" onclick="unarchiveListing('${url}', event)" style="color: #27ae60;">
+                            <span class="material-icons">unarchive</span>
+                            Restore
+                        </button>
+                        {% else %}
                         <button class="archive-btn" onclick="archiveListing('${url}', event)">
                             <span class="material-icons">archive</span>
                             Archive
                         </button>
+                        {% endif %}
                     </div>
                 </div>
                 `;
@@ -2721,24 +3130,203 @@
                 console.log(`Filtered down to ${filteredInventory.length} vehicles.`);
 
                 try {
-                    sortResults(); // This calls displayInventory via sortAndDisplay usually? No, sortResults calls sortAndDisplay.
+                    sortResults();
                 } catch (e) {
                     console.error("Sort failed:", e);
                 }
 
-                // updateDealQualityDisplay(); // Calls display? No.
                 try {
                     updateDealQualityDisplay();
                 } catch (e) {
                     console.error("Deal quality update failed:", e);
                 }
-
-                // Force display update
-                displayInventory(filteredInventory);
-
             } catch (err) {
                 console.error("Error in applyFilters:", err);
                 alert("Error applying filters: " + err.message);
+            }
+        }
+
+        function renderDeletedInventory(vehicles) {
+            try {
+                const container = document.getElementById('deletedInventoryGrid');
+                const resultsCountEl = document.getElementById('deletedResultsCount');
+                if (!container) return;
+
+                if (resultsCountEl) {
+                    resultsCountEl.innerText = `Showing ${vehicles ? vehicles.length : 0} vehicles pending deletion (30-day purge cycle)`;
+                }
+
+                // Render Table Header (Always visible now)
+                let html = `
+            <div class="inventory-table-container" style="margin-top: 0;">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;">
+                                <input type="checkbox" id="selectAllDeleted" onchange="toggleAllDeleted(this)">
+                            </th>
+                            ${CURRENT_MODE === 'tickle' ? '<th>Tickle</th>' : ''}
+                            <th>Brand</th>
+                            <th>Model</th>
+                            <th>Price</th>
+                            <th>Mileage</th>
+                            <th>Accidents</th>
+                            <th>Location</th>
+                            <th>Date Sourced</th>
+                            <th>Source</th>
+                            <th>DQM</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+                if (!vehicles || vehicles.length === 0) {
+                    html += `
+                        <tr>
+                            <td colspan="${CURRENT_MODE === 'tickle' ? 12 : 11}" style="text-align: center; padding: 60px; color: #666; font-style: italic;">
+                                No items pending deletion.
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    const rowsHtml = vehicles.map(v => {
+                        try {
+                            const title = v.title || 'Unknown Vehicle';
+                            const year = extractYear(title);
+                            const make = extractMake(title) || 'Unknown';
+
+                            let model = title.replace(year, '').replace(make, '').trim();
+                            if (model.length > 30) model = model.substring(0, 30) + '...';
+                            if (!model) model = 'N/A';
+
+                            const price = (v.price !== null && v.price !== undefined) ? '$' + v.price.toLocaleString() : 'Call';
+
+                            let miles = v.mileage || 0;
+                            const milesDisplay = miles ? miles.toLocaleString() : 'N/A';
+
+                            let accidents = 'N/A';
+                            if (v.description) {
+                                const lowerDesc = v.description.toLowerCase();
+                                if (lowerDesc.includes('clean title')) accidents = 'Clean Title';
+                                else if (lowerDesc.includes('salvage title')) accidents = 'Salvage';
+                                else if (lowerDesc.includes('rebuilt title')) accidents = 'Rebuilt';
+                            }
+
+                            const location = v.location || "Unknown";
+                            const date = v.processed_at ? new Date(v.processed_at).toLocaleString() : 'N/A';
+
+                            let source = v.source ? v.source.replace('_', ' ') : 'Unknown';
+                            if (source.toLowerCase().includes('facebook')) source = 'FB';
+                            if (source.toLowerCase().includes('craigslist')) source = 'CL';
+
+                            const score = v.dealScore || 0;
+                            let scoreClass = 'dqm-low';
+                            if (score >= 75) scoreClass = 'dqm-high';
+                            else if (score >= 50) scoreClass = 'dqm-med';
+
+                            const listingUrl = v.listing_url || '#';
+
+                            // Restore Button
+                            const restoreBtn = `
+                            <button onclick="unarchiveListing('${listingUrl}', event)" class="btn-sm" 
+                                style="background:#27ae60; color:white; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-weight: 700; font-size: 10px; text-transform: uppercase; transition: all 0.2s ease;">
+                                Restore
+                            </button>
+                        `;
+
+                            return `
+                        <tr style="opacity: 0.8; cursor: pointer;" onclick="window.open('${listingUrl}', '_blank')">
+                            <td style="text-align: center;" onclick="event.stopPropagation()">
+                                <input type="checkbox" class="deleted-listing-check" value="${v.listing_url}" onchange="updateDeletedSelection()">
+                            </td>
+                            ${CURRENT_MODE === 'tickle' ? `<td>${v.tickle_at ? new Date(new Date(v.tickle_at).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString() : 'N/A'}</td>` : ''}
+                            <td>${make}</td>
+                            <td>${model}</td>
+                            <td>${price}</td>
+                            <td>${milesDisplay}</td>
+                            <td>${accidents}</td>
+                            <td>${location}</td>
+                            <td>${date}</td>
+                            <td><span class="source-badge">${source}</span></td>
+                            <td><span class="dqm-badge ${scoreClass}">${score}</span></td>
+                            <td onclick="event.stopPropagation()">${restoreBtn}</td>
+                        </tr>
+                        `;
+                        } catch (rowError) {
+                            console.error("Deleted row error", rowError);
+                            return '';
+                        }
+                    }).join('');
+                    html += rowsHtml;
+                }
+
+                html += `</tbody></table></div>`;
+                container.innerHTML = html;
+            } catch (e) {
+                console.error("Error in renderDeletedInventory:", e);
+            }
+        }
+
+        function toggleAllDeleted(masterCb) {
+            const checkboxes = document.querySelectorAll('.deleted-listing-check');
+            checkboxes.forEach(cb => cb.checked = masterCb.checked);
+            updateDeletedSelection();
+        }
+
+        function updateDeletedSelection() {
+            const selected = document.querySelectorAll('.deleted-listing-check:checked');
+            const count = selected.length;
+
+            const countEl = document.getElementById('deletedSelectionCount');
+            if (countEl) countEl.innerText = `${count} selected`;
+
+            const btn = document.getElementById('btnRestoreSelected');
+            if (btn) btn.disabled = (count === 0);
+        }
+
+        async function restoreSelectedDeleted() {
+            const selected = Array.from(document.querySelectorAll('.deleted-listing-check:checked'));
+            const ids = selected.map(cb => cb.value); // These are URLs in this context
+
+            if (ids.length === 0) return;
+
+            // PAUSE auto-refresh so the confirm dialog doesn't disappear
+            stopAutoRefresh();
+
+            const confirmed = confirm(`Restore ${ids.length} items to active status?`);
+
+            // RESUME auto-refresh regardless of choice
+            startAutoRefresh();
+
+            if (!confirmed) return;
+
+            const btn = document.getElementById('btnRestoreSelected');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="material-icons rotating">sync</span> RESTORING...';
+            btn.disabled = true;
+
+            try {
+                let successCount = 0;
+                for (const url of ids) {
+                    const res = await fetch('/api/update_status', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: url, status: 'active' })
+                    });
+                    const data = await res.json();
+                    if (data.success) successCount++;
+                }
+
+                // Refresh data
+                await loadInventory();
+
+            } catch (e) {
+                console.error("Error restoring items:", e);
+                alert("Restoration failed.");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
 
@@ -2849,163 +3437,157 @@
         }
 
         function displayInventory(vehicles) {
-            const container = document.getElementById('inventoryGrid'); // keeping ID for compatibility
-            const resultsCount = document.getElementById('resultsCount');
+            try {
+                const container = document.getElementById('inventoryGrid');
+                const resultsCount = document.getElementById('resultsCount');
 
-            resultsCount.textContent = `Showing ${vehicles.length} of ${allInventory.length} vehicles`;
+                if (!container || !resultsCount) return;
 
-            if (vehicles.length === 0) {
-                container.innerHTML = `
-                    <div class="loading-state">
-                        <span class="material-icons">search_off</span>
-                        <p>No vehicles match your filters</p>
-                    </div>
+                resultsCount.textContent = `Showing ${vehicles.length} of ${allInventory.length} vehicles`;
+
+                if (vehicles.length === 0) {
+                    container.innerHTML = `
+                        <div class="loading-state">
+                            <span class="material-icons">search_off</span>
+                            <p>No vehicles match your filters</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Pagination Logic
+                const startIdx = (currentPage - 1) * itemsPerPage;
+                const endIdx = startIdx + itemsPerPage;
+                const pagedVehicles = vehicles.slice(startIdx, endIdx);
+                const totalPages = Math.ceil(vehicles.length / itemsPerPage);
+
+                // Sort indicator helper
+                const getArrow = (f) => currentSortField === f ? (currentSortDir === 'asc' ? '▲' : '▼') : '';
+
+                // Render Table Header
+                let html = `
+                <div class="inventory-table-container">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
+                                ${CURRENT_MODE === 'tickle' ? '<th>Tickle</th>' : ''}
+                                <th onclick="sortTable('make')" style="cursor:pointer">Brand ${getArrow('make')}</th>
+                                <th onclick="sortTable('model')" style="cursor:pointer">Model ${getArrow('model')}</th>
+                                <th onclick="sortTable('price')" style="cursor:pointer">Price ${getArrow('price')}</th>
+                                <th onclick="sortTable('mileage')" style="cursor:pointer">Mileage ${getArrow('mileage')}</th>
+                                <th>Accidents</th>
+                                <th onclick="sortTable('location')" style="cursor:pointer">Location ${getArrow('location')}</th>
+                                <th onclick="sortTable('date')" style="cursor:pointer">Date Sourced ${getArrow('date')}</th>
+                                <th onclick="sortTable('source')" style="cursor:pointer">Source ${getArrow('source')}</th>
+                                <th onclick="sortTable('dealScore')" style="cursor:pointer">DQM ${getArrow('dealScore')}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 `;
-                return;
-            }
 
-            // Pagination Logic
-            const startIdx = (currentPage - 1) * itemsPerPage;
-            const endIdx = startIdx + itemsPerPage;
-            const pagedVehicles = vehicles.slice(startIdx, endIdx);
-            const totalPages = Math.ceil(vehicles.length / itemsPerPage);
+                // Render Rows
+                html += pagedVehicles.map(v => {
+                    const title = v.title || 'Unknown Vehicle';
+                    const year = extractYear(title);
+                    const make = extractMake(title) || 'Unknown';
+                    let model = title.replace(year, '').replace(make, '').trim();
+                    if (model.length > 30) model = model.substring(0, 30) + '...';
+                    if (!model) model = 'N/A';
 
-            // Sort indicator helper
-            const getArrow = (f) => currentSortField === f ? (currentSortDir === 'asc' ? '▲' : '▼') : '';
+                    const price = (v.price !== null && v.price !== undefined) ? '$' + v.price.toLocaleString() : 'Call';
+                    let miles = v.mileage || 0;
+                    const milesDisplay = miles ? miles.toLocaleString() : 'N/A';
 
-            // Render Table Header with Batch Actions
-            let html = `
-            <div class="inventory-table-container">
-                <table class="inventory-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
-                            <th onclick="sortTable('make')" style="cursor:pointer">Brand ${getArrow('make')}</th>
-                            <th onclick="sortTable('model')" style="cursor:pointer">Model ${getArrow('model')}</th>
-                            <th onclick="sortTable('price')" style="cursor:pointer">Price ${getArrow('price')}</th>
-                            <th onclick="sortTable('mileage')" style="cursor:pointer">Mileage ${getArrow('mileage')}</th>
-                            <th>Accidents</th>
-                            <th onclick="sortTable('location')" style="cursor:pointer">Location ${getArrow('location')}</th>
-                            <th onclick="sortTable('date')" style="cursor:pointer">Date Sourced ${getArrow('date')}</th>
-                            <th onclick="sortTable('source')" style="cursor:pointer">Source ${getArrow('source')}</th>
-                            <th onclick="sortTable('dealScore')" style="cursor:pointer">DQM ${getArrow('dealScore')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+                    let accidents = 'N/A';
+                    if (v.description) {
+                        const lowerDesc = v.description.toLowerCase();
+                        if (lowerDesc.includes('clean title')) accidents = 'Clean Title';
+                        else if (lowerDesc.includes('salvage title')) accidents = 'Salvage';
+                        else if (lowerDesc.includes('rebuilt title')) accidents = 'Rebuilt';
+                        else if (lowerDesc.includes('no accidents')) accidents = 'None reported';
+                    }
 
-            // Render Rows
-            html += pagedVehicles.map(v => {
-                const year = extractYear(v.title);
-                const make = extractMake(v.title) || 'Unknown';
-                // Model is title without Year and Make
-                let model = v.title.replace(year, '').replace(make, '').trim();
-                if (model.length > 30) model = model.substring(0, 30) + '...';
-                if (!model) model = 'N/A';
+                    const location = v.location || "Unknown";
+                    const date = v.processed_at ? new Date(v.processed_at).toLocaleString() : 'N/A';
+                    const score = v.dealScore || 0;
+                    let scoreClass = 'dqm-low';
+                    if (score >= 75) scoreClass = 'dqm-high';
+                    else if (score >= 50) scoreClass = 'dqm-med';
 
-                const price = v.price ? '$' + v.price.toLocaleString() : 'Call';
+                    let source = v.source ? v.source.replace('_', ' ') : 'Unknown';
+                    if (source.toLowerCase().includes('facebook')) source = 'FB';
+                    if (source.toLowerCase().includes('craigslist')) source = 'CL';
 
-                // Mileage fallback logic
-                let miles = v.mileage || 0;
-                if (miles === 0 && v.description) {
-                    const mMatch = v.description.match(/(\d+)[kK]\s*miles/i);
-                    if (mMatch) miles = parseInt(mMatch[1]) * 1000;
-                }
-                const milesDisplay = miles ? miles.toLocaleString() : 'N/A';
+                    const listingUrl = v.listing_url || '#';
 
-                // Accidents extraction
-                let accidents = 'N/A';
-                if (v.description) {
-                    const lowerDesc = v.description.toLowerCase();
-                    if (lowerDesc.includes('clean title')) accidents = 'Clean Title';
-                    else if (lowerDesc.includes('salvage title')) accidents = 'Salvage';
-                    else if (lowerDesc.includes('rebuilt title')) accidents = 'Rebuilt';
-                    else if (lowerDesc.includes('no accidents')) accidents = 'None reported';
-                }
+                    return `
+                    <tr onclick="window.open('${listingUrl}', '_blank')" style="cursor: pointer; opacity: ${v.status === 'deleted' ? '0.6' : '1'};">
+                        <td onclick="event.stopPropagation()" style="text-align: center;">
+                            <input type="checkbox" class="listing-check" value="${v.id || v.listing_url}" onchange="handleCheck(this)">
+                        </td>
+                        ${CURRENT_MODE === 'tickle' ? `<td>${v.tickle_at ? new Date(new Date(v.tickle_at).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString() : 'N/A'}</td>` : ''}
+                        <td>${make}</td>
+                        <td>${model}</td>
+                        <td>${price}</td>
+                        <td>${milesDisplay}</td>
+                        <td>${accidents}</td>
+                        <td>${location}</td>
+                        <td>${date}</td>
+                        <td><span class="source-badge">${source}</span></td>
+                        <td><span class="dqm-badge ${scoreClass}">${score}</span></td>
+                    </tr>
+                    `;
+                }).join('');
 
-                // Location fallback
-                let location = v.location;
-                if ((!location || location === 'Unknown') && v.description) {
-                    const locMatch = v.description.match(/([A-Z][a-z]+(\s[A-Z][a-z]+)*,\s*[A-Z]{2})/);
-                    if (locMatch) location = locMatch[0];
-                }
-
-                // Phone
-                let phone = (v.phone_numbers && v.phone_numbers.length) ? v.phone_numbers[0] : 'N/A';
-                phone = formatPhoneNumber(phone);
-
-                // Email extraction
-                let email = 'N/A';
-                if (v.email) email = v.email;
-                else if (v.description) {
-                    const emailMatch = v.description.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/);
-                    if (emailMatch) email = emailMatch[0];
-                }
-
-                // Time
-                const date = v.processed_at ? new Date(v.processed_at).toLocaleString() : 'N/A';
-
-                // Score class
-                const score = v.dealScore || 0;
-                let scoreClass = 'dqm-low';
-                if (score >= 75) scoreClass = 'dqm-high';
-                else if (score >= 50) scoreClass = 'dqm-med';
-
-                // Source clean
-                let source = v.source ? v.source.replace('_', ' ') : 'Unknown';
-                if (source.toLowerCase().includes('facebook')) source = 'FB';
-                if (source.toLowerCase().includes('craigslist')) source = 'CL';
-
-                // Ensure ID is available
-                const id = v.id || '';
-
-                return `
-                <tr onclick="window.open('${v.listing_url}', '_blank')" style="cursor: pointer;">
-                    <td onclick="event.stopPropagation()" style="text-align: center;">
-                        <input type="checkbox" class="listing-check" value="${id}" onchange="updateDeleteBtn()">
-                    </td>
-                    <td>${make}</td>
-                    <td>${model}</td>
-                    <td>${price}</td>
-                    <td>${milesDisplay}</td>
-                    <td>${accidents}</td>
-                    <td>${location}</td>
-                    <td>${date}</td>
-                    <td><span class="source-badge">${source}</span></td>
-                    <td><span class="dqm-badge ${scoreClass}">${score}</span></td>
-                </tr>
-                `;
-            }).join('');
-
-            html += `
-                    </tbody>
-                </table>
-            </div>
-            `;
-
-            // Pagination Controls
-            if (totalPages > 1) {
                 html += `
-                <div class="pagination-controls" style="display:flex; justify-content:center; align-items:center; gap:20px; margin-top:20px;">
-                    <button class="btn btn-secondary" onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>
-                        <span class="material-icons" style="font-size:16px; vertical-align:middle;">chevron_left</span> Prev
-                    </button>
-                    <span style="color:#999; font-size:14px; font-weight:600;">Page ${currentPage} of ${totalPages}</span>
-                    <button class="btn btn-secondary" onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''}>
-                        Next <span class="material-icons" style="font-size:16px; vertical-align:middle;">chevron_right</span>
-                    </button>
+                        </tbody>
+                    </table>
                 </div>
                 `;
-            }
 
-            container.innerHTML = html;
+                // Pagination Controls
+                if (totalPages > 1) {
+                    html += `
+                    <div class="pagination-controls" style="display:flex; justify-content:center; align-items:center; gap:20px; margin-top:20px;">
+                        <button class="btn btn-secondary" onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>
+                            <span class="material-icons" style="font-size:16px; vertical-align:middle;">chevron_left</span> Prev
+                        </button>
+                        <span style="color:#999; font-size:14px; font-weight:600;">Page ${currentPage} of ${totalPages}</span>
+                        <button class="btn btn-secondary" onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''}>
+                            Next <span class="material-icons" style="font-size:16px; vertical-align:middle;">chevron_right</span>
+                        </button>
+                    </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+            } catch (e) {
+                console.error("Critical error in displayInventory:", e);
+                alert("Critical Error: " + e.message);
+            }
         }
 
         // --- BULK ACTION HANDLERS ---
 
         function toggleAll(headerCheckbox) {
             const checkboxes = document.querySelectorAll('.listing-check');
-            checkboxes.forEach(cb => cb.checked = headerCheckbox.checked);
+            checkboxes.forEach(cb => {
+                cb.checked = headerCheckbox.checked;
+                // CRITICAl: Update logic set
+                if (headerCheckbox.checked) {
+                    selectedListingIds.add(cb.value);
+                } else {
+                    selectedListingIds.delete(cb.value);
+                }
+            });
+            updateDeleteBtn();
+        }
+
+        // Add event listener helper for individual checks
+        function handleCheck(cb) {
+            if (cb.checked) selectedListingIds.add(cb.value);
+            else selectedListingIds.delete(cb.value);
             updateDeleteBtn();
         }
 
@@ -3013,14 +3595,21 @@
             const selected = document.querySelectorAll('.listing-check:checked');
             const count = selected.length;
             const btn = document.getElementById('deleteBtn');
+            // Check for both button types
+            const archiveBtn = document.getElementById('btnArchive');
+            const unarchiveBtn = document.getElementById('btnUnarchive');
             const label = document.getElementById('selectionCount');
 
             if (count > 0) {
-                btn.disabled = false;
-                label.textContent = `${count} vehicle${count === 1 ? '' : 's'} selected`;
+                if (btn) btn.disabled = false;
+                if (archiveBtn) archiveBtn.disabled = false;
+                if (unarchiveBtn) unarchiveBtn.disabled = false;
+                if (label) label.textContent = `${count} selected`;
             } else {
-                btn.disabled = true;
-                label.textContent = '0 vehicles selected';
+                if (btn) btn.disabled = true;
+                if (archiveBtn) archiveBtn.disabled = true;
+                if (unarchiveBtn) unarchiveBtn.disabled = true;
+                if (label) label.textContent = '0 selected';
             }
         }
 
@@ -3028,24 +3617,89 @@
         let itemsToDelete = [];
 
         function deleteSelected() {
-            const selected = Array.from(document.querySelectorAll('.listing-check:checked'));
-            itemsToDelete = selected.map(cb => cb.value);
+            // Unify: prioritize selectedListingIds if populated, otherwise use checked checkboxes
+            if (selectedListingIds.size > 0) {
+                itemsToDelete = Array.from(selectedListingIds);
+            } else {
+                const selected = Array.from(document.querySelectorAll('.listing-check:checked'));
+                itemsToDelete = selected.map(cb => cb.value);
+            }
 
-            if (!itemsToDelete.length) return;
+            if (!itemsToDelete.length) {
+                alert('Please select items to delete first.');
+                return;
+            }
 
             // Show custom modal
-            document.getElementById('deleteCount').innerText = itemsToDelete.length;
-            document.getElementById('deleteModal').style.display = 'flex';
+            const countEl = document.getElementById('deleteCount');
+            if (countEl) countEl.innerText = itemsToDelete.length;
+
+            const modal = document.getElementById('deleteModal');
+            if (modal) modal.style.display = 'flex';
         }
 
         function closeDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-            itemsToDelete = [];
+            const modal = document.getElementById('deleteModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        async function archiveSelectedListings() {
+            const ids = Array.from(selectedListingIds);
+            console.log("Archiving IDs:", ids);
+
+            if (ids.length === 0) {
+                alert("No items selected!");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/listings/bulk_status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: ids, status: 'tickle' })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    selectedListingIds.clear();
+                    updateDeleteBtn();
+                    loadInventory(); // Refresh with cache buster already added
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Connection error');
+            }
+        }
+
+        async function unarchiveSelectedListings() {
+            const ids = Array.from(selectedListingIds);
+            if (ids.length === 0) return;
+
+            try {
+                const response = await fetch('/api/listings/bulk_status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: ids, status: 'active' })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    selectedListingIds.clear();
+                    updateDeleteBtn();
+                    loadInventory();
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Connection error');
+            }
         }
 
         async function archiveListing(url, event) {
             if (event) event.stopPropagation();
-            if (!confirm('Move this listing to the Tickle File?')) return;
 
             try {
                 const response = await fetch('/api/update_status', {
@@ -3055,13 +3709,7 @@
                 });
 
                 if (response.ok) {
-                    // Remove from local inventory
-                    allInventory = allInventory.filter(v => v.listing_url !== url);
-                    applyFilters(); // Re-render grid
-                    updateFeaturedInventory(); // Re-render carousel
-
-                    // Show toast or alert?
-                    // alert('Moved to Tickle File');
+                    loadInventory();
                 } else {
                     alert('Failed to archive listing');
                 }
@@ -3071,22 +3719,34 @@
             }
         }
 
-        async function performDelete() {
-            const ids = [...itemsToDelete]; // Capture IDs before clearing
-            if (!ids.length && document.querySelectorAll('.listing-check:checked').length > 0) {
-                // Fallback: re-query if empty but checkboxes are checked
-                const selected = Array.from(document.querySelectorAll('.listing-check:checked'));
-                ids.push(...selected.map(cb => cb.value));
+        async function unarchiveListing(url, event) {
+            if (event) event.stopPropagation();
+
+            try {
+                const response = await fetch('/api/update_status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url, status: 'active' })
+                });
+
+                if (response.ok) {
+                    loadInventory();
+                } else {
+                    alert('Failed to restore listing');
+                }
+            } catch (error) {
+                console.error('Restore error:', error);
+                alert('Error restoring listing');
             }
+        }
+
+        async function performDelete() {
+            const ids = [...itemsToDelete];
             closeDeleteModal();
 
             if (!ids.length) return;
-            if (!ids.length) return;
 
-            const btn = document.getElementById('deleteBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="material-icons spin">refresh</span> Deleting...';
-            btn.disabled = true;
+            console.log('Performing delete for IDs:', ids);
 
             try {
                 const response = await fetch('/api/listings/delete', {
@@ -3098,18 +3758,18 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    // Clear state
+                    selectedListingIds.clear();
+                    itemsToDelete = [];
+                    updateDeleteBtn();
                     // Refresh data
-                    await loadInventory(); // Reloads all data
+                    await loadInventory();
                 } else {
                     alert('Error deleting: ' + (data.error || 'Unknown error'));
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
                 }
             } catch (error) {
                 console.error('Delete error:', error);
                 alert('Failed to delete vehicles.');
-                btn.innerHTML = originalText;
-                btn.disabled = false;
             }
         }
 
@@ -3147,6 +3807,11 @@
                 const statusText = document.getElementById('statusText');
                 const startBtn = document.getElementById('startBtn');
                 const stopBtn = document.getElementById('stopBtn');
+                const totalListings = document.getElementById('totalListings');
+                const lastRun = document.getElementById('lastRun');
+
+                if (!statusIcon) return; // Exit if elements are hidden
+
 
                 if (data.status === 'running') {
                     statusIcon.className = 'status-icon running';
@@ -3162,31 +3827,61 @@
                     stopBtn.disabled = true;
                 }
 
-                document.getElementById('totalListings').textContent = data.total_listings || 0;
-                document.getElementById('lastRun').textContent = data.last_run || 'Never';
+                if (totalListings) totalListings.textContent = data.total_listings || 0;
+                if (lastRun) lastRun.textContent = data.last_run || 'Never';
             } catch (error) {
                 console.error('Error updating status:', error);
             }
         }
 
         let notificationsData = [];
+        let examinedUrls = new Set();
 
         async function checkNotifications() {
             try {
                 const res = await fetch('/api/notifications');
                 const data = await res.json();
-                notificationsData = data.items || [];
+                const newNotifications = data.items || [];
+
+                // Keep existing examine status if URLs still present
+                const currentUrls = new Set(newNotifications.map(n => n.url));
+                examinedUrls = new Set([...examinedUrls].filter(url => currentUrls.has(url)));
+
+                notificationsData = newNotifications;
 
                 const badge = document.getElementById('badge');
+                const beacon = document.getElementById('bellBeacon');
+
                 if (data.count > 0) {
                     badge.innerText = data.count;
                     badge.style.display = 'block';
+
+                    // Show beacon if there are unexamined items
+                    const unexaminedCount = notificationsData.filter(n => !examinedUrls.has(n.url)).length;
+                    if (unexaminedCount > 0) {
+                        beacon.style.display = 'block';
+                    } else {
+                        beacon.style.display = 'none';
+                    }
                 } else {
                     badge.style.display = 'none';
+                    beacon.style.display = 'none';
                 }
 
                 renderDropdown();
             } catch (e) { }
+        }
+
+        function markAsExamined(url) {
+            if (examinedUrls.has(url)) return;
+            examinedUrls.add(url);
+
+            // Check if all are examined
+            const unexaminedCount = notificationsData.filter(n => !examinedUrls.has(n.url)).length;
+            if (unexaminedCount === 0) {
+                const beacon = document.getElementById('bellBeacon');
+                if (beacon) beacon.style.display = 'none';
+            }
         }
 
         function renderDropdown() {
@@ -3198,10 +3893,11 @@
 
             let html = '';
             notificationsData.forEach(item => {
-                // Encode URL to pass as param
                 const encodedUrl = encodeURIComponent(item.url);
                 html += `
-                    <div class="dropdown-item" onclick="window.location.href='/tickle?highlight=${encodedUrl}'">
+                    <div class="dropdown-item" 
+                         onmouseenter="markAsExamined('${item.url}')"
+                         onclick="window.location.href='/tickle?highlight=${encodedUrl}'">
                         <div class="dropdown-title">${item.title}</div>
                         <div class="dropdown-meta">
                             <span class="material-icons" style="font-size:12px; vertical-align:middle;">location_on</span> ${item.location}
@@ -3213,24 +3909,37 @@
         }
 
         function toggleDropdown() {
-            const dd = document.getElementById('notificationDropdown');
-            dd.classList.toggle('show');
+            const dropdown = document.getElementById('notificationDropdown');
+            const profileDropdown = document.getElementById('profileDropdown');
+            if (profileDropdown) profileDropdown.classList.remove('show');
+            dropdown.classList.toggle('show');
         }
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function (event) {
-            const wrapper = document.querySelector('.notification-wrapper');
-            if (wrapper && !wrapper.contains(event.target)) {
-                const dd = document.getElementById('notificationDropdown');
-                if (dd) dd.classList.remove('show');
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            if (notificationDropdown) notificationDropdown.classList.remove('show');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdowns when clicking outside
+        window.onclick = function (event) {
+            if (!event.target.closest('.notification-wrapper') && !event.target.closest('.profile-wrapper')) {
+                const notifications = document.getElementById('notificationDropdown');
+                const profile = document.getElementById('profileDropdown');
+                if (notifications) notifications.classList.remove('show');
+                if (profile) profile.classList.remove('show');
             }
-        });
+        }
 
         async function refreshLogs() {
             try {
                 const response = await fetch('/api/logs');
                 const data = await response.json();
-                document.getElementById('logsContent').textContent = data.logs || 'No activity yet';
+                const logsEl = document.getElementById('logsContent');
+                if (!logsEl) return;
+
+                logsEl.textContent = data.logs || 'No activity yet';
 
                 const logsContent = document.getElementById('logsContent');
                 logsContent.scrollTop = logsContent.scrollHeight;
@@ -3310,6 +4019,11 @@
             modal.style.display = 'none';
             clearInterval(spectatorInterval);
         }
+
+
+
+
+
     </script>
 </body>
 

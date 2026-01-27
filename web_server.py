@@ -4,25 +4,39 @@ Barndoor Web Server
 Flask backend for the modern Material Design interface.
 """
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for
+from werkzeug.utils import secure_filename
 import subprocess
 import json
 import os
 from pathlib import Path
 from datetime import datetime
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+from dotenv import load_dotenv
+from tinydb import TinyDB, Query
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.secret_key = 'barndoor-secret-key-change-this'
 
-# Simple Auth Check
-USERNAME = "admin"
-PASSWORD = "password"  # You should change this or load from env
-
 PROJECT_DIR = Path(__file__).parent
 DB_PATH = PROJECT_DIR / "database" / "ledger.json"
 SETTINGS_PATH = PROJECT_DIR / "database" / "settings.json"
+USERS_PATH = PROJECT_DIR / "database" / "users.json"
 LOG_PATH = PROJECT_DIR / "barnfind.log"
 PID_FILE = PROJECT_DIR / "barnfind.pid"
+
+def get_users():
+    if not USERS_PATH.exists():
+        return {"users": []}
+    with open(USERS_PATH, 'r') as f:
+        return json.load(f)
+
+def save_users(users_data):
+    with open(USERS_PATH, 'w') as f:
+        json.dump(users_data, f, indent=4)
 
 
 def is_service_running():
@@ -40,15 +54,45 @@ def is_service_running():
         return False
 
 
+def send_email(to_email, subject, content):
+    """Send email via SendGrid."""
+    api_key = os.getenv('SENDGRID_API_KEY')
+    if not api_key or api_key == 'your_sendgrid_api_key_here':
+        print(f"MOCK EMAIL to {to_email}: [{subject}] {content}")
+        return True
+
+    message = Mail(
+        from_email='noreply@barndoor.me',
+        to_emails=to_email,
+        subject=subject,
+        html_content=content)
+    try:
+        sg = SendGridAPIClient(api_key)
+        sg.send(message)
+        return True
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Handle user login."""
     if request.method == 'POST':
-        user = request.form.get('username')
+        email = request.form.get('username')
         pw = request.form.get('password')
         
-        if user == USERNAME and pw == PASSWORD:
+        users_data = get_users()
+        user = next((u for u in users_data['users'] if u['email'] == email), None)
+        
+        if user and user['password'] == pw: # Note: In production use hashing
+            if user['status'] != 'approved':
+                return render_template('login.html', error="Your account is pending approval.")
+            
             session['logged_in'] = True
+            session['user_email'] = user['email']
+            session['user_name'] = user['full_name']
+            session['role'] = user['role']
             return redirect(url_for('index'))
         else:
             return render_template('login.html', error="Invalid credentials")
@@ -56,10 +100,97 @@ def login():
     return render_template('login.html')
 
 
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    """Handle user access requests."""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Default name from email since we removed the field
+        full_name = email.split('@')[0].title()
+        
+        users_data = get_users()
+        if any(u['email'] == email for u in users_data['users']):
+            return render_template('login.html', error="Email already registered", signup_mode=True)
+        
+        new_user = {
+            "email": email,
+            "password": password,
+            "full_name": full_name,
+            "role": "user",
+            "status": "pending",
+            "created_at": datetime.now().isoformat()
+        }
+        users_data['users'].append(new_user)
+        save_users(users_data)
+        
+        # send_email confirmation to user
+        subject = "Thank you for your interest in Barndoor"
+        content = """
+        <p>Thank you for your interest in Barndoor, the premium classic car finder across the heartland.</p>
+        <p>Your request has been added to our waiting list. Our team will review your request and get back to you at our soonest availability.</p>
+        <p>Thank you</p>
+        """
+        send_email(email, subject, content)
+        
+        return render_template('login.html', message="Request submitted! We will review and get back to you.")
+    
+    return render_template('login.html', signup_mode=True)
+
+
+@app.route('/admin/users')
+def users_admin():
+    """Serve the user management interface."""
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return redirect(url_for('login'))
+    return render_template('users_admin.html')
+
+
+@app.route('/api/users')
+def list_users():
+    """List all users for admin."""
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+    return jsonify(get_users())
+
+
+@app.route('/api/users/status', methods=['POST'])
+def update_user_status():
+    """Approve or deny a user request."""
+    if not session.get('logged_in') or session.get('role') != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    email = data.get('email')
+    status = data.get('status')
+    
+    users_data = get_users()
+    user = next((u for u in users_data['users'] if u['email'] == email), None)
+    
+    if user:
+        user['status'] = status
+        save_users(users_data)
+        
+        # Send notification email
+        if status == 'approved':
+            subject = "Access Granted - Barndoor"
+            content = f"<p>Hello {user['full_name']},</p><p>We are happy to inform you that your request for access to Barndoor has been approved. You can now log in to your profile.</p>"
+        else:
+            subject = "Update regarding your Barndoor request"
+            content = f"<p>Hello {user['full_name']},</p><p>Thank you for your interest in Barndoor. At this time, we are unable to grant you access to the platform.</p>"
+            
+        send_email(email, subject, content)
+        return jsonify({'success': True})
+    
+    return jsonify({'error': 'User not found'}), 404
+
+
 @app.route('/logout')
 def logout():
     """Handle user logout."""
-    session.pop('logged_in', None)
+    session.clear()
     return redirect(url_for('login'))
 
 
@@ -68,7 +199,7 @@ def index():
     """Serve the main interface."""
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', mode='active')
 
 
 @app.route('/settings')
@@ -85,6 +216,121 @@ def portal_page():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     return render_template('portal.html')
+
+
+@app.route('/profile')
+def profile_page():
+    """Serve the user profile interface."""
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    return render_template('profile.html')
+
+
+@app.route('/api/auth/forgot', methods=['POST'])
+def request_password_reset():
+    """Handle forgot password requests."""
+    email = request.json.get('email')
+    
+    users_data = get_users()
+    user = next((u for u in users_data['users'] if u['email'] == email), None)
+    
+    # Always return success to prevent email enumeration
+    if not user:
+        return jsonify({'success': True})
+        
+    # Generate 6 digit code
+    import random
+    code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    
+    # Save code and expiry (15 mins)
+    user['reset_token'] = code
+    # Store timestamp as ISO string
+    user['reset_expires'] = (datetime.now().timestamp() + 900) 
+    save_users(users_data)
+    
+    # Send email
+    subject = "Password Reset Code - Barndoor"
+    content = f"""
+    <p>Hello,</p>
+    <p>You requested to reset your password. Use the code below to complete the process:</p>
+    <h2 style="font-size: 24px; letter-spacing: 5px; background: #eee; padding: 10px; display: inline-block;">{code}</h2>
+    <p>This code expires in 15 minutes.</p>
+    <p>If you didn't request this, please ignore this email.</p>
+    """
+    send_email(email, subject, content)
+    
+    return jsonify({'success': True})
+
+
+@app.route('/api/auth/reset', methods=['POST'])
+def reset_password_confirm():
+    """Verify code and reset password."""
+    data = request.json
+    email = data.get('email')
+    code = data.get('code')
+    new_password = data.get('password')
+    
+    users_data = get_users()
+    user = next((u for u in users_data['users'] if u['email'] == email), None)
+    
+    if not user:
+        return jsonify({'error': 'Invalid request'}), 400
+        
+    # Check token
+    stored_token = user.get('reset_token')
+    expires = user.get('reset_expires', 0)
+    
+    if not stored_token or stored_token != code:
+        return jsonify({'error': 'Invalid code'}), 400
+        
+    if datetime.now().timestamp() > expires:
+        return jsonify({'error': 'Code expired'}), 400
+        
+    # Update password
+    user['password'] = new_password
+    # Clear token
+    del user['reset_token']
+    del user['reset_expires']
+    
+    save_users(users_data)
+    
+    return jsonify({'success': True})
+
+
+@app.route('/api/profile/update', methods=['POST'])
+def update_profile():
+    """Update user profile information."""
+    if not session.get('logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    data = request.json
+    email = data.get('email')
+    full_name = data.get('full_name')
+    new_password = data.get('password')
+    
+    users_data = get_users()
+    user_email = session.get('user_email')
+    user = next((u for u in users_data['users'] if u['email'] == user_email), None)
+    
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+        
+    # Check if new email is already taken by someone else
+    if email and email != user_email:
+        if any(u['email'] == email for u in users_data['users']):
+            return jsonify({'error': 'Email already in use'}), 400
+        user['email'] = email
+        session['user_email'] = email # update session
+        
+    if full_name:
+        user['full_name'] = full_name
+        session['user_name'] = full_name # update session
+        
+    if new_password:
+        user['password'] = new_password
+        
+    save_users(users_data)
+    return jsonify({'success': True})
 
 
 @app.route('/api/status')
@@ -212,8 +458,10 @@ def stop_service():
 
 @app.route('/tickle')
 def tickle_page():
-    """Serve the Tickle Sheet interface."""
-    return render_template('tickle.html')
+    """Serve the Tickle Sheet interface using the Dashboard layout."""
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    return render_template('dashboard.html', mode='tickle')
 
 
 @app.route('/api/listings')
@@ -222,30 +470,23 @@ def get_listings():
     status_filter = request.args.get('status')
     
     try:
-        if not DB_PATH.exists():
-            return jsonify({'listings': []})
+        db = TinyDB(DB_PATH)
+        listings_table = db.table('listings')
         
-        with open(DB_PATH, 'r') as f:
-            data = json.load(f)
-        
-        all_listings = []
-        listings_map = data.get('listings', {})
-        
-        # Iterate over ITEMS to get the ID
-        for doc_id, listing in listings_map.items():
-            # Inject ID for frontend use
-            listing['id'] = doc_id 
+        # Query listings
+        if status_filter:
+            Listing = Query()
+            all_listings = listings_table.search(Listing.status == status_filter)
+        else:
+            all_listings = listings_table.all()
             
-            # Default status is 'active' if not present
-            current_status = listing.get('status', 'active')
-            
-            # If filter is requested, match it
-            if status_filter:
-                if current_status == status_filter:
-                    all_listings.append(listing)
-            else:
-                all_listings.append(listing)
-        
+        # Inject IDs as string (doc_id)
+        for listing in all_listings:
+            listing['id'] = str(listing.doc_id)
+            if 'status' not in listing:
+                listing['status'] = 'active'
+                
+        db.close()
         return jsonify({'listings': all_listings, 'total': len(all_listings)})
     except Exception as e:
         print(f"Error serving listings: {e}") 
@@ -254,7 +495,7 @@ def get_listings():
 
 @app.route('/api/listings/delete', methods=['POST'])
 def delete_listings():
-    """Bulk delete listings by ID."""
+    """Bulk soft-delete listings by ID or URL."""
     try:
         payload = request.json
         ids_to_delete = payload.get('ids', []) 
@@ -262,30 +503,73 @@ def delete_listings():
         if not ids_to_delete:
              return jsonify({'success': True, 'count': 0})
              
-        if not DB_PATH.exists():
-             return jsonify({'error': 'DB not found'}), 404
-             
-        with open(DB_PATH, 'r+') as f:
-            data = json.load(f)
-            listings = data.get('listings', {})
-            deleted_count = 0
+        db = TinyDB(DB_PATH)
+        listings_table = db.table('listings')
+        deleted_count = 0
+        
+        for identifier in ids_to_delete:
+            id_str = str(identifier)
+            Listing = Query()
             
-            for id_str in ids_to_delete:
-                # Ensure string type as JSON keys are strings
-                id_key = str(id_str)
-                if id_key in listings:
-                    del listings[id_key]
-                    deleted_count += 1
+            # 1. Try by doc_id (numeric string)
+            target_doc_id = None
+            if id_str.isdigit():
+                target_doc_id = int(id_str)
+                if not listings_table.contains(doc_id=target_doc_id):
+                    target_doc_id = None
             
-            # Save back
-            f.seek(0)
-            json.dump(data, f, indent=4)
-            f.truncate()
+            # 2. Try by URL fallback
+            if target_doc_id is None:
+                results = listings_table.search(Listing.listing_url == id_str)
+                if results:
+                    target_doc_id = results[0].doc_id
             
+            if target_doc_id is not None:
+                listings_table.update(
+                    {'status': 'deleted', 'deleted_at': datetime.now().isoformat()},
+                    doc_ids=[target_doc_id]
+                )
+                deleted_count += 1
+        
+        db.close()
         return jsonify({'success': True, 'count': deleted_count})
             
     except Exception as e:
         print(f"Error deleting listings: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/listings/bulk_status', methods=['POST'])
+def bulk_update_status():
+    """Update status for multiple listings by ID."""
+    try:
+        payload = request.json
+        ids_to_update = payload.get('ids', [])
+        new_status = payload.get('status')
+        
+        if not ids_to_update or not new_status:
+            return jsonify({'success': True, 'count': 0})
+            
+        db = TinyDB(DB_PATH)
+        listings_table = db.table('listings')
+        updated_count = 0
+        
+        for id_str in ids_to_update:
+            if str(id_str).isdigit():
+                doc_id = int(id_str)
+                if listings_table.contains(doc_id=doc_id):
+                    update_data = {'status': new_status}
+                    if new_status == 'tickle':
+                        update_data['tickle_at'] = datetime.now().isoformat()
+                    
+                    listings_table.update(update_data, doc_ids=[doc_id])
+                    updated_count += 1
+        
+        db.close()
+        return jsonify({'success': True, 'count': updated_count})
+            
+    except Exception as e:
+        print(f"Error bulk updating listings: {e}")
         return jsonify({'error': str(e)}), 500
 
 
@@ -339,22 +623,119 @@ def get_notifications():
         due_items = []
         now = datetime.now()
         
-        for platform in data.get('listings', {}).values():
-            for listing in platform:
-                if listing.get('status') == 'archived' and listing.get('archived_at'):
-                    archived = datetime.fromisoformat(listing['archived_at'])
-                    # Check if 7 days passed
-                    if (now - archived).days >= 7:
-                        due_items.append({
-                            'title': listing.get('title', 'Unknown Vehicle'),
-                            'location': listing.get('location', 'Unknown Location'),
-                            'url': listing.get('listing_url'),
-                            'archived_at': listing.get('archived_at')
-                        })
+        listings_map = data.get('listings', {})
+        for listing in listings_map.values():
+            # Use 'tickle' status and 'tickle_at' timestamp
+            if listing.get('status') == 'tickle' and listing.get('tickle_at'):
+                tickle_date = datetime.fromisoformat(listing['tickle_at'])
+                # Check if exactly one week (7 days) has passed
+                if (now - tickle_date).days >= 7:
+                    due_items.append({
+                        'title': listing.get('title', 'Unknown Vehicle'),
+                        'location': listing.get('location', 'Unknown Location'),
+                        'url': listing.get('listing_url'),
+                        'tickle_at': listing.get('tickle_at')
+                    })
                         
         return jsonify({'count': len(due_items), 'items': due_items})
     except Exception as e:
+        print(f"Notification error: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+
+@app.route('/veterans')
+def veterans_page():
+    """Serve the Veteran Buying Page."""
+    return render_template('veterans.html')
+
+
+@app.route('/api/submit_veteran_vehicle', methods=['POST'])
+def submit_veteran_vehicle():
+    """Handle vehicle submissions from veterans."""
+    try:
+        data = request.form.to_dict()
+        files = request.files.getlist('photos')
+        
+        # Log submission
+        app.logger.info(f"Veteran submission: {data}")
+        
+        # Save photos
+        upload_folder = PROJECT_DIR / "uploads" / "veterans"
+        os.makedirs(upload_folder, exist_ok=True)
+        saved_files = []
+        
+
+        # Handle Competitor Offer Photo
+        offer_file = request.files.get('offer_photo')
+        offer_path = None
+        if offer_file and offer_file.filename:
+            filename = secure_filename(offer_file.filename)
+            ts = int(datetime.now().timestamp())
+            filename = f"{ts}_OFFER_{filename}"
+            save_path = upload_folder / filename
+            offer_file.save(save_path)
+            offer_path = str(save_path)
+
+        for file in files:
+            if file and file.filename:
+                filename = secure_filename(file.filename)
+                # Add timestamp to avoid collisions
+                ts = int(datetime.now().timestamp())
+                filename = f"{ts}_{filename}"
+                save_path = upload_folder / filename
+                file.save(save_path)
+                saved_files.append(str(save_path))
+        
+        # Send Alert Email to Admin (Mock Admin Email)
+        admin_email = "admin@barndoor.me" 
+        subject = f"🎖 Veteran Vehicle: {data.get('year')} {data.get('make')} {data.get('model')}"
+        
+        has_offer = "YES" if offer_path else "NO"
+        
+        content = f"""
+        <div style="font-family: sans-serif; padding: 20px; color: #333;">
+            <h2 style="color: #33691e;">New Veteran Vehicle Submission</h2>
+            <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h3 style="margin-top: 0;">Vehicle Details</h3>
+                <p><strong>Vehicle:</strong> {data.get('year')} {data.get('make')} {data.get('model')}</p>
+                <p><strong>Mileage:</strong> {data.get('mileage')}</p>
+                <p><strong>Color:</strong> {data.get('color')}</p>
+                <p><strong>Condition:</strong> {data.get('condition')}/10</p>
+                <p><strong>Photos Uploaded:</strong> {len(saved_files)}</p>
+                <p><strong>Competitor Offer Attached:</strong> {has_offer}</p>
+            </div>
+            
+            <div style="background: #e8f5e9; padding: 15px; border-radius: 5px;">
+                <h3 style="margin-top: 0;">Veteran Contact</h3>
+                <p><strong>Name:</strong> {data.get('owner_name')}</p>
+                <p><strong>Email:</strong> {data.get('owner_email')}</p>
+                <p><strong>Phone:</strong> {data.get('owner_phone')}</p>
+            </div>
+        </div>
+        """
+        send_email(admin_email, subject, content)
+        
+        # Send Confirmation to Veteran
+        vet_subject = "We received your vehicle submission - Barndoor"
+        vet_content = f"""
+        <div style="font-family: sans-serif; padding: 20px; color: #333;">
+            <h2>Submission Received</h2>
+            <p>Dear {data.get('owner_name')},</p>
+            <p>We have received your submission for the <strong>{data.get('year')} {data.get('make')} {data.get('model')}</strong>.</p>
+            <p>Our team is currently reviewing the details against our buying criteria. If your vehicle matches what we are looking for, we will reach out to you shortly with our guaranteed offer.</p>
+            <br>
+            <p>Thank you for your service.</p>
+            <p>The Barndoor Team</p>
+        </div>
+        """
+        send_email(data.get('owner_email'), vet_subject, vet_content)
+        
+        return jsonify({"status": "success"})
+        
+    except Exception as e:
+        app.logger.error(f"Error submitting veteran form: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':
@@ -379,4 +760,4 @@ if __name__ == '__main__':
     threading.Thread(target=open_browser, daemon=True).start()
     
     # Run Flask
-    app.run(host='127.0.0.1', port=5050, debug=False)
+    app.run(host='0.0.0.0', port=5050, debug=False)

@@ -1,0 +1,38 @@
+{
+    "users": [
+        {
+            "email": "gaft90@gmail.com",
+            "password": "utPKvfxBqqkT2_4",
+            "full_name": "Admin User",
+            "role": "admin",
+            "status": "approved",
+            "created_at": "2026-01-25T20:07:45"
+        },
+        {
+            "email": "bodhidixon62@gmail.com",
+            "password": "pass",
+            "full_name": "Bodhidixon62",
+            "role": "user",
+            "status": "approved",
+            "created_at": "2026-01-26T00:17:42.449498"
+        },
+        {
+            "email": "admin@barndoor.me",
+            "password": "password",
+            "full_name": "Admin",
+            "role": "user",
+            "status": "pending",
+            "created_at": "2026-01-26T08:15:21.454455",
+            "reset_token": "322145",
+            "reset_expires": 1769438087.265773
+        },
+        {
+            "email": "test@example.com",
+            "password": "Password123!",
+            "full_name": "Test",
+            "role": "user",
+            "status": "pending",
+            "created_at": "2026-01-27T00:12:39.195268"
+        }
+    ]
+}

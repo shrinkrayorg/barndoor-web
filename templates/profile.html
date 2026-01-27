@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barndoor - My Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #CC0000;
+            --dark-bg: #1a1a1a;
+            --darker-bg: #0d0d0d;
+            --text-light: #ffffff;
+            --text-gray: #b0b0b0;
+            --border-gray: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--dark-bg);
+            border-bottom: 1px solid var(--border-gray);
+            height: 80px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-light);
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 120px auto 40px;
+            padding: 0 40px;
+        }
+
+        .profile-card {
+            background: var(--darker-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 12px;
+            padding: 40px;
+        }
+
+        .section-header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .section-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .section-header p {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-gray);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            padding-right: 40px;
+            background: #2a2a2a;
+            border: 1px solid var(--border-gray);
+            border-radius: 4px;
+            color: var(--text-light);
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            color: #999;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .password-toggle:hover {
+            color: #ccc;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: #aa0000;
+            transform: translateY(-2px);
+        }
+
+        .status-msg {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 24px;
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">BARNDOOR</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="profile-card">
+            <div class="section-header">
+                <h1>My Profile</h1>
+                <p>Update your account details and password</p>
+            </div>
+
+            <div id="status" class="status-msg"></div>
+
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="fullName" value="{{ session.get('user_name', '') }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" value="{{ session.get('user_email', '') }}" required>
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="password" placeholder="••••••••">
+                    <span class="material-icons password-toggle"
+                        onclick="togglePassword('password', this)">visibility_off</span>
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmPassword" placeholder="••••••••">
+                    <span class="material-icons password-toggle"
+                        onclick="togglePassword('confirmPassword', this)">visibility_off</span>
+                    <div id="passwordError"
+                        style="display:none; color: #ef4444; font-size: 12px; margin-top: 8px; font-weight: 500;">
+                        Passwords do not match</div>
+                </div>
+                <button type="submit" class="btn">Update Profile</button>
+            </form>
+
+            <a href="/" class="back-link">
+                <span class="material-icons" style="font-size: 14px; vertical-align: middle;">arrow_back</span>
+                Return to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.textContent = "visibility";
+            } else {
+                input.type = "password";
+                icon.textContent = "visibility_off";
+            }
+        }
+
+        // Real-time validation
+        const p1 = document.getElementById('password');
+        const p2 = document.getElementById('confirmPassword');
+        const err = document.getElementById('passwordError');
+
+        function checkPasswords() {
+            if (p2.value.length > 0 && p1.value.length > 0 && p1.value !== p2.value) {
+                err.style.display = 'block';
+            } else {
+                err.style.display = 'none';
+            }
+        }
+
+        p1.addEventListener('input', checkPasswords);
+        p2.addEventListener('input', checkPasswords);
+
+        document.getElementById('profileForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const status = document.getElementById('status');
+            status.style.display = 'none';
+
+            // Validation
+            if (p1.value !== p2.value) {
+                err.style.display = 'block';
+                status.innerText = 'Passwords do not match';
+                status.className = 'status-msg error';
+                status.style.display = 'block';
+                return;
+            }
+
+            const data = {
+                full_name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const res = await fetch('/api/profile/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+
+                if (res.ok) {
+                    status.innerText = 'Profile updated successfully!';
+                    status.className = 'status-msg success';
+                    status.style.display = 'block';
+                    // Clear passwords
+                    p1.value = '';
+                    p2.value = '';
+                } else {
+                    status.innerText = result.error || 'Error updating profile';
+                    status.className = 'status-msg error';
+                    status.style.display = 'block';
+                }
+            } catch (err) {
+                status.innerText = 'Failed to connect to server';
+                status.className = 'status-msg error';
+                status.style.display = 'block';
+            }
+        };
+    </script>
+</body>
+
+</html>
