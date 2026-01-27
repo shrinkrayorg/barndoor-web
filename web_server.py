@@ -94,6 +94,44 @@ def send_email(to_email, subject, content):
         return False
 
 
+@app.route('/api/ops/seed_db')
+def seed_database():
+    """Seeds MongoDB with data from the local ledger.json file."""
+    try:
+        # Define path explicitly since it might be commented out globally
+        local_db_path = PROJECT_DIR / "database" / "ledger.json"
+        
+        if not local_db_path.exists():
+            return jsonify({'error': 'Local ledger.json not found'}), 404
+            
+        if not mongo_db:
+             return jsonify({'error': 'No MongoDB connection'}), 500
+
+        with open(local_db_path, 'r') as f:
+            data = json.load(f)
+            
+        listings_map = data.get('listings', {})
+        count = 0
+        
+        for doc_id, listing in listings_map.items():
+            # Inject string ID
+            listing['original_id'] = str(doc_id)
+            if 'status' not in listing:
+                listing['status'] = 'active'
+            
+            # Upsert based on original_id or URL to prevent duplicates
+            mongo_db.listings.replace_one(
+                {'original_id': str(doc_id)},
+                listing,
+                upsert=True
+            )
+            count += 1
+            
+        return jsonify({'success': True, 'count': count, 'message': f'Seeded {count} listings to MongoDB'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Handle user login."""
