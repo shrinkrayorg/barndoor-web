@@ -104,7 +104,7 @@ def seed_database():
         if not local_db_path.exists():
             return jsonify({'error': 'Local ledger.json not found'}), 404
             
-        if not mongo_db:
+        if mongo_db is None:
              return jsonify({'error': 'No MongoDB connection'}), 500
 
         with open(local_db_path, 'r') as f:
@@ -403,7 +403,7 @@ def get_status():
             'status': 'running' if running else 'stopped'
         }
         
-        if mongo_db:
+        if mongo_db is not None:
              stats['total_listings'] = mongo_db.listings.count_documents({})
         
         # Get last run from logs
@@ -521,7 +521,7 @@ def get_listings():
     status_filter = request.args.get('status')
     
     try:
-        if not mongo_db:
+        if mongo_db is None:
              # Fallback or empty if no DB connection
              return jsonify({'listings': [], 'total': 0})
 
@@ -558,7 +558,7 @@ def delete_listings():
         if not ids_to_delete:
              return jsonify({'success': True, 'count': 0})
              
-        if not mongo_db:
+        if mongo_db is None:
              return jsonify({'error': 'No Database Connection'}), 500
         
         deleted_count = 0
@@ -609,7 +609,7 @@ def bulk_update_status():
         if not ids_to_update or not new_status:
             return jsonify({'success': True, 'count': 0})
             
-        if not mongo_db:
+        if mongo_db is None:
              return jsonify({'error': 'No Database Connection'}), 500
              
         updated_count = 0
@@ -652,7 +652,7 @@ def update_status():
         url = payload.get('url')
         new_status = payload.get('status')
         
-        if not mongo_db:
+        if mongo_db is None:
              return jsonify({'error': 'No Database Connection'}), 500
             
         update_data = {'status': new_status}
@@ -677,7 +677,7 @@ def update_status():
 def get_notifications():
     """Check for due tickle reminders and return details (MongoDB)."""
     try:
-        if not mongo_db:
+        if mongo_db is None:
             return jsonify({'count': 0, 'items': []})
             
         # Find listings with status 'tickle'
