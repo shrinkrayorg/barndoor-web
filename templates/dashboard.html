@@ -1210,6 +1210,19 @@
             color: var(--text-light);
             /* Restoring text color variable */
             margin: 0;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Hide Vercel Toolbar */
+        vercel-live-feedback,
+        #vercel-toolbar,
+        .vercel-toolbar {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
         }
 
         .carousel-nav {
