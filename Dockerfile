@@ -17,9 +17,8 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers (just to be safe/update)
-RUN playwright install chromium
-RUN playwright install-deps
+# Browsers are already in the base image (because we pin version in requirements.txt)
+# No need to run playwright install
 
 # Copy the rest of the application
 COPY . .

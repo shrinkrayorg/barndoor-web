@@ -12,6 +12,6 @@ schedule
 # rumps (Disabled for Vercel/Linux compatibility)
 # rumps
 flask
-playwright
+playwright==1.44.0
 streamlit
 pandas
