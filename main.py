@@ -51,8 +51,54 @@ def initialize_modules():
     print(f"   ✅ Loaded Profile: {active_config.get('profile_name')}")
     
     # Initialize database
-    db = TinyDB('database/ledger.json')
-    listings_table = db.table('listings')
+    print("\n[0.5/4] initializing Database...")
+    mongo_uri = os.getenv('MONGO_URI')
+    
+    if mongo_uri:
+        print("   ☁️  Using MongoDB (Persistent Cloud Storage)")
+        try:
+            import pymongo
+            import certifi
+            client = pymongo.MongoClient(mongo_uri, tlsCAFile=certifi.where())
+            db_instance = client['barndoor']
+            # Simple Adapter for TinyDB compatibility
+            class MongoAdapter:
+                def __init__(self, collection):
+                    self.collection = collection
+                def search(self, query):
+                    # Query is complex in TinyDB, here we assume it's a URL match from code below
+                    # The code below uses: listings_table.search(Listing.listing_url == clean_url)
+                    # We can't support generic TinyDB queries easily, but we know the exact line calling it.
+                    # HACK: The caller constructs a query. We intercept it in the specialized method below.
+                    return [] # Fallback
+                
+                # Specialized method to replace specific TinyDB usage
+                def get_by_url(self, url):
+                    res = self.collection.find_one({'listing_url': url})
+                    return [res] if res else []
+                
+                def update_by_url(self, url, data):
+                    self.collection.update_one({'listing_url': url}, {'$set': data})
+
+                def insert(self, doc):
+                    self.collection.insert_one(doc)
+                    
+                def update(self, doc, query):
+                    # Legacy support, ideally unused now
+                     print("⚠️ Helper update called unexpectedly")
+
+
+            listings_table = MongoAdapter(db_instance['listings'])
+            db = client # Keep client open
+            
+        except ImportError:
+            print("   ❌ PyMongo not installed. Falling back to TinyDB.")
+            db = TinyDB('database/ledger.json')
+            listings_table = db.table('listings')
+    else:
+        print("   📂 Using TinyDB (Local File Storage)")
+        db = TinyDB('database/ledger.json')
+        listings_table = db.table('listings')
     
     # Initialize Ghost for browser session management
     print("\n[1/4] Initializing Ghost (Browser Session Manager)...")
@@ -246,8 +292,13 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
             listing['listing_url'] = clean_url  # Save clean URL
             
             # Check if listing already exists (by partial URL match)
-            Listing = Query()
-            existing_results = listings_table.search(Listing.listing_url == clean_url)
+            # Support both TinyDB and our MongoAdapter
+            existing_results = []
+            if hasattr(listings_table, 'get_by_url'):
+                 existing_results = listings_table.get_by_url(clean_url)
+            else:
+                 Listing = Query()
+                 existing_results = listings_table.search(Listing.listing_url == clean_url)
             
             if not existing_results:
                 # Add 'batch_history' field
@@ -257,7 +308,7 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
                     'price': listing.get('price')
                 }]
                 listings_table.insert(listing)
-                print(f"  ✓ Saved: {listing.get('title', 'Unknown')}")
+                print(f"  ✓ Saved (New): {listing.get('title', 'Unknown')}")
             else:
                 # Update existing listing
                 existing_item = existing_results[0]
@@ -280,7 +331,11 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
                     'batch_history': history
                 }
                 
-                listings_table.update(update_data, Listing.listing_url == clean_url)
+                if hasattr(listings_table, 'update_by_url'):
+                    listings_table.update_by_url(clean_url, update_data)
+                else:
+                    listings_table.update(update_data, Listing.listing_url == clean_url)
+                    
                 print(f"  ↻ Updated: {listing.get('title', 'Unknown')} (Seen in {len(history)+1} batches)")
         
         # Step 4: Herald sends notifications
