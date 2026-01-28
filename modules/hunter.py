@@ -12,6 +12,8 @@ import random
 import os
 # Import Navigator
 from modules.navigator import Navigator, NavReason
+# Import Enricher
+from modules.bright_data import BrightDataEnricher
 
 # Common User Agents to rotate
 USER_AGENTS = [
@@ -94,13 +96,14 @@ class ScrapeStrategy(ABC):
         self.random_sleep(1.0, 3.0)
 
     @abstractmethod
-    def scrape(self, page: Page, url: str) -> list:
+    def scrape(self, page: Page, url: str, max_hours: float = None) -> list:
         """
         Scrape listings from a page.
         
         Args:
             page: Playwright page object
             url: Target URL to scrape
+            max_hours: Optional filter for listing age
             
         Returns:
             list: List of listing dictionaries
@@ -151,6 +154,7 @@ class FacebookStrategy(ScrapeStrategy):
         """
         super().__init__(navigator)
         self.ghost = ghost
+        self.enricher = BrightDataEnricher()
     
     def login_if_needed(self, page: Page):
         """
@@ -222,27 +226,29 @@ class FacebookStrategy(ScrapeStrategy):
             print(f"   ❌ Auto-Configuration Failed: {e}")
             return "https://www.facebook.com/marketplace/category/vehicles"
 
-    def scrape(self, page: Page, url: str) -> list:
+    def scrape(self, page: Page, url: str, max_hours: float = None, progress_callback=None) -> list:
         """
-        Scrape Facebook Marketplace listings using Deep Loop Strategy.
-        Simulates human behavior by visiting individual item pages.
+        Scrape Facebook Marketplace (Listings -> Enrichment).
+        Uses simple feed scrolling to get URLs, then handles details via Bright Data or simplified extraction.
+        
+        Args:
+            page: Playwright Page object.
+            url: Target URL (search results page).
+            max_hours: Optional filter for listing age.
+            progress_callback: Optional progress callback.
+            
+        Returns:
+            list: List of extracted listing dictionaries.
         """
         listings = []
-        
         try:
-            # Navigate to Feed
             print(f"   Getting {url}...")
-            page.goto(url, wait_until='domcontentloaded', timeout=60000)
-            
-            # Use Ghost Wait for live feed
-            if self.ghost:
-                self.ghost.wait(random.uniform(3.0, 5.0))
-            else:
-                self.random_sleep(3.0, 5.0)
-            
-            # Check if content loaded, otherwise proceed
+            # page.goto(url, wait_until='networkidle', timeout=60000)
+            self.navigate(page, url, NavReason.INITIAL_LOAD)
+
+            # Check for login wall or captcha
             try:
-                page.wait_for_selector('a[href*="/marketplace/item/"]', timeout=5000)
+                page.wait_for_selector('div[role="feed"], div[role="main"], div[data-nosnippet]', timeout=15000)
             except Exception:
                 print("   ⚠️ Content wait timed out, proceeding anyway...")
             
@@ -252,6 +258,9 @@ class FacebookStrategy(ScrapeStrategy):
             
             # Collect Links (Scroll a bit to get a good batch)
             print("   🔍 Scanning feed for potential vehicles...")
+            if progress_callback:
+                progress_callback(0, 0, "Scanning Facebook Feed...")
+                
             unique_links = []
             seen_urls = set()
             
@@ -327,103 +336,30 @@ class FacebookStrategy(ScrapeStrategy):
                 print("   ⚠️ Found 0 links. Taking debug screenshot...")
                 page.screenshot(path="debug_failure.png")
                 
-            print(f"   Found {len(unique_links)} potential listing links. Selecting top 10 for deep inspection.")
+            print(f"   Found {len(unique_links)} potential listing links. Sending to Bright Data for enrichment.")
             
-            # Deep Loop: Visit each item individually
-            # Limit to 10 to simulate realistic human browsing session
-            targets = unique_links[:10]
-            
-            
-            for i, target_url in enumerate(targets):
-                print(f"   [{i+1}/{len(targets)}] Inspecting: {target_url}")
+            # --- CLOUD ENRICHMENT (Bright Data) ---
+            # Instead of visiting locally (risky/slow), send all found links to cloud.
+            if unique_links:
+                # Limit to 20 per batch if needed to control costs/speed, or process all.
+                # Bright Data is fast, so let's process up to 20.
+                targets = unique_links[:20] 
                 
-                # Check for Social Detour (Reduced to 5% to avoid rapid switching - relying on Long Break)
-                if random.random() < 0.05 and self.ghost:
-                    print("   human_behavior: Taking a break to socialize...")
-                    self.ghost.social_detour(page) 
-                    print("   human_behavior: Returning to work.")
-                    # CRITICAL: After detour, ensure we return to work properly
-                    # logic continues below with goto(target_url) which is fine.
+                print(f"   🚀 Triggering cloud batch for {len(targets)} items...")
+                enriched_listings = self.enricher.enrich(targets, progress_callback)
                 
-                try:
-                    # Visit Listing
-                    page.goto(target_url, wait_until='domcontentloaded', timeout=45000)
-                    
-                    # Anti-Drift Check: Did we accidentally land on "Today's Picks" or generic feed?
-                    # This happens if a link is broken or redirects.
-                    # Since we are supposed to be on an item page here (`target_url`), 
-                    # "Today's picks" usually implies we got booted to home.
-                    try:
-                        if page.get_by_text("Today's picks").count() > 0:
-                             print("   ⚠️ Drifted to 'Today's Picks'. Retrying listing...")
-                             page.goto(target_url, wait_until='domcontentloaded')
-                    except:
-                        pass
-                    
-                    if self.ghost:
-                        self.ghost.wait(random.uniform(2.0, 4.0))
-                        
-                        # Simulate reading with ghost scroll
-                        self.ghost.scroll(page, 300)
-                        self.ghost.wait(random.uniform(1.0, 2.0))
-                    else:
-                        self.random_sleep(2.0, 4.0)
-                        page.mouse.wheel(0, 300)
-                        self.random_sleep(1.0, 2.0)
-                    
-                    # Extract Details
-                    listing_data = self._extract_deep_details(page, target_url)
-                    
-                    # --- POST-CLICK VALIDATION (Deep Check) ---
-                    # Sometimes determining factors are only visible in the full description or seller name
-                    if listing_data:
-                        full_text = f"{listing_data.get('title', '')} {listing_data.get('description', '')}".lower()
-                        
-                        # 1. Re-check Dealership Keywords in full text
-                        dealer_keywords = ['llc', 'inc', 'auto group', 'financing', 'down payment', 'warranty', 'dealer']
-                        if any(k in full_text for k in dealer_keywords):
-                             print(f"   ⛔ Rejecting (Dealer Text): {target_url}")
-                             continue
-
-                        # 2. Re-check Rust/Damage in full text
-                        rust_keywords = ['severe rust', 'frame rot', 'rusted out', 'frame damage']
-                        if any(k in full_text for k in rust_keywords):
-                             print(f"   ⛔ Rejecting (Severe Rust): {target_url}")
-                             continue
-                             
-                        # 3. Re-check Vehicle Type in full text
-                        bad_types = ['part out', 'parts only', 'motorcycle', 'scooter', 'boat', 'camper']
-                        if any(k in full_text for k in bad_types):
-                             print(f"   ⛔ Rejecting (Wrong Type): {target_url}")
-                             continue
-
-                    # 72-Hour Freshness Filter
-                    if listing_data and listing_data.get('hours_since_listed') is not None: # Check for None explicitly
-                        hours = listing_data.get('hours_since_listed')
-                        if hours > 72:
-                             print(f"   ⚠️ Stale listing ({hours}h old). Skipping.")
-                             continue
-                    
-                    if listing_data:
-                        raw_listings.append(listing_data)
-                        print(f"   ✅ Collected: {listing_data.get('title', 'Unknown')}")
-                    else:
-                         print("   ⚠️ Failed to extract data.")
-                         
-                    # Cooldown between items
-                    self.random_sleep(3.0, 8.0)
-                    
-                except Exception as e:
-                    print(f"   ❌ Error inspecting item: {e}")
-                    pass # Changed from continue to pass
+                if enriched_listings:
+                    listings.extend(enriched_listings)
+                    print(f"   ✅ Successfully enriched {len(enriched_listings)} items via cloud.")
+                else:
+                    print("   ⚠️ Cloud enrichment returned 0 results.")
             
-            print(f"✓ Deep Scan Complete. Extracted {len(raw_listings)} verified listings") # Changed to raw_listings
-            return raw_listings # Changed from listings
+            return listings
             
         except Exception as e:
             print(f"Error scraping Facebook Marketplace: {e}")
         
-        return raw_listings # Changed from listings
+        return listings
 
     def _extract_deep_details(self, page: Page, url: str) -> dict:
         """Extract details from a specific listing page."""
@@ -493,11 +429,33 @@ class FacebookStrategy(ScrapeStrategy):
                 elif 'week' in unit: hours_since_listed = val * 24.0 * 7.0
             
             # Construct Listing
+            # LOCATION
+            location = "Unknown"
+            
+            # Pattern 1: "Listed X ago in [Location]"
+            listed_in_match = re.search(r'Listed.*?ago in\s+([\w\s,]+)', body_text, re.IGNORECASE)
+            if listed_in_match:
+                location = listed_in_match.group(1).split('\n')[0].strip() # Take first line only
+            
+            # Pattern 2: Explicit "Location is"
+            if location == "Unknown":
+                loc_match = re.search(r'Location is ([\w\s,]+)', body_text, re.IGNORECASE)
+                if loc_match:
+                    location = loc_match.group(1).strip()
+            
+            # Pattern 3: Fallback City, State
+            if location == "Unknown":
+                # Rough heuristic for US cities
+                city_state_match = re.search(r'([A-Z][a-zA-Z\s]+,\s*[A-Z]{2})', body_text[:1000])
+                if city_state_match:
+                        location = city_state_match.group(1).strip()
+
+            # Construct Listing
             return {
                 'title': title,
                 'price': price,
                 'mileage': mileage, 
-                'location': "Unknown", # Extractor needed or use vetting logic
+                'location': location,
                 'description': description,
                 'images': images,
                 'listing_url': url,
@@ -507,6 +465,7 @@ class FacebookStrategy(ScrapeStrategy):
         except Exception as e:
             print(f"Deep extract error: {e}")
             return None
+            
     
     def _extract_facebook_listing(self, page: Page, elem) -> dict:
         """Extract data from a single Facebook listing element."""
@@ -563,13 +522,15 @@ class CraigslistStrategy(ScrapeStrategy):
     Does not require login.
     """
     
-    def scrape(self, page: Page, url: str) -> list:
+    def scrape(self, page: Page, url: str, max_hours: float = None, progress_callback=None) -> list:
         """
         Scrape Craigslist listings.
         
         Args:
             page: Playwright page object
             url: Craigslist search URL
+            max_hours: Optional filter for listing age
+            progress_callback: Optional callback(current, total, status)
             
         Returns:
             list: List of listing dictionaries
@@ -594,19 +555,30 @@ class CraigslistStrategy(ScrapeStrategy):
                 print("⚠️  No listings found with Craigslist selectors")
                 return listings
             
-            print(f"Found {len(listing_elements)} Craigslist listings")
+            total_items = len(listing_elements)
+            print(f"Found {total_items} Craigslist listings")
+            
+            if progress_callback:
+                progress_callback(0, total_items, "Found listings, extracting...")
             
             # Extract data from each listing
-            for elem in listing_elements:
+            for idx, elem in enumerate(listing_elements):
                 try:
                     listing_data = self._extract_craigslist_listing(page, elem)
                     if listing_data and listing_data.get('title'):
                         listings.append(listing_data)
+                    
+                    if progress_callback and idx % 2 == 0:
+                         progress_callback(idx + 1, total_items, f"Extracting {idx+1}/{total_items}")
+                         
                 except Exception as e:
                     print(f"Error extracting Craigslist listing: {e}")
                     continue
             
             print(f"✓ Extracted {len(listings)} Craigslist listings")
+            
+            if progress_callback:
+                 progress_callback(total_items, total_items, "Extraction complete")
             
             # Decoy click?
             if listings and random.random() > 0.8:
@@ -637,10 +609,51 @@ class CraigslistStrategy(ScrapeStrategy):
         meta_text = meta_elem.inner_text().strip() if meta_elem else ""
         
         # Parse meta for location (often last part after separator)
-        # Structure: "1/22 199k mi Village Okla."
-        # We can just treat meta_text as general location/desc context
-        location = meta_text
+        # Structure variants: "Jan 27", "Jan 27 86k mi", "Jan 27 86k mi CityName"
+        # Strategy: Extract Date, Extract Mileage, Remainder is Location
         
+        cleaned_meta = meta_text.replace('\n', ' ').strip()
+        
+        # 1. Extract Date
+        hours_since_listed = 0 # Default to "Fresh" if unknown, or handled by vetting
+        date_pattern = r'^(\d{1,2}/\d{1,2}|\w{3}\s\d{1,2}|\d+\w ago)'
+        date_match = re.search(date_pattern, cleaned_meta)
+        date_str = ""
+        if date_match:
+            date_str = date_match.group(1)
+            # Remove date from string
+            cleaned_meta = cleaned_meta.replace(date_str, '', 1).strip()
+            
+            # Helper to parse date to hours
+            try:
+                if 'ago' in date_str:
+                    rel_match = re.search(r'(\d+)\s*(mins|min|hours|hour|days|day|h|m|d)', date_str, re.IGNORECASE)
+                    if rel_match:
+                        val = float(rel_match.group(1))
+                        unit = rel_match.group(2).lower()
+                        if 'm' in unit: hours_since_listed = val / 60
+                        elif 'h' in unit: hours_since_listed = val
+                        elif 'd' in unit: hours_since_listed = val * 24
+                else:
+                    # Parse "Jan 27" or "1/27" relative to now
+                    now = datetime.now()
+                    # Simple fuzzy logic: assign 24h+ if not today, etc.
+                    # Ideally use dateutil, but manual is fine for rough sort
+                    pass
+            except: pass
+            
+        # 2. Extract Mileage for cleanup (redundant to later mileage extract, but needed for location clean)
+        mi_pattern = r'(\d+(?:k)?\s*mi)'
+        mi_match = re.search(mi_pattern, cleaned_meta, re.IGNORECASE)
+        if mi_match:
+             cleaned_meta = cleaned_meta.replace(mi_match.group(1), '', 1).strip()
+        
+        # 3. Remainder is location
+        location = cleaned_meta.strip(' -·,')
+        if not location:
+            location = "Unknown"
+
+
         # URL
         link_elem = elem.query_selector('a.posting-title')
         listing_url = link_elem.get_attribute('href') if link_elem else ""
@@ -666,7 +679,8 @@ class CraigslistStrategy(ScrapeStrategy):
             'description': meta_text,
             'images': images,
             'listing_url': listing_url,
-            'source': 'craigslist'
+            'source': 'craigslist',
+            'hours_since_listed': hours_since_listed
         }
 
 
@@ -712,6 +726,25 @@ class Hunter:
         for s in self.strategies.values():
             if hasattr(s, 'set_history'):
                 s.set_history(self.global_history)
+
+    def update_progress(self, current, total, status="Scraping"):
+        """Write progress to status file."""
+        try:
+            import json
+            from pathlib import Path
+            status_file = Path('database/scan_status.json')
+            data = {
+                'current': current,
+                'total': total,
+                'percent': int((current / total) * 100) if total > 0 else 0,
+                'status': status,
+                'active': True,
+                'updated_at': datetime.now().isoformat()
+            }
+            with open(status_file, 'w') as f:
+                json.dump(data, f)
+        except:
+            pass
 
     # ... get_domain and get_strategy methods unchanged ...
     # ... scrape_url unchanged ...
@@ -789,13 +822,14 @@ class Hunter:
         print(f"⚠️  No strategy found for domain: {domain}")
         return None
     
-    def scrape_url(self, url: str, browser_context=None) -> list:
+    def scrape_url(self, url: str, browser_context=None, max_hours: float = None) -> list:
         """
         Scrape listings from a single URL using appropriate strategy.
         
         Args:
             url: Target URL to scrape
             browser_context: Optional browser context from Ghost module
+            max_hours: Optional filter for listing age in hours
             
         Returns:
             list: List of listing dictionaries
@@ -819,8 +853,13 @@ class Hunter:
                     browser = p.chromium.launch(headless=False)
                     page = browser.new_page()
             
+            # Progress Callback Wrapper
+            def callback(curr, tot, sts):
+                domain = self.get_domain(url)
+                self.update_progress(curr, tot, f"{domain}: {sts}")
+
             # Execute strategy
-            listings = strategy.scrape(page, url)
+            listings = strategy.scrape(page, url, max_hours=max_hours, progress_callback=callback)
             
             # Close page if we created the browser
             if not browser_context:
@@ -833,12 +872,13 @@ class Hunter:
         
         return listings
     
-    def execute(self, target_urls: list) -> list:
+    def execute(self, target_urls: list, max_hours: float = None) -> list:
         """
         Execute the hunter's main data collection process.
         
         Args:
             target_urls: List of URLs to scrape
+            max_hours: Optional filter for listing age in hours
             
         Returns:
             list: List of raw listing dictionaries from all sources
@@ -856,7 +896,7 @@ class Hunter:
             domain = self.get_domain(url)
             print(f"   Domain: {domain}")
             
-            listings = self.scrape_url(url, browser_context)
+            listings = self.scrape_url(url, browser_context, max_hours=max_hours)
             self.raw_listings.extend(listings)
             print(f"   Found {len(listings)} listings")
         

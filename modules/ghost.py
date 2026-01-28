@@ -175,10 +175,11 @@ class Ghost:
         self.socializer = None
         self.account_creator = None
         self.config = config or {}
+        self.session_file = 'database/session.json'
         
         # Spectator Mode
         self.broadcast_file = "static/live_view.jpg"
-    
+
     def capture_live_frame(self):
         """
         Take a single screenshot for the spectator feed.
@@ -221,12 +222,10 @@ class Ghost:
     
     def get_random_user_agent(self):
         """
-        Generate a random user agent string.
-        
-        Returns:
-            str: Random user agent string
+        Return a stable DESKTOP Chrome user agent.
+        Marketplace frequently fails to hydrate on some mobile/random UAs.
         """
-        return UserAgent().random
+        return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
     
     def load_cookies(self):
         """
@@ -237,9 +236,9 @@ class Ghost:
         """
         # This method is likely deprecated with the new persistent context approach
         # but kept for compatibility if other parts of the code still call it.
-        if os.path.exists('database/session.json'): # Assuming default path if session_file is removed
+        if os.path.exists(self.session_file): # Assuming default path if session_file is removed
             try:
-                with open('database/session.json', 'r') as f:
+                with open(self.session_file, 'r') as f:
                     data = json.load(f)
                     return data.get('cookies', [])
             except Exception as e:
@@ -314,7 +313,8 @@ class Ghost:
             user_agent=user_agent,
             viewport={'width': 1920, 'height': 1080},
             locale='en-US',
-            timezone_id='America/New_York'
+            timezone_id='America/New_York',
+            ignore_https_errors=True
         )
         
         # Load saved cookies if available
@@ -326,6 +326,39 @@ class Ghost:
             except Exception as e:
                 print(f"Warning loading cookies: {e}")
         
+        # INJECT STEALTH SCRIPTS (Anti-Fingerprinting)
+        # This effectively hides the "Robot" flag from the browser
+        stealth_js = """
+            // 1. Pass the Webdriver Test
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined,
+            });
+
+            // 2. Mock Plugins (Chrome usually has these)
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5],
+            });
+            
+            // 3. Mock Languages
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['en-US', 'en'],
+            });
+
+            // 4. Overwrite permissions (Notifications usually 'denied' or 'prompt' by default)
+            const originalQuery = window.navigator.permissions.query;
+            window.navigator.permissions.query = (parameters) => (
+                parameters.name === 'notifications' ?
+                Promise.resolve({ state: Notification.permission }) :
+                originalQuery(parameters)
+            );
+            
+            // 5. Add Chrome Runtime (missing in headless)
+            window.chrome = {
+                runtime: {}
+            };
+        """
+        self.context.add_init_script(stealth_js)
+
         # INJECT VISUAL CURSOR (User Request - CRITICAL)
         cursor_js = """
             // Visual Cursor Injection for Spectator Mode

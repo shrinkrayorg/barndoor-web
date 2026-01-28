@@ -138,16 +138,33 @@ class Herald:
         Returns:
             str: Formatted message text
         """
+    def format_alert_message(self, listing):
+        """
+        Format a listing into an SMS alert message.
+        """
         title = listing.get('title', 'Unknown Vehicle')
         price = listing.get('price', 0)
         score = listing.get('score', 0)
         url = listing.get('listing_url', 'No URL')
         
-        # Truncate title if too long
-        if len(title) > 40:
-            title = title[:37] + '...'
+        # Tags indicator
+        tags = listing.get('tags', [])
+        tag_str = ""
+        if 'fresh_listing' in tags: tag_str += "🔥FRESH "
+        if 'high_value_make' in tags or 'high_value_model' in tags: tag_str += "💎GEM "
         
-        message = f"🚗 BARNFIND ALERT: {title} - ${price:,} - Score: {score} - {url}"
+        # Phone Numbers
+        phone_numbers = listing.get('phone_numbers', [])
+        contact_info = ""
+        if phone_numbers:
+            contact_info = f"\n📞 CALL: {', '.join(phone_numbers)}"
+        
+        # Truncate title if too long
+        if len(title) > 30:
+            title = title[:27] + '...'
+        
+        # Format
+        message = f"{tag_str}{title} - ${price:,} (Score: {score}){contact_info}\n{url}"
         return message
     
     def format_digest_email(self):

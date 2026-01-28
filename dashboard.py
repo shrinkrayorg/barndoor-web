@@ -155,13 +155,19 @@ def render_data_explorer():
         # Get existing targets
         current_targets = current_config.get('target_urls', '')
         
+        # Normalize list to string if needed
+        if isinstance(current_targets, list):
+            current_targets = "\n".join(current_targets)
+        
         # If the user has "50 mile..." text that isn't a URL, show a warning
-        if current_targets and not current_targets.startswith("http"):
-            st.warning("⚠️ That doesn't look like a link!")
+        if current_targets and not current_targets.strip().startswith("http"):
+            # Check if any line starts with http if it's multiline
+            if not any(line.strip().startswith("http") for line in current_targets.split('\n') if line.strip()):
+                st.warning("⚠️ That doesn't look like a valid link!")
         
         new_targets = st.text_area(
             "Target URLs (One per line)",
-            value=current_targets.replace(',', '\n') if current_targets else "",
+            value=current_targets,
             placeholder="https://www.facebook.com/marketplace/chicago/cars",
             height=100
         )

@@ -1,3 +1,4 @@
+import argparse
 """
 Main execution script for the Barnfind data processing application.
 Orchestrates the Hunter, Vetter, Ghost, and Herald modules for automated vehicle market analysis.
@@ -6,7 +7,7 @@ Runs on a schedule: every 10 minutes for pipeline execution, midnight for daily 
 from modules import Hunter, Vetter, Ghost, Herald
 from tinydb import TinyDB, Query
 from database.config_db import ConfigDB
-from datetime import datetime
+from datetime import datetime, timedelta
 import schedule
 import time
 import sys
@@ -127,14 +128,36 @@ def check_and_rotate_session():
         print(f"   ✅ Session Rotated. Next swap in {int(session_rotation_interval/60)} mins.")
 
 
-def run_pipeline():
+def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
     """
     Scheduled job that runs the entire pipeline.
     Checks rotation policy before execution.
+    Args:
+        manual_mode (bool): If True, bypasses some checks.
+        max_hours (float): If set, filters listings by age.
+        source_filter (str): If set, only scrapes URLs containing this string.
     """
     check_and_rotate_session()
     print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 Starting Pipeline Run...")
     
+    # Initialize Status File for UI Progress
+    try:
+        import json
+        from pathlib import Path
+        status_file = Path('database/scan_status.json')
+        with open(status_file, 'w') as f:
+            json.dump({
+                'active': True,
+                'status': 'Starting...',
+                'percent': 0,
+                'current': 0,
+                'total': 0,
+                'source': source_filter or 'All',
+                'updated_at': datetime.now().isoformat()
+            }, f)
+    except Exception as e:
+        print(f"⚠️ Failed to init status file: {e}")
+
     # Initialize database locally to ensure fresh read/write (avoid cache issues with web server)
     db = TinyDB('database/ledger.json')
     listings_table = db.table('listings')
@@ -149,12 +172,20 @@ def run_pipeline():
             if new_url:
                 active_config['target_urls'] = new_url
                 # Persist if needed, or just use in memory for session
-            
-        target_urls = active_config.get('target_urls', '').split(',')
+        raw_target_urls = active_config.get('target_urls', '')
+        if isinstance(raw_target_urls, list):
+            target_urls = [u.strip() for u in raw_target_urls if isinstance(u, str) and u.strip()]
+        else:
+            target_urls = [u.strip() for u in str(raw_target_urls).split(',') if u.strip()]
         target_urls = [url.strip() for url in target_urls if url.strip()]
         
+        # Apply Source Filter
+        if source_filter:
+            print(f"   🎯 Filtering targets by source: '{source_filter}'")
+            target_urls = [url for url in target_urls if source_filter.lower() in url.lower()]
+
         if not target_urls:
-            print("⚠️ No target URLs configured in active profile.")
+            print("⚠️ No target URLs configured (or none matched source filter).")
             return
             
         # --- BATCH TRACKING (HURRICANE PROTOCOL) ---
@@ -171,7 +202,7 @@ def run_pipeline():
         
         # Use Hunter's execute method with batch info
         # Hunter must accept batch_id/name and tag listings
-        raw_listings = hunter.execute(target_urls)
+        raw_listings = hunter.execute(target_urls, max_hours=max_hours)
         
         # Inject Batch Info into listings before vetting
         for l in raw_listings:
@@ -193,8 +224,21 @@ def run_pipeline():
         # Step 3: Save to database
         print("\n💾 STEP 3: Saving approved listings to database...")
         for listing in processed_listings:
-            # Add timestamp
+            # Add timestamp and default status
             listing['processed_at'] = datetime.now().isoformat()
+            if 'status' not in listing:
+                listing['status'] = 'active'
+                
+            # Calculate absolute listed_at time
+            hours_ago = listing.get('hours_since_listed')
+            if hours_ago is not None:
+                try:
+                    listed_dt = datetime.now() - timedelta(hours=float(hours_ago))
+                    listing['listed_at'] = listed_dt.isoformat()
+                except:
+                    listing['listed_at'] = listing['processed_at']
+            else:
+                listing['listed_at'] = listing['processed_at']
             
             # Normalize URL for deduplication (strip query params)
             raw_url = listing.get('listing_url', '')
@@ -368,15 +412,45 @@ def create_facebook_account(first_name, last_name, email, password, phone_number
 
 def main():
     """
+
     Main execution function with scheduler.
     Runs the pipeline every 10 minutes and sends daily digest at midnight.
     Also runs random social activity to simulate human behavior.
     """
     # Initialize all modules
     initialize_modules()
+    # CLI flags
+    parser = argparse.ArgumentParser(add_help=True)
+    parser.add_argument('--once', action='store_true', help='Run pipeline once and exit (no scheduler loop).')
+    parser.add_argument('--manual', action='store_true', help='Indicate a manual run.')
+    parser.add_argument('--hours', type=float, default=None, help='Filter by hours since listed.')
+    parser.add_argument('--source', type=str, default=None, help='Filter by source (facebook or craigslist).')
+    args, _ = parser.parse_known_args()
+
     
+    if args.once or args.manual:
+        print(f"\n🚀 Running one-shot pipeline (Manual: {args.manual}, Max Hours: {args.hours}, Source: {args.source})...")
+        run_pipeline(manual_mode=args.manual, max_hours=args.hours, source_filter=args.source)
+        return
+
     # Schedule the pipeline to run every 10 minutes
-    schedule.every(10).minutes.do(run_pipeline)
+    # We define a wrapper to check the auto-run flag
+    def scheduled_job():
+        # Check settings for auto-run flag
+        try:
+            settings_path = Path("database/settings.json")
+            if settings_path.exists():
+                with open(settings_path, 'r') as f:
+                    settings = json.load(f)
+                    if not settings.get('auto_scrape_enabled', True):
+                        print("\n⏸️  Auto-run skipped (Disabled in Settings)")
+                        return
+        except Exception:
+            pass # Default to running if check fails
+            
+        run_pipeline()
+
+    schedule.every(10).minutes.do(scheduled_job)
     
     # Schedule the daily digest to run at midnight
     schedule.every().day.at("00:00").do(send_daily_digest)
@@ -386,15 +460,17 @@ def main():
     
     print("\n📅 SCHEDULER STARTED")
     print("=" * 60)
-    print("⏰ Pipeline runs every 10 minutes")
+    print("⏰ Pipeline runs every 10 minutes (if enabled)")
     print("📧 Daily digest email sent at midnight")
     print("🎭 Social activity runs at random intervals (1-4 hours)")
     print("Press Ctrl+C to stop")
     print("=" * 60)
     
-    # Run pipeline immediately on startup
-    print("\n🚀 Running initial pipeline...")
-    run_pipeline()
+    # Run pipeline immediately on startup ONLY if not disabled
+    # (Optional: or just wait for first schedule. Let's run once to be safe, 
+    # but check flag first)
+    print("\n🚀 Checking initial pipeline run...")
+    scheduled_job()
     
     # Keep the scheduler running
     try:

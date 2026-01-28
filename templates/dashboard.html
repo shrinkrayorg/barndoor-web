@@ -2342,6 +2342,110 @@
                     <span class="material-icons">search</span>
                     APPLY FILTERS
                 </button>
+
+                <!-- Scanner Controls Panel -->
+                <div class="scrape-ops-panel"
+                    style="margin-top: 20px; border: 1px solid #ddd; background: #fff; border-radius: 4px; overflow: hidden;">
+                    <div class="ops-header"
+                        style="background: linear-gradient(180deg, #cc0000 0%, #aa0000 100%); color: white; padding: 10px 15px; font-weight: 700; font-family: 'Roboto Condensed', sans-serif; display: flex; align-items: center; justify-content: space-between;">
+                        <span>SCANNER CONTROLS</span>
+                        <div class="live-indicator" id="live-indicator"></div>
+                    </div>
+
+                    <div class="ops-content" style="padding: 15px;">
+
+                        <!-- Auto-Run Section -->
+                        <div class="control-section"
+                            style="border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <label style="font-size: 13px; font-weight: 700; color: #333;">Auto-Run Schedule</label>
+                                <label class="switch" style="transform: scale(0.8);">
+                                    <input type="checkbox" id="auto-scrape-toggle" onchange="toggleAutoScrape(this)">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <p style="font-size: 11px; color: #777; margin: 0; line-height: 1.3;">
+                                Automatically scans for new listings every 10 minutes when enabled. Uncheck to pause
+                                background scanning.
+                            </p>
+                        </div>
+
+                        <!-- Manual Trigger Section -->
+                        <div class="control-section">
+                            <label
+                                style="font-size: 11px; font-weight: 700; color: #666; display: block; margin-bottom: 5px; text-transform: uppercase;">Manual
+                                Trigger</label>
+
+                            <select id="scrape-hours"
+                                style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; margin-bottom: 8px; background: #f9f9f9;">
+                                <option value="0.5">Last 30 Mins (Fast)</option>
+                                <option value="24" selected>Last 24 Hours</option>
+                                <option value="48">Last 48 Hours</option>
+                                <option value="72">Last 72 Hours</option>
+                                <option value="">All Listings (Slow)</option>
+                            </select>
+
+                            <div style="display: flex; gap: 8px;">
+                                <div style="flex: 1; text-align: center;">
+                                    <button onclick="triggerManualScrape('facebook')"
+                                        style="width: 100%; background: #1877F2; color: white; border: none; padding: 8px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                        <span class="material-icons" style="font-size: 14px;">facebook</span>
+                                        SCAN FB
+                                    </button>
+                                    <div id="status-facebook"
+                                        style="color: #27ae60; font-size: 10px; font-weight: 700; margin-top: 4px; min-height: 14px;">
+                                    </div>
+                                </div>
+
+                                <div style="flex: 1; text-align: center;">
+                                    <button onclick="triggerManualScrape('craigslist')"
+                                        style="width: 100%; background: #5a32a3; color: white; border: none; padding: 8px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                        <span class="material-icons" style="font-size: 14px;">list_alt</span>
+                                        SCAN CL
+                                    </button>
+                                    <div id="status-craigslist"
+                                        style="color: #27ae60; font-size: 10px; font-weight: 700; margin-top: 4px; min-height: 14px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="scrape-status"
+                                style="font-size: 10px; margin-top: 4px; text-align: center; color: #888; height: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: none;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    // Poll for progress
+                    setInterval(async () => {
+                        try {
+                            const res = await fetch('/api/ops/progress');
+                            const data = await res.json();
+
+                            const fbStatus = document.getElementById('status-facebook');
+                            const clStatus = document.getElementById('status-craigslist');
+
+                            // Reset both
+                            if (fbStatus) fbStatus.innerText = '';
+                            if (clStatus) clStatus.innerText = '';
+
+                            // Only show if active and not Idle
+                            if (data.active && data.status !== 'Idle' && !data.status.includes('Stale')) {
+                                const percentStr = data.percent + '%';
+
+                                // Update specific source
+                                if (data.source === 'facebook') {
+                                    if (fbStatus) fbStatus.innerText = percentStr;
+                                } else if (data.source === 'craigslist') {
+                                    if (clStatus) clStatus.innerText = percentStr;
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Progress poll error", e);
+                        }
+                    }, 2000);
+                </script>
             </aside>
 
             <!-- Main Content - Results -->
@@ -2629,6 +2733,14 @@
                     const locText = `${dealSettings.location.city_state} • ${dealSettings.location.radius}mi`;
                     const el = document.getElementById('criteriaLocation');
                     if (el) el.textContent = locText;
+                }
+
+                // Initialize Auto-Scrape Toggle
+                const toggle = document.getElementById('auto-scrape-toggle');
+                if (toggle && dealSettings.auto_scrape_enabled !== undefined) {
+                    toggle.checked = dealSettings.auto_scrape_enabled;
+                } else if (toggle) {
+                    toggle.checked = true; // Default to true if not set
                 }
             } catch (e) {
                 console.error("Failed to load settings", e);
@@ -3172,6 +3284,7 @@
                             <th>Mileage</th>
                             <th>Accidents</th>
                             <th>Location</th>
+                            <th>Listed</th>
                             <th>Date Sourced</th>
                             <th>Source</th>
                             <th>DQM</th>
@@ -3247,6 +3360,7 @@
                             <td>${milesDisplay}</td>
                             <td>${accidents}</td>
                             <td>${location}</td>
+                            <td style="font-size: 11px;">${v.listed_at ? new Date(v.listed_at).toLocaleString([], { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown'}</td>
                             <td>${date}</td>
                             <td><span class="source-badge">${source}</span></td>
                             <td><span class="dqm-badge ${scoreClass}">${score}</span></td>
@@ -3361,6 +3475,59 @@
 
 
 
+        // --- SCRAPE CONTROLS ---
+
+        async function triggerManualScrape(source) {
+            const hoursVal = document.getElementById('scrape-hours').value;
+            const statusDiv = document.getElementById('scrape-status');
+
+            statusDiv.innerText = `Starting ${source || 'manual'} scan...`;
+            statusDiv.style.color = "#0066cc";
+
+            try {
+                const res = await fetch('/api/ops/scrape', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hours: hoursVal, source: source })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    statusDiv.innerText = `Scan started! (${source ? source.toUpperCase() : 'ALL'})`;
+                    statusDiv.style.color = "green";
+                    setTimeout(() => {
+                        statusDiv.innerText = "Running in background...";
+                        statusDiv.style.color = "#888";
+                    }, 5000);
+                } else {
+                    statusDiv.innerText = "Error: " + (data.error || "Unknown");
+                    statusDiv.style.color = "red";
+                }
+            } catch (e) {
+                console.error(e);
+                statusDiv.innerText = "Request failed.";
+                statusDiv.style.color = "red";
+            }
+        }
+
+        async function toggleAutoScrape(toggle) {
+            const enabled = toggle.checked;
+            // TODO: Implement persistent setting update here if needed
+            // For now just console log, backend setting update endpoint needed ideally
+            console.log("Auto Scrape Toggled:", enabled);
+
+            try {
+                await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ auto_scrape_enabled: enabled })
+                });
+            } catch (e) {
+                console.error("Failed to update auto-scrape setting", e);
+                // Revert toggle if failed
+                toggle.checked = !enabled;
+            }
+        }
         // Save functionality helper
         function toggleSave(id, event) {
             if (event) event.stopPropagation();
@@ -3416,6 +3583,7 @@
                     if (f === 'year') return extractYear(item.title);
                     if (f === 'make') return extractMake(item.title) || '';
                     if (f === 'date') return item.processed_at || '';
+                    if (f === 'listed_at') return item.listed_at || '';
                     return item[f] || '';
                 };
 
@@ -3478,6 +3646,7 @@
                                 <th onclick="sortTable('mileage')" style="cursor:pointer">Mileage ${getArrow('mileage')}</th>
                                 <th>Accidents</th>
                                 <th onclick="sortTable('location')" style="cursor:pointer">Location ${getArrow('location')}</th>
+                                <th onclick="sortTable('listed_at')" style="cursor:pointer">Listed ${getArrow('listed_at')}</th>
                                 <th onclick="sortTable('date')" style="cursor:pointer">Date Sourced ${getArrow('date')}</th>
                                 <th onclick="sortTable('source')" style="cursor:pointer">Source ${getArrow('source')}</th>
                                 <th onclick="sortTable('dealScore')" style="cursor:pointer">DQM ${getArrow('dealScore')}</th>
@@ -3533,6 +3702,7 @@
                         <td>${milesDisplay}</td>
                         <td>${accidents}</td>
                         <td>${location}</td>
+                        <td style="font-size: 11px; white-space: nowrap;">${v.listed_at ? new Date(v.listed_at).toLocaleString([], { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown'}</td>
                         <td>${date}</td>
                         <td><span class="source-badge">${source}</span></td>
                         <td><span class="dqm-badge ${scoreClass}">${score}</span></td>

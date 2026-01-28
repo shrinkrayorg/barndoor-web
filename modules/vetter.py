@@ -63,129 +63,189 @@ class Vetter:
              matches = re.findall(p, text)
              nums.extend(matches)
          return list(set([n.strip() for n in nums]))
-
     def apply_hard_filters(self, listing):
-        """Apply hard filters."""
-        description_lower = listing.get('description', '').lower()
-        salvage_keywords = ['salvage', 'rebuilt', 'branded']
-        if any(keyword in description_lower for keyword in salvage_keywords):
-            return False, "salvage_title"
-        
-        location = listing.get('location', '')
+        """Apply hard filters based on database/settings.json."""
+        description_lower = (listing.get('description', '') or '').lower()
+        title_lower = (listing.get('title', '') or '').lower()
+        combined_text = f"{title_lower} {description_lower}"
+
+        filters_cfg = (self.config or {}).get("filters", {}) if isinstance(self.config, dict) else {}
+
+        # 1) Excluded types (optional)
+        excluded_types = [t.lower() for t in filters_cfg.get("excluded_types", []) if isinstance(t, str)]
+        if excluded_types and any(t in combined_text for t in excluded_types):
+            return False, "excluded_vehicle_type"
+
+        # 2) Deal breakers / hard rejects (salvage/branded/rollback etc.)
+        reject_title = [k.lower() for k in filters_cfg.get("reject_title_keywords", []) if isinstance(k, str)]
+        reject_desc  = [k.lower() for k in filters_cfg.get("reject_description_keywords", []) if isinstance(k, str)]
+        reject_rust  = [k.lower() for k in filters_cfg.get("reject_rust_keywords", []) if isinstance(k, str)]
+
+        if reject_title and any(k in combined_text for k in reject_title):
+            return False, "reject_title_keyword"
+        if reject_desc and any(k in combined_text for k in reject_desc):
+            return False, "reject_description_keyword"
+        if reject_rust and any(k in combined_text for k in reject_rust):
+            return False, "reject_rust_keyword"
+
+        # 3) Location radius check
+        location = listing.get('location', '') or ''
         if location:
             distance = self.calculate_distance(location)
             if distance and distance > self.geo_radius_miles:
                 return False, f"too_far_{int(distance)}_miles"
+
         return True, "passed"
 
     def apply_valuation_check(self, listing):
         return True
-
     def calculate_score(self, listing):
         """
-        Calculate quality score using dynamic weights from settings.json.
+        Calculate quality score using database/settings.json.
+        Keeps the existing heuristics but pulls lists/weights from settings.json.
         """
-        score = 50  # Starting score
+        score = 50
         tags = []
-        
-        # Get settings
-        weights = self.config.get('score_weights', {})
-        lists = self.config.get('lists', {})
-        
-        # Parse Lists (defaults if empty)
-        tier1_makers = lists.get('high_value_makes') or ['toyota', 'honda', 'subaru']
-        tier2_makers = lists.get('medium_value_makes') or ['mazda', 'hyundai']
-        tier3_makers = lists.get('low_value_makes') or ['nissan', 'ford', 'chevy']
-        
-        # Normalize lists
-        tier1_makers = [x.lower() for x in tier1_makers]
-        tier2_makers = [x.lower() for x in tier2_makers]
-        tier3_makers = [x.lower() for x in tier3_makers]
 
-        description_lower = listing.get('description', '').lower()
-        title_lower = listing.get('title', '').lower()
-        combined_text = description_lower + ' ' + title_lower
-        
-        # Extract attributes
+        cfg = self.config if isinstance(self.config, dict) else {}
+        lists_cfg = cfg.get("lists", {}) or {}
+        weights = cfg.get("score_weights", {}) or {}
+
+        high_value = [str(x).lower() for x in lists_cfg.get("high_value_makes", [])]
+        medium_value = [str(x).lower() for x in lists_cfg.get("medium_value_makes", [])]
+        low_value = [str(x).lower() for x in lists_cfg.get("low_value_makes", [])]
+
+        description_lower = (listing.get('description', '') or '').lower()
+        title_lower = (listing.get('title', '') or '').lower()
+        combined_text = f"{description_lower} {title_lower}"
+
         year = self._extract_year(combined_text)
-        mileage = listing.get('mileage', 0)
+        mileage = listing.get('mileage', 0) or 0
+        price = listing.get('price', 0) or 0
         make = self._extract_make(combined_text)
         vehicle_type = self._extract_type(combined_text)
-        
-        # --- Dynamic Scoring ---
-        
-        # Make Tiers
-        if make:
-            make_lower = make.lower()
-            if any(m in make_lower for m in tier1_makers):
-                score += 40
-                tags.append('tier1_make')
-            elif any(m in make_lower for m in tier2_makers):
-                score += 25
-                tags.append('tier2_make')
-            elif any(m in make_lower for m in tier3_makers):
-                # Penalty only if high mileage/old
-                if year and year <= 2012 and mileage > 80000:
-                    score -= 20
-                    tags.append('tier3_risk')
-                else:
-                    score += 5
-        
-        # Vehicle Type Bonuses (Dynamic)
-        if vehicle_type == 'pickup':
-            bonus = weights.get('type_pickup', 10)
-            score += bonus
-            tags.append('pickup_bonus')
-            
-        if vehicle_type == 'minivan':
-            bonus = weights.get('type_minivan', 20)
-            score += bonus
-            tags.append('minivan_bonus')
-            
-        # Feature Bonuses (Dynamic)
-        handicap_keywords = ['handicap', 'wheelchair', 'ramp']
-        if any(k in combined_text for k in handicap_keywords):
-            bonus = weights.get('type_handicap', 30)
-            score += bonus
-            tags.append('handicap_access')
-            
-        if 'v8' in combined_text:
-            bonus = weights.get('engine_v8', 10)
-            score += bonus
-            tags.append('v8_engine')
-        
-        # Condition Penalties (Static for now, could move to config too)
-        mechanical_issues = ['needs engine', 'transmission issue', 'rod knock', 'tow away']
-        if any(issue in combined_text for issue in mechanical_issues):
-            score -= 50
-            tags.append('mechanical_issue')
-        
-        # Spanish & Emoji Penalties (User Request 2026-01-24)
+
+        # --- Junk SUV suppression (allow only if super cheap) ---
+        filters_cfg = cfg.get("filters", {}) or {}
+        junk_keywords = [str(x).lower() for x in filters_cfg.get("junk_suv_keywords", [])]
+        junk_override = int(filters_cfg.get("junk_suv_price_override", 1000) or 1000)
+
+        is_junk_suv = False
+        # Detect: SUV or common SUV body phrasing + keyword match
+        if ("suv" in combined_text or vehicle_type == "suv") and junk_keywords:
+            if any(k in combined_text for k in junk_keywords):
+                is_junk_suv = True
+
+        if is_junk_suv:
+            if price <= junk_override:
+                # allow but never prioritize
+                score = min(score, 30)
+                tags.append("junk_suv_super_cheap")
+            else:
+                # suppress hard: no alerts, effectively non-viable margin
+                score -= 80
+                tags.append("junk_suv_suppressed")
+
+        # --- 1) Low-value logic (down-rank; reject unless "value is in the hundreds") ---
+        is_low_value = any(m in combined_text for m in low_value)
+        if is_low_value:
+            if price > 1500:
+                score -= 100
+                tags.append("reject_low_value_model")
+            else:
+                score -= 10
+                tags.append("cheap_low_value_model")
+
+        # --- 2) High/Medium value logic ---
+        is_high_value = False
+        if any(h in combined_text for h in high_value):
+            score += 15
+            tags.append("high_value_keyword")
+            is_high_value = True
+        elif make and any(make == h for h in high_value):
+            score += 15
+            tags.append("high_value_make")
+            is_high_value = True
+        elif any(m in combined_text for m in medium_value):
+            score += 5
+            tags.append("medium_value_keyword")
+
+        # --- 3) Freshness bonus ---
+        hours_since_listed = listing.get('hours_since_listed')
+        if hours_since_listed is not None and hours_since_listed < 1.0:
+            score += 25
+            tags.append("fresh_listing")
+        elif hours_since_listed is not None and hours_since_listed < 24.0:
+            score += 10
+            tags.append("daily_listing")
+
+        # --- 4) Year/Mileage preference ---
+        if year:
+            if year >= 2010:
+                score += 10
+                tags.append("modern_year")
+            elif year < 2005 and not is_high_value:
+                score -= 10
+                tags.append("older_non_high_value")
+
+        if mileage > 0:
+            if mileage <= 120000:
+                score += 15
+                tags.append("low_mileage")
+            elif mileage > 180000 and not is_high_value:
+                score -= 20
+                tags.append("high_mileage_risk")
+
+        # --- 5) Engine/type bonuses from weights ---
+        if "v8" in combined_text:
+            score += int(weights.get("engine_v8", 10))
+            tags.append("v8_engine")
+
+        if vehicle_type == "pickup":
+            score += int(weights.get("type_pickup", 15))
+            tags.append("pickup_truck")
+        elif vehicle_type == "minivan":
+            score += int(weights.get("type_minivan", 15))
+            tags.append("minivan")
+            if any(k in combined_text for k in ["handicap", "wheelchair", "mobility", "ramp"]):
+                score += int(weights.get("type_handicap", 40))
+                tags.append("handicap_accessible")
+
+
+        # --- Repair tolerance logic (dealer-realistic) ---
+        # Allow common AWD / traction faults and normal $1500 repairs
+        repair_tolerance = 2000
+        estimated_repairs = 0
+
+        if any(k in combined_text for k in ["awd fault", "traction control", "stability control", "abs light"]):
+            estimated_repairs += 500
+            tags.append("awd_or_sensor_issue")
+
+        if any(k in combined_text for k in ["rough shift", "hesitation"]):
+            estimated_repairs += 1000
+            tags.append("minor_transmission_issue")
+
+        if estimated_repairs > repair_tolerance:
+            score -= 30
+            tags.append("repair_cost_exceeds_tolerance")
+        # --- 6) Spanish/emoji checks (kept) ---
         spanish_keywords = [
-            'titulo', 'trasmision', 'limpio', 'llantas', 'negociable', 
-            'asientos', 'falla', 'luces', 'corre', 'conduce', 'motor', 
-            'aire', 'frio', 'caliente', 'genial', 'al 100'
+            "titulo", "trasmision", "limpio", "llantas", "negociable",
+            "asientos", "falla", "luces", "corre", "conduce", "motor",
+            "aire", "frio", "caliente", "genial", "al 100"
         ]
-        
-        # Check for Spanish
         spanish_count = sum(1 for word in spanish_keywords if word in description_lower)
-        if spanish_count >= 2: # Threshold to avoid false positives on cognates like 'motor'
-            penalty = weights.get('spanish_description_penalty', -20)
-            score += penalty # Add the negative value
-            tags.append('spanish_description_penalty')
-            
-        # Check for excessive Emojis
-        # Simple regex for common emoji ranges and specific ones seen in screenshot
-        # Matches most 4-byte unicode characters which include emojis
-        emoji_pattern = re.compile(r'[\U00010000-\U0010ffff]', flags=re.UNICODE)
-        emojis_found = emoji_pattern.findall(combined_text)
-        
-        if len(emojis_found) > 4:
-            score -= 20
-            tags.append('excessive_emojis')
-        
+        if spanish_count >= 2:
+            score -= 10
+            tags.append("spanish_description")
+
+        emoji_pattern = re.compile(r"[\U00010000-\U0010ffff]", flags=re.UNICODE)
+        if len(emoji_pattern.findall(combined_text)) > 4:
+            score -= 10
+            tags.append("excessive_emojis")
+
         return score, tags
-    
+
     def _extract_year(self, text):
         """Extract vehicle year from text."""
         year_match = re.search(r'\b(19\d{2}|20[0-2]\d)\b', text)

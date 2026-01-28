@@ -429,9 +429,22 @@ def handle_settings():
     """Get or update deal quality settings."""
     if request.method == 'POST':
         try:
-            new_settings = request.json
+            updates = request.json
+            current_settings = {}
+            
+            # Load existing
+            if SETTINGS_PATH.exists():
+                with open(SETTINGS_PATH, 'r') as f:
+                    try:
+                        current_settings = json.load(f)
+                    except:
+                        pass # Corrupt file, start fresh
+            
+            # Merge updates
+            current_settings.update(updates)
+            
             with open(SETTINGS_PATH, 'w') as f:
-                json.dump(new_settings, f, indent=4)
+                json.dump(current_settings, f, indent=4)
             return jsonify({'success': True})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
@@ -521,28 +534,49 @@ def get_listings():
     status_filter = request.args.get('status')
     
     try:
-        if mongo_db is None:
-             # Fallback or empty if no DB connection
-             return jsonify({'listings': [], 'total': 0})
-
-        query = {}
-        if status_filter:
-            query['status'] = status_filter
-            
-        # Sort by most recent? Default natural order or add sort
-        cursor = mongo_db.listings.find(query)
-        
-        results = []
-        for doc in cursor:
-            # Inject string ID for frontend (use _id)
-            doc['id'] = str(doc['_id'])
-            del doc['_id']
-            
-            if 'status' not in doc:
-                doc['status'] = 'active'
-            results.append(doc)
+        # 1. MongoDB Strategy
+        if mongo_db is not None:
+            query = {}
+            if status_filter:
+                query['status'] = status_filter
                 
-        return jsonify({'listings': results, 'total': len(results)})
+            cursor = mongo_db.listings.find(query)
+            
+            results = []
+            for doc in cursor:
+                doc['id'] = str(doc['_id'])
+                del doc['_id']
+                if 'status' not in doc: doc['status'] = 'active'
+                results.append(doc)
+            return jsonify({'listings': results, 'total': len(results)})
+
+        # 2. Local Ledger Strategy (Fallback)
+        local_db_path = PROJECT_DIR / "database" / "ledger.json"
+        if local_db_path.exists():
+            with open(local_db_path, 'r') as f:
+                data = json.load(f)
+            
+            # TinyDB structure: {"listings": {"ID": {...}, "ID": {...}}}
+            listings_map = data.get('listings', {})
+            results = []
+            
+            for doc_id, listing in listings_map.items():
+                listing['id'] = str(doc_id)
+                # Default status to 'active' if missing
+                if 'status' not in listing:
+                    listing['status'] = 'active'
+                
+                # Filter by status if requested
+                if status_filter:
+                   if listing['status'] != status_filter:
+                       continue
+                
+                results.append(listing)
+                
+            return jsonify({'listings': results, 'total': len(results)})
+            
+        return jsonify({'listings': [], 'total': 0})
+
     except Exception as e:
         print(f"Error serving listings: {e}") 
         return jsonify({'error': str(e)}), 500
@@ -644,6 +678,37 @@ def bulk_update_status():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/ops/scrape', methods=['POST'])
+def trigger_scrape():
+    """Trigger a manual scrape with optional parameters."""
+    try:
+        data = request.json or {}
+        hours = data.get('hours')
+        source = data.get('source')
+        
+        # Command construction
+        cmd = ["python3", "main.py", "--manual"]
+        if hours:
+            cmd.extend(["--hours", str(hours)])
+        if source:
+            cmd.extend(["--source", str(source)])
+            
+        print(f"🚀 Triggering Manual Scrape: {' '.join(cmd)}")
+        
+        # Run in background (nohup style)
+        subprocess.Popen(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            cwd=str(PROJECT_DIR)
+        )
+        
+        return jsonify({
+            'success': True, 
+            'message': f"Started manual scrape (Freshness: {hours or 'All'} hours, Source: {source or 'All'})"
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 @app.route('/api/update_status', methods=['POST'])
 def update_status():
     """Update listing status (archive, sold, deleted) via URL (MongoDB)."""
@@ -804,11 +869,35 @@ def submit_veteran_vehicle():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/ops/progress', methods=['GET'])
+def get_scan_progress():
+    """Get current scan progress."""
+    try:
+        status_file = PROJECT_DIR / 'database' / 'scan_status.json'
+        if status_file.exists():
+            with open(status_file, 'r') as f:
+                data = json.load(f)
+            
+            # Check if stale (> 10 mins old)
+            updated = datetime.fromisoformat(data.get('updated_at'))
+            if (datetime.now() - updated).total_seconds() > 600:
+                data['active'] = False
+                data['status'] = "Idle (Stale)"
+            
+            return jsonify(data)
+        else:
+            return jsonify({'active': False, 'status': 'Idle', 'percent': 0})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     # Create templates directory if it doesn't exist
     os.makedirs('templates', exist_ok=True)
+    # Ensure database dir exists
+    (PROJECT_DIR / 'database').mkdir(exist_ok=True)
     
     # Run the server
+    print("🚗 Barndoor Web Server")
     print("🚗 Barndoor Web Server")
     print("=" * 50)
     print("Opening in browser...")
