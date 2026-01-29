@@ -187,6 +187,7 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
         max_hours (float): If set, filters listings by age.
         source_filter (str): If set, only scrapes URLs containing this string.
     """
+    global mongo_db # Fix NameError access
     # Initialize Status File for UI Progress immediately
     try:
         import json
