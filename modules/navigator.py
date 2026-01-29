@@ -18,7 +18,7 @@ class Navigator:
     def __init__(self):
         self.history = []  # Stores (url, timestamp)
         self.nav_budget = 50  # Start with budget
-        self.last_nav_time = datetime.now()
+        self.last_nav_time = datetime.min # Allow immediate first action
         
     def navigate_to(self, page, url, reason) -> bool:
         """
