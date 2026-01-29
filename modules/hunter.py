@@ -243,23 +243,35 @@ class FacebookStrategy(ScrapeStrategy):
         listings = []
         try:
             print(f"   Getting {url}...")
+            if progress_callback:
+                progress_callback(0, 0, "Navigating to Marketplace...")
+
             # page.goto(url, wait_until='networkidle', timeout=60000)
             self.navigate(page, url, NavReason.INITIAL_LOAD)
 
             # Check for login wall or captcha
+            print("   👀 Waiting for Marketplace feed to load...")
+            if progress_callback:
+                progress_callback(0, 0, "Waiting for content...")
+                
             try:
-                page.wait_for_selector('div[role="feed"], div[role="main"], div[data-nosnippet]', timeout=15000)
+                # Broader selectors for 2026 FB layout
+                # div[role="main"] is standard, aria-label="Collection..." is specific to feed
+                page.wait_for_selector('div[role="feed"], div[role="main"], div[aria-label*="Marketplace"], div[data-nosnippet]', timeout=15000)
+                print("   ✅ Content loaded.")
             except Exception:
-                print("   ⚠️ Content wait timed out, proceeding anyway...")
+                print("   ⚠️ Content wait timed out, proceeding anyway (might be a false alarm or empty page)...")
             
             # Initial human behavior before doing work
+            if progress_callback:
+                progress_callback(0, 0, "Simulating human interaction...")
             self.simulate_human_interaction(page)
             self.login_if_needed(page)
             
             # Collect Links (Scroll a bit to get a good batch)
             print("   🔍 Scanning feed for potential vehicles...")
             if progress_callback:
-                progress_callback(0, 0, "Scanning Facebook Feed...")
+                progress_callback(5, 0, "Scanning Feed (Batch 1)...")
                 
             unique_links = []
             seen_urls = set()
