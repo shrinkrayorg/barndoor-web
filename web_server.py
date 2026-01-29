@@ -686,14 +686,14 @@ def trigger_scrape():
         hours = data.get('hours')
         source = data.get('source')
         
-        # Command construction
-        cmd = ["python3", "-u", "main.py", "--manual"]
+        # Command construction - USE SAFE LAUNCHER
+        cmd = ["python3", "-u", "safe_launcher.py", "--manual"]
         if hours:
             cmd.extend(["--hours", str(hours)])
         if source:
             cmd.extend(["--source", str(source)])
             
-        print(f"🚀 Triggering Manual Scrape: {' '.join(cmd)}")
+        print(f"🚀 Triggering Manual Scrape via Safer Launcher: {' '.join(cmd)}")
         
         print(f"🚀 Triggering Manual Scrape: {' '.join(cmd)}")
         
