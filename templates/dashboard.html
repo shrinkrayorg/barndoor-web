@@ -2105,10 +2105,54 @@
                                 <option value="">All Listings (Slow)</option>
                             </select>
 
+                            <!-- Scanner Button Styles -->
+                            <style>
+                                .btn-scan-fb {
+                                    width: 100%;
+                                    background: #1877F2;
+                                    color: white;
+                                    border: none;
+                                    padding: 8px;
+                                    border-radius: 4px;
+                                    font-weight: 700;
+                                    cursor: pointer;
+                                    font-size: 11px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    gap: 4px;
+                                    transition: background 0.2s;
+                                }
+
+                                .btn-scan-fb:hover {
+                                    background: #145dbf;
+                                }
+
+                                .btn-scan-cl {
+                                    width: 100%;
+                                    background: #5a32a3;
+                                    color: white;
+                                    border: none;
+                                    padding: 8px;
+                                    border-radius: 4px;
+                                    font-weight: 700;
+                                    cursor: pointer;
+                                    font-size: 11px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    gap: 4px;
+                                    transition: background 0.2s;
+                                }
+
+                                .btn-scan-cl:hover {
+                                    background: #462680;
+                                }
+                            </style>
+
                             <div style="display: flex; gap: 8px;">
                                 <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-                                    <button onclick="triggerManualScrape('facebook')"
-                                        style="width: 100%; background: #1877F2; color: white; border: none; padding: 8px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    <button onclick="triggerManualScrape('facebook')" class="btn-scan-fb">
                                         <span class="material-icons" style="font-size: 14px;">facebook</span>
                                         SCAN FB
                                     </button>
@@ -2120,8 +2164,7 @@
                                 </div>
 
                                 <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-                                    <button onclick="triggerManualScrape('craigslist')"
-                                        style="width: 100%; background: #5a32a3; color: white; border: none; padding: 8px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    <button onclick="triggerManualScrape('craigslist')" class="btn-scan-cl">
                                         <span class="material-icons" style="font-size: 14px;">list_alt</span>
                                         SCAN CL
                                     </button>
