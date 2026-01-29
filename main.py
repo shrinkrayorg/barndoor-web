@@ -57,7 +57,7 @@ def initialize_modules():
     print(f"   ✅ Loaded Profile: {active_config.get('profile_name')}")
     
     # Initialize database
-    print("\n[0.5/4] initializing Database...")
+    print("\n[0.5/4] initializing Database System (v3.0)...")
     mongo_uri = os.getenv('MONGO_URI')
     if mongo_uri:
         try:
