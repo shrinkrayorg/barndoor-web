@@ -51,49 +51,12 @@ class ScrapeStrategy(ABC):
         
     def simulate_human_interaction(self, page: Page):
         """
-        Perform random actions to appear human:
-        - Random mouse movements
-        - Scrolling up and down
-        - Hovering over elements
+        Perform minimal random actions to appear human.
+        SIMPLIFIED to prevent hanging on mouse moves.
         """
-        print("   🤖 Simulating human behavior...")
-        
-        # 1. Random Mouse Move
-        # Move across screen
-        page.mouse.move(random.randint(100, 500), random.randint(100, 500), steps=random.randint(5, 10))
-        self.random_sleep(0.5, 1.5)
-        
-        # 2. Variable Scrolling (Reading behavior)
-        # Scroll down randomly
-        for _ in range(random.randint(2, 4)):
-            scroll_amount = random.randint(300, 700)
-            page.mouse.wheel(0, scroll_amount)
-            self.random_sleep(0.8, 2.0)
-            
-            # Occasionally scroll back up slightly (re-reading)
-            if random.random() > 0.7:
-                page.mouse.wheel(0, -random.randint(50, 200))
-                self.random_sleep(0.5, 1.0)
-        
-        # 3. Random Hover (Interact with page elements)
-        try:
-            # Find interactive elements (links, headings)
-            elements = page.query_selector_all('a, h2, h3, div')
-            if elements:
-                # Pick a random sample to hover
-                target = random.choice(elements[:10]) # Limit to top few to avoid waiting
-                box = target.bounding_box()
-                if box:
-                    # Move to element with natural curve (simulated by steps)
-                    page.mouse.move(
-                        box['x'] + box['width']/2, 
-                        box['y'] + box['height']/2, 
-                        steps=random.randint(10, 20)
-                    )
-        except Exception:
-            pass # Ignore movement errors
-            
-        self.random_sleep(1.0, 3.0)
+        print("   🤖 Simulating human behavior (Fast)...")
+        self.random_sleep(1.5, 3.0)
+        # Mouse movements causing hangs in headless/server environments are removed.
 
     @abstractmethod
     def scrape(self, page: Page, url: str, max_hours: float = None) -> list:
