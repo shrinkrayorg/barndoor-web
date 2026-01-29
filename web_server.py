@@ -687,7 +687,7 @@ def trigger_scrape():
         source = data.get('source')
         
         # Command construction
-        cmd = ["python3", "main.py", "--manual"]
+        cmd = ["python3", "-u", "main.py", "--manual"]
         if hours:
             cmd.extend(["--hours", str(hours)])
         if source:
@@ -695,11 +695,14 @@ def trigger_scrape():
             
         print(f"🚀 Triggering Manual Scrape: {' '.join(cmd)}")
         
-        # Run in background (nohup style)
+        # Run in background (nohup style) with logging
+        out_log = open(PROJECT_DIR / 'main.stdout.log', 'a')
+        err_log = open(PROJECT_DIR / 'main.stderr.log', 'a')
+        
         subprocess.Popen(
             cmd,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=out_log,
+            stderr=err_log,
             cwd=str(PROJECT_DIR)
         )
         
@@ -898,21 +901,25 @@ if __name__ == '__main__':
     
     # Run the server
     print("🚗 Barndoor Web Server")
-    print("🚗 Barndoor Web Server")
     print("=" * 50)
-    print("Opening in browser...")
-    print("=" * 50)
+
+    # Use the PORT environment variable provided by Railway/Render
+    # Default to 5050 for local development
+    port = int(os.environ.get("PORT", 5050))
     
-    # Open browser automatically
-    import webbrowser
-    import threading
-    
-    def open_browser():
-        import time
-        time.sleep(1.5)
-        webbrowser.open('http://localhost:5050')
-    
-    threading.Thread(target=open_browser, daemon=True).start()
+    # Only open browser if running locally (not in cloud)
+    if not os.environ.get('RAILWAY_ENVIRONMENT') and not os.environ.get('DYNO'):
+        print("Opening in browser...")
+        import webbrowser
+        import threading
+        
+        def open_browser():
+            import time
+            time.sleep(1.5)
+            webbrowser.open(f'http://localhost:{port}')
+        
+        threading.Thread(target=open_browser, daemon=True).start()
     
     # Run Flask
-    app.run(host='0.0.0.0', port=5050, debug=False)
+    # bind to 0.0.0.0 to ensure external access in Docker/Railway
+    app.run(host='0.0.0.0', port=port, debug=False)
