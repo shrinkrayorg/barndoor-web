@@ -358,7 +358,13 @@ class FacebookStrategy(ScrapeStrategy):
                 targets = unique_links[:20] 
                 
                 print(f"   🚀 Triggering cloud batch for {len(targets)} items...")
+                if progress_callback:
+                    progress_callback(50, 60, f"Enriching 20 items via Cloud...")
+                
                 enriched_listings = self.enricher.enrich(targets, progress_callback)
+                
+                if progress_callback:
+                    progress_callback(90, 60, "Cloud enrichment complete.")
                 
                 if enriched_listings:
                     listings.extend(enriched_listings)
