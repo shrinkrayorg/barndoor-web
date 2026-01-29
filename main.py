@@ -555,4 +555,25 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"❌ FATAL ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # WRITE ERROR TO STATUS FILE SO UI SEES IT
+        try:
+            import json
+            from pathlib import Path
+            from datetime import datetime
+            status_file = Path('database/scan_status.json')
+            with open(status_file, 'w') as f:
+                json.dump({
+                    'active': False,
+                    'status': f"Error: {str(e)}", 
+                    'percent': 0,
+                    'updated_at': datetime.now().isoformat()
+                }, f)
+        except:
+             pass
