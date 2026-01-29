@@ -247,15 +247,22 @@ class FacebookStrategy(ScrapeStrategy):
                 progress_callback(10, 0, "Checking Login Status...")
             
             # Check for login requirement
-            if self.login_if_needed(page):
-                 print("   ✅ Feed access confirmed.")
+            is_logged_in = self.login_if_needed(page)
+            
+            # Check if feed items are actually visible 
+            feed_items = page.query_selector_all('a[href*="/marketplace/item/"]')
+            
+            if is_logged_in or len(feed_items) > 0:
+                 print(f"   ✅ Feed access confirmed ({len(feed_items)} visible items).")
             else:
                  # Check if we are stuck on a login page/overlay
                  if page.query_selector('input[name="email"], div[role="dialog"] h2:has-text("Log In")'):
-                      print("   ⛔ CRITICAL: Stuck at Login Wall. Please refresh cookies in Ghost.")
+                      print("   ⛔ CRITICAL: Hard Login Wall. Please refresh cookies in Ghost.")
                       if progress_callback:
                           progress_callback(10, 100, "Error: Login Required")
                       return [] # Abort gracefully
+                 else:
+                      print("   ⚠️  Login status uncertain, but content not visible. Proceeding with scan...")
             
             # Collect Links (Scroll a bit to get a good batch)
             print("   🔍 Scanning feed for potential vehicles...")
@@ -265,14 +272,15 @@ class FacebookStrategy(ScrapeStrategy):
             unique_links = []
             seen_urls = set()
             
-            for _ in range(2): # Reduced from 3 for speed
+            for i in range(12): # Increased to 12 cycles to reach 200+ findings
+                print(f"   📜 Scroll {i+1}/12...")
                 # use ghost scroll for live feed
                 if self.ghost:
-                     self.ghost.scroll(page, random.randint(300, 600))
-                     self.ghost.wait(1.0)
+                     self.ghost.scroll(page, random.randint(800, 1500)) # Larger scrolls
+                     self.ghost.wait(0.5)
                 else:
-                     page.mouse.wheel(0, random.randint(300, 600))
-                     self.random_sleep(0.5, 1.0)
+                     page.mouse.wheel(0, random.randint(800, 1500))
+                     self.random_sleep(0.3, 0.7)
                 
                 # Link discovery
                 found_links = page.locator('a[href*="/marketplace/item/"]').all()
