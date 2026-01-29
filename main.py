@@ -388,9 +388,8 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
         herald.execute(processed_listings)
         
     finally:
-        if db:
-            db.close()
-            print("   🔒 DB Closed for this run.")
+        # DB closure is now handled globally in main() finally block to support scheduling
+        pass
 
 
 def send_daily_digest():

@@ -30,7 +30,8 @@ class Vetter:
         except (ValueError, TypeError):
             self.geo_radius_miles = 250
             
-        self.geolocator = Nominatim(user_agent="barnfind_vetter")
+        self.geolocator = Nominatim(user_agent="barnfind_vetter_v2")
+        self.geo_cache = {} # Cache for geocoding results
         self.processed_listings = []
     
     # ... (Keep get_wholesale_value, calculate_distance, extract_phone_numbers as is) ...
@@ -42,8 +43,16 @@ class Vetter:
         try:
             zip_match = re.search(r'\b\d{5}\b', location)
             location_query = zip_match.group() if zip_match else location
-            home_loc = self.geolocator.geocode(self.home_zip_code)
-            listing_loc = self.geolocator.geocode(location_query)
+            
+            # Use cache
+            if self.home_zip_code not in self.geo_cache:
+                self.geo_cache[self.home_zip_code] = self.geolocator.geocode(self.home_zip_code)
+            home_loc = self.geo_cache[self.home_zip_code]
+            
+            if location_query not in self.geo_cache:
+                self.geo_cache[location_query] = self.geolocator.geocode(location_query)
+            listing_loc = self.geo_cache[location_query]
+            
             if home_loc and listing_loc:
                 return geodesic((home_loc.latitude, home_loc.longitude), (listing_loc.latitude, listing_loc.longitude)).miles
         except:
