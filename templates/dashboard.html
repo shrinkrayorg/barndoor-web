@@ -2430,6 +2430,11 @@
                             <div id="scrape-status"
                                 style="font-size: 10px; margin-top: 4px; text-align: center; color: #888; height: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: none;">
                             </div>
+                            <!-- Debug Link -->
+                            <div style="text-align: center; margin-top: 5px;">
+                                <a href="#" onclick="viewDebugLog(); return false;"
+                                    style="font-size: 9px; color: #bbb; text-decoration: none;">View Logs</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3537,6 +3542,16 @@
                 toggle.checked = !enabled;
             }
         }
+        async function viewDebugLog() {
+            try {
+                const res = await fetch('/api/debug/log?_t=' + Date.now());
+                const text = await res.text();
+                alert("--- DEBUG LOG ---\n\n" + text.substring(0, 2000)); // Limit length
+            } catch (e) {
+                alert("Failed to fetch logs: " + e.message);
+            }
+        }
+
         // Save functionality helper
         function toggleSave(id, event) {
             if (event) event.stopPropagation();

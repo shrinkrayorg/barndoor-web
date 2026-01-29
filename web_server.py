@@ -697,11 +697,18 @@ def trigger_scrape():
         
         print(f"🚀 Triggering Manual Scrape: {' '.join(cmd)}")
         
-        # Run in background.
-        # We use None for stdout/stderr to inherit from parent (Flask app),
-        # so output shows up in Railway logs.
+        # Run in background with file logging for UI debugging
+        log_path = PROJECT_DIR / 'database' / 'debug_launcher.log'
+        # ensure db dir exists
+        log_path.parent.mkdir(exist_ok=True)
+        
+        # Open in append mode (or write to clear? let's use 'w' to capture fresh run)
+        log_file = open(log_path, 'w')
+        
         subprocess.Popen(
             cmd,
+            stdout=log_file,
+            stderr=subprocess.STDOUT, # Merge stderr into stdout
             cwd=str(PROJECT_DIR)
         )
         
@@ -711,6 +718,16 @@ def trigger_scrape():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/debug/log')
+def get_debug_log():
+    try:
+        log_path = PROJECT_DIR / 'database' / 'debug_launcher.log'
+        if log_path.exists():
+            return log_path.read_text()
+        return "No debug log found."
+    except Exception as e:
+        return f"Error reading log: {e}"
 @app.route('/api/update_status', methods=['POST'])
 def update_status():
     """Update listing status (archive, sold, deleted) via URL (MongoDB)."""
