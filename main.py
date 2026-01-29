@@ -83,11 +83,16 @@ def initialize_modules():
         print("   Please run 'streamlit run dashboard.py', go to Access Portal, and select an active profile.")
         sys.exit(1)
         
-    print(f"   ✅ Loaded Profile: {active_config.get('profile_name')}")
+    profile_name = active_config.get('profile_name') or "Local Settings"
+    print(f"   ✅ Loaded Profile: {profile_name}")
     
     # Initialize database
     print("\n[0.5/4] initializing Database System (v3.0)...")
     mongo_uri = os.getenv('MONGO_URI')
+    if not mongo_uri:
+        print("   ⚠️  MONGO_URI not found in environment variables.")
+    else:
+        print(f"   📡 MONGO_URI detected (Length: {len(mongo_uri)})")
     
     if mongo_uri:
         try:
@@ -114,6 +119,7 @@ def initialize_modules():
                     return [] # Fallback for legacy calls
             
             listings_table = MongoAdapter(mongo_db['listings'])
+            db = mongo_client # Standard closeable handle for finally blocks
             print("   ☁️  Using MongoDB Adapter")
             
         except Exception as e:
@@ -208,7 +214,7 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
         max_hours (float): If set, filters listings by age.
         source_filter (str): If set, only scrapes URLs containing this string.
     """
-    global listings_table, mongo_db
+    global listings_table, mongo_db, db
     # Initialize Status File for UI Progress immediately
     try:
         import json
@@ -382,8 +388,9 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
         herald.execute(processed_listings)
         
     finally:
-        db.close()
-        print("   🔒 DB Closed for this run.")
+        if db:
+            db.close()
+            print("   🔒 DB Closed for this run.")
 
 
 def send_daily_digest():

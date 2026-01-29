@@ -130,11 +130,24 @@ class FacebookStrategy(ScrapeStrategy):
             # Check if we're on a login page
             if 'login' in page.url.lower() or page.query_selector('input[name="email"]'):
                 print("⚠️  Facebook login required")
-                print("💡 Please ensure Ghost has valid Facebook session cookies")
                 # Wait a bit for potential auto-login from cookies
-                page.wait_for_timeout(3000)
+                page.wait_for_timeout(2000)
+                if 'login' in page.url.lower() or page.query_selector('input[name="email"]'):
+                    return False
+            
+            # Check for the annoying 'Log in' popup that isn't a hard wall
+            login_popup = page.query_selector('div[role="dialog"] h2:has-text("Log")')
+            if login_popup:
+                print("   🧩 Attempting to dismiss non-blocking login popup...")
+                close_btn = page.query_selector('div[aria-label="Close"], div[role="button"]:has-text("✕")')
+                if close_btn:
+                    close_btn.click()
+                    page.wait_for_timeout(1000)
+            
+            return True # Not stuck
         except Exception as e:
-            print(f"Warning during login check: {e}")
+            print(f"   ⚠️ Warning during login check: {e}")
+            return True # Proceed with caution
     
     
     def auto_configure(self, criteria: dict) -> str:
@@ -235,13 +248,13 @@ class FacebookStrategy(ScrapeStrategy):
             
             # Check for login requirement
             if self.login_if_needed(page):
-                 print("   ✅ Login handled or not needed.")
+                 print("   ✅ Feed access confirmed.")
             else:
                  # Check if we are stuck on a login page/overlay
                  if page.query_selector('input[name="email"], div[role="dialog"] h2:has-text("Log In")'):
-                      print("   ⛔ CRITICAL: Stuck at Login Wall. Aborting this run.")
+                      print("   ⛔ CRITICAL: Stuck at Login Wall. Please refresh cookies in Ghost.")
                       if progress_callback:
-                           progress_callback(0, 0, "Error: Login Wall Detected")
+                          progress_callback(10, 100, "Error: Login Required")
                       return [] # Abort gracefully
             
             # Collect Links (Scroll a bit to get a good batch)
