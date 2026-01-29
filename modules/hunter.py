@@ -653,6 +653,7 @@ class CraigslistStrategy(ScrapeStrategy):
         date_pattern = r'^(\d{1,2}/\d{1,2}|\w{3}\s\d{1,2}|\d+\w ago)'
         date_match = re.search(date_pattern, cleaned_meta)
         date_str = ""
+        # Force re-indent check
         if date_match:
             date_str = date_match.group(1)
             # Remove date from string
