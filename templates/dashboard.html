@@ -2495,9 +2495,9 @@
 
                             // Reset logic implies we only show % if active and specific source matches
                             // But we need to keep the other one as '/'
-                            // Default State
-                            if (fbTile) fbTile.innerText = '/';
-                            if (clTile) clTile.innerText = '/';
+                            // Default State (COMMENTED OUT TO PREVENT FLICKER)
+                            // if (fbTile) fbTile.innerText = '/';
+                            // if (clTile) clTile.innerText = '/';
 
                             // Error State Handling
                             if (data.status && data.status.startsWith('Error')) {
