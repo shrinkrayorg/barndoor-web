@@ -252,14 +252,14 @@ class FacebookStrategy(ScrapeStrategy):
             unique_links = []
             seen_urls = set()
             
-            for _ in range(3): # Scroll a few times
+            for _ in range(2): # Reduced from 3 for speed
                 # use ghost scroll for live feed
                 if self.ghost:
-                     self.ghost.scroll(page, random.randint(500, 1000))
-                     self.ghost.wait(1.5)
+                     self.ghost.scroll(page, random.randint(300, 600))
+                     self.ghost.wait(1.0)
                 else:
-                     page.mouse.wheel(0, random.randint(500, 1000))
-                     self.random_sleep(1.0, 2.0)
+                     page.mouse.wheel(0, random.randint(300, 600))
+                     self.random_sleep(0.5, 1.0)
                 
                 # Link discovery
                 found_links = page.locator('a[href*="/marketplace/item/"]').all()
@@ -331,7 +331,7 @@ class FacebookStrategy(ScrapeStrategy):
             if unique_links:
                 # Limit to 20 per batch if needed to control costs/speed, or process all.
                 # Bright Data is fast, so let's process up to 20.
-                targets = unique_links[:20] 
+                targets = unique_links # Removed 20-item cap to restore 200+ findings capacity 
                 
                 print(f"   🚀 Triggering cloud batch for {len(targets)} items...")
                 
