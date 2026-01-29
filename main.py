@@ -13,9 +13,13 @@ import sys
 import random
 import os
 from dotenv import load_dotenv
+import functools
 
 # Load env vars immediately
 load_dotenv()
+
+# Force immediate log flushing for UI visibility
+print = functools.partial(print, flush=True)
 
 class Tee(object):
     def __init__(self, *files):
@@ -84,6 +88,7 @@ def initialize_modules():
     # Initialize database
     print("\n[0.5/4] initializing Database System (v3.0)...")
     mongo_uri = os.getenv('MONGO_URI')
+    
     if mongo_uri:
         try:
             import certifi
@@ -93,38 +98,29 @@ def initialize_modules():
             # Send a ping to confirm a successful connection
             mongo_client.admin.command('ping')
             print("   ✅ Connected to MongoDB!")
-        except Exception as e:
-            print(f"   ❌ MongoDB Connection Failed: {e}")
-            mongo_db = None # Fallback logic handles None inside run_pipeline adapter selection
-    
-
-                    # HACK: The caller constructs a query. We intercept it in the specialized method below.
-                    return [] # Fallback
-                
-                # Specialized method to replace specific TinyDB usage
+            
+            # Initialize Adapter for listings_table
+            class MongoAdapter:
+                def __init__(self, collection):
+                    self.collection = collection
                 def get_by_url(self, url):
                     res = self.collection.find_one({'listing_url': url})
                     return [res] if res else []
-                
-                def update_by_url(self, url, data):
-                    self.collection.update_one({'listing_url': url}, {'$set': data})
-
                 def insert(self, doc):
                     self.collection.insert_one(doc)
-                    
-                def update(self, doc, query):
-                    # Legacy support, ideally unused now
-                     print("⚠️ Helper update called unexpectedly")
-
-
-            listings_table = MongoAdapter(db_instance['listings'])
-            db = client # Keep client open
+                def update_by_url(self, url, data):
+                    self.collection.update_one({'listing_url': url}, {'$set': data})
+                def search(self, query):
+                    return [] # Fallback for legacy calls
             
-        except ImportError:
-            print("   ❌ PyMongo not installed. Falling back to TinyDB.")
-            db = TinyDB('database/ledger.json')
-            listings_table = db.table('listings')
-    else:
+            listings_table = MongoAdapter(mongo_db['listings'])
+            print("   ☁️  Using MongoDB Adapter")
+            
+        except Exception as e:
+            print(f"   ❌ MongoDB Connection Failed: {e}")
+            mongo_db = None
+            
+    if mongo_db is None:
         print("   📂 Using TinyDB (Local File Storage)")
         db = TinyDB('database/ledger.json')
         listings_table = db.table('listings')
@@ -212,7 +208,7 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
         max_hours (float): If set, filters listings by age.
         source_filter (str): If set, only scrapes URLs containing this string.
     """
-    global mongo_db # Fix NameError access
+    global listings_table, mongo_db
     # Initialize Status File for UI Progress immediately
     try:
         import json
@@ -238,42 +234,16 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
     except Exception as e:
         print(f"⚠️ Session rotation warning: {e}")
 
-    # Database Adapter Selection
-    listings_table = None
+    # Database selection already handled in initialize_modules()
+    if listings_table is None:
+        print("⚠️ Warning: listings_table not initialized. Re-initializing...")
+        db = TinyDB('database/ledger.json')
+        listings_table = db.table('listings')
     
     if mongo_db is not None:
         print("   💽 Using MongoDB Adapter")
-        
-        class MongoAdapter:
-            def __init__(self, db):
-                self.collection = db.listings
-            
-            def search(self, query):
-                # We only really search by listing_url in the main loop
-                # The query passed is unlikely to be parsable easily if it's a TinyDB Query obj
-                # BUT, looking at the code: listings_table.search(Listing.listing_url == clean_url)
-                # We can't easily intercept the Query execution.
-                # So we should modify the call site OR implement a 'get_by_url' method and use that.
-                pass
-                
-            def get_by_url(self, url):
-                res = self.collection.find_one({'listing_url': url})
-                if res:
-                    # Convert _id to string id if needed, though main.py doesn't seem to use id much
-                    return [res] # Return list to match search() result
-                return []
-                
-            def insert(self, doc):
-                self.collection.insert_one(doc)
-                
-            def update_by_url(self, url, data):
-                self.collection.update_one({'listing_url': url}, {'$set': data})
-                
-        listings_table = MongoAdapter(mongo_db)
     else:
         print("   📂 Using TinyDB (Local File Storage)")
-        db = TinyDB('database/ledger.json')
-        listings_table = db.table('listings')
     
     try:
         # === STEP 1: HUNT ===
