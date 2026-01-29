@@ -264,8 +264,11 @@ class FacebookStrategy(ScrapeStrategy):
             
             # Initial human behavior before doing work
             if progress_callback:
-                progress_callback(0, 0, "Simulating human interaction...")
+                progress_callback(5, 0, "Warming up (Human behavior)...")
             self.simulate_human_interaction(page)
+            
+            if progress_callback:
+                progress_callback(10, 0, "Checking Login Status...")
             
             # Check for login requirement
             if self.login_if_needed(page):
