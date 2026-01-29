@@ -7,7 +7,8 @@ import requests
 import time
 import json
 import os
-from datetime import datetime
+import re
+from datetime import datetime, timezone
 
 class BrightDataEnricher:
     """
@@ -144,25 +145,58 @@ class BrightDataEnricher:
                 
                 # Mileage
                 mileage = 0
-                if 'mileage' in item:
-                    mileage = item['mileage']
+                raw_mileage = item.get('mileage')
+                if raw_mileage:
+                    if isinstance(raw_mileage, (int, float)):
+                        mileage = int(raw_mileage)
+                    else:
+                        m_text = str(raw_mileage).lower()
+                        # Handle "123k" notation
+                        k_match = re.search(r'(\d+(?:\.\d+)?)\s*k', m_text)
+                        if k_match:
+                            mileage = int(float(k_match.group(1)) * 1000)
+                        else:
+                            digits = re.sub(r'[^\d]', '', m_text)
+                            mileage = int(digits) if digits else 0
+                
+                # If mileage is still 0, try to find it in title or description
+                if mileage == 0:
+                    combined_text = f"{item.get('title', '')} {item.get('description', '')} {item.get('seller_description', '')}".lower()
+                    # Look for "123k miles" or "123,456 miles"
+                    m_match = re.search(r'(\d+(?:[,\d.]\d{3})*)\s*k?\s*(?:miles|mi|k\b)', combined_text)
+                    if m_match:
+                        m_val = m_match.group(1).replace(',', '').replace(' ', '')
+                        if 'k' in m_match.group(0).lower():
+                             mileage = int(float(m_val) * 1000)
+                        else:
+                             mileage = int(float(m_val)) if m_val else 0
                 
                 # Hours Since Listed
-                # Check for various date keys Bright Data might return
                 hours_since_listed = 0
                 
-                # Try 'date_posted' (ISO string or similar)
-                date_posted_str = item.get('date_posted')
-                if date_posted_str:
+                # Try 'listing_date' or 'date_posted'
+                date_str = item.get('listing_date') or item.get('date_posted')
+                if date_str:
                     try:
-                        # Try parsing common formats
-                        # Assume ISO for now or implement smart parse
-                        # Simplified: If we can't parse easily without dateutil, skip for now or use regex
-                        pass
-                    except: pass
-                
-                # Fallback: if 'hours_ago' or similar exists (unlikely in raw dataset schema, usually absolute date)
-                
+                        # Handle ISO format with 'Z' or '+00:00'
+                        if date_str.endswith('Z'):
+                            date_str = date_str.replace('Z', '+00:00')
+                        
+                        posted_date = datetime.fromisoformat(date_str)
+                        now = datetime.now(timezone.utc)
+                        
+                        # Ensure posted_date has timezone if now does
+                        if posted_date.tzinfo is None:
+                            posted_date = posted_date.replace(tzinfo=timezone.utc)
+                            
+                        diff = now - posted_date
+                        hours_since_listed = diff.total_seconds() / 3600.0
+                        
+                        # Sanity check: if it's in the future (due to clock skew), set to 0
+                        if hours_since_listed < 0:
+                            hours_since_listed = 0
+                    except Exception as e:
+                        print(f"   ⚠️ Date parse error: {e}")
                 
                 listing = {
                     'title': item.get('title', 'Unknown'),

@@ -144,6 +144,166 @@
             font-size: 14px;
         }
 
+        /* --- Proprietary Notification System --- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 450px;
+            transform: translateX(120%);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        .toast-success .toast-icon {
+            color: #00e676;
+        }
+
+        .toast-error .toast-icon {
+            color: #f44336;
+        }
+
+        .toast-warning .toast-icon {
+            color: #ff9800;
+        }
+
+        .toast-info .toast-icon {
+            color: #2196f3;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        /* Custom Confirmation Modal Styling */
+        .confirm-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 10001;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirm-modal {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 420px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .confirm-icon {
+            font-size: 56px;
+            color: var(--primary-red);
+            margin-bottom: 20px;
+        }
+
+        .confirm-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .confirm-text {
+            font-size: 15px;
+            color: #999;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-confirm {
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel {
+            background: #333;
+            color: #ccc;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.2s;
+        }
+
+        .btn-confirm:hover {
+            background: #aa0000;
+            transform: translateY(-1px);
+        }
+
+        .btn-cancel:hover {
+            background: #444;
+            color: white;
+        }
+
         /* Profile Dropdown Styles */
         .profile-wrapper {
             position: relative;
@@ -2507,14 +2667,14 @@
                                     fbTile.style.color = "red";
                                     fbTile.title = data.status; // Tooltip full error
                                     fbTile.style.cursor = "pointer";
-                                    fbTile.onclick = () => alert(data.status); // Click for mobile/no-hover
+                                    fbTile.onclick = () => showToast(data.status, 'info'); // Click for mobile/no-hover
                                 }
                                 if (clTile) {
                                     clTile.innerText = "ERR";
                                     clTile.style.color = "red";
                                     clTile.title = data.status;
                                     clTile.style.cursor = "pointer";
-                                    clTile.onclick = () => alert(data.status);
+                                    clTile.onclick = () => showToast(data.status, 'info');
                                 }
                                 // Also show in global status
                                 const statusDiv = document.getElementById('scrape-status');
@@ -2721,23 +2881,36 @@
         </div>
     </div>
 
-    <!-- Custom Delete Modal -->
-    <div id="deleteModal" class="spectator-modal" style="background: rgba(0,0,0,0.9);">
-        <div class="spectator-content" style="max-width: 400px; text-align:center;">
-            <div style="margin-bottom:20px;">
-                <span class="material-icons" style="font-size: 48px; color: #e74c3c;">warning</span>
+    <!-- Custom Confirmation Modal (Generic) -->
+    <div id="propConfirmModal" class="confirm-modal-overlay">
+        <div class="confirm-modal">
+            <span class="material-icons confirm-icon" id="propConfirmIcon">help_outline</span>
+            <div class="confirm-title" id="propConfirmTitle">Are you sure?</div>
+            <div class="confirm-text" id="propConfirmText">This action will update the selected items.</div>
+            <div class="confirm-actions">
+                <button class="btn-cancel" onclick="handleConfirmResponse(false)">CANCEL</button>
+                <button class="btn-confirm" id="propConfirmBtn" onclick="handleConfirmResponse(true)">CONFIRM</button>
             </div>
-            <h3 style="color:white; margin-bottom:15px; font-weight:700;">CONFIRM DELETION</h3>
-            <p style="color:#ccc; margin-bottom:25px;">
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Custom Delete Modal -->
+    <div id="deleteModal" class="confirm-modal-overlay">
+        <div class="confirm-modal">
+            <span class="material-icons confirm-icon" style="color: #e74c3c;">warning</span>
+            <div class="confirm-title">DELETE SELECTION</div>
+            <div class="confirm-text">
                 Are you sure you want to PERMANENTLY delete <span id="deleteCount"
                     style="color:white; font-weight:bold;">0</span> vehicle(s)?
                 <br><br>
-                <span style="font-size:12px; color:#777;">This action cannot be undone.</span>
-            </p>
-            <div style="display:flex; justify-content:center; gap:15px;">
-                <button class="btn btn-secondary" onclick="closeDeleteModal()" style="min-width:100px;">CANCEL</button>
-                <button class="btn btn-danger" onclick="performDelete()"
-                    style="min-width:100px; background:#e74c3c;">DELETE</button>
+                <span style="font-size:12px; color:#555;">This action cannot be undone.</span>
+            </div>
+            <div class="confirm-actions">
+                <button class="btn-cancel" onclick="closeDeleteModal()">CANCEL</button>
+                <button class="btn-confirm" onclick="performDelete()" style="background:#e74c3c;">DELETE</button>
             </div>
         </div>
     </div>
@@ -3304,7 +3477,7 @@
                 }
             } catch (err) {
                 console.error("Error in applyFilters:", err);
-                alert("Error applying filters: " + err.message);
+                showToast("Error applying filters: " + err.message, 'error');
             }
         }
 
@@ -3455,12 +3628,13 @@
 
             if (ids.length === 0) return;
 
-            // PAUSE auto-refresh so the confirm dialog doesn't disappear
             stopAutoRefresh();
-
-            const confirmed = confirm(`Restore ${ids.length} items to active status?`);
-
-            // RESUME auto-refresh regardless of choice
+            const confirmed = await showConfirm(
+                'RESTORE TO ACTIVE',
+                `Restore ${ids.length} items to active status?`,
+                'RESTORE',
+                'settings_backup_restore'
+            );
             startAutoRefresh();
 
             if (!confirmed) return;
@@ -3484,10 +3658,11 @@
 
                 // Refresh data
                 await loadInventory();
+                showToast(`Successfully restored ${successCount} items.`, 'success');
 
             } catch (e) {
                 console.error("Error restoring items:", e);
-                alert("Restoration failed.");
+                showToast("Restoration failed.", "error");
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
@@ -3872,7 +4047,7 @@
                 container.innerHTML = html;
             } catch (e) {
                 console.error("Critical error in displayInventory:", e);
-                alert("Critical Error: " + e.message);
+                showToast("Critical Error: " + e.message, 'error');
             }
         }
 
@@ -3934,7 +4109,7 @@
             }
 
             if (!itemsToDelete.length) {
-                alert('Please select items to delete first.');
+                showToast('Please select items to delete first.', 'warning');
                 return;
             }
 
@@ -3956,7 +4131,7 @@
             console.log("Archiving IDs:", ids);
 
             if (ids.length === 0) {
-                alert("No items selected!");
+                showToast("No items selected!", 'warning');
                 return;
             }
 
@@ -3972,12 +4147,13 @@
                     selectedListingIds.clear();
                     updateDeleteBtn();
                     loadInventory(); // Refresh with cache buster already added
+                    showToast('Items archived successfully.', 'success');
                 } else {
-                    alert('Error: ' + (data.error || 'Unknown error'));
+                    showToast('Error: ' + (data.error || 'Unknown error'), 'error');
                 }
             } catch (e) {
                 console.error(e);
-                alert('Connection error');
+                showToast('Connection error', 'error');
             }
         }
 
@@ -3997,12 +4173,13 @@
                     selectedListingIds.clear();
                     updateDeleteBtn();
                     loadInventory();
+                    showToast('Items restored successfully.', 'success');
                 } else {
-                    alert('Error: ' + (data.error || 'Unknown error'));
+                    showToast('Error: ' + (data.error || 'Unknown error'), 'error');
                 }
             } catch (e) {
                 console.error(e);
-                alert('Connection error');
+                showToast('Connection error', 'error');
             }
         }
 
@@ -4018,12 +4195,13 @@
 
                 if (response.ok) {
                     loadInventory();
+                    showToast('Listing archived.', 'success');
                 } else {
-                    alert('Failed to archive listing');
+                    showToast('Failed to archive listing', 'error');
                 }
             } catch (error) {
                 console.error('Archive error:', error);
-                alert('Error archiving listing');
+                showToast('Error archiving listing', 'error');
             }
         }
 
@@ -4039,12 +4217,13 @@
 
                 if (response.ok) {
                     loadInventory();
+                    showToast('Listing restored.', 'success');
                 } else {
-                    alert('Failed to restore listing');
+                    showToast('Failed to restore listing', 'error');
                 }
             } catch (error) {
                 console.error('Restore error:', error);
-                alert('Error restoring listing');
+                showToast('Error restoring listing', 'error');
             }
         }
 
@@ -4072,12 +4251,13 @@
                     updateDeleteBtn();
                     // Refresh data
                     await loadInventory();
+                    showToast('Vehicles deleted successfully.', 'success');
                 } else {
-                    alert('Error deleting: ' + (data.error || 'Unknown error'));
+                    showToast('Error deleting: ' + (data.error || 'Unknown error'), 'error');
                 }
             } catch (error) {
                 console.error('Delete error:', error);
-                alert('Failed to delete vehicles.');
+                showToast('Failed to delete vehicles.', 'error');
             }
         }
 
@@ -4271,10 +4451,10 @@
                     setTimeout(refreshLogs, 1500);
                     setTimeout(loadInventory, 3000); // Refresh inventory after starting
                 } else {
-                    alert('Error: ' + (data.error || 'Failed to start'));
+                    showToast('Error: ' + (data.error || 'Failed to start'), 'error');
                 }
             } catch (error) {
-                alert('Error: ' + error.message);
+                showToast('Error: ' + error.message, 'error');
             } finally {
                 btn.innerHTML = originalHTML;
             }
@@ -4293,10 +4473,10 @@
                 if (data.success) {
                     setTimeout(updateStatus, 1000);
                 } else {
-                    alert('Error: ' + (data.error || 'Failed to stop'));
+                    showToast('Error: ' + (data.error || 'Failed to stop'), 'error');
                 }
             } catch (error) {
-                alert('Error: ' + error.message);
+                showToast('Error: ' + error.message, 'error');
             } finally {
                 btn.innerHTML = originalHTML;
             }

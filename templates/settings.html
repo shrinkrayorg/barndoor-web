@@ -235,6 +235,66 @@
             border-color: var(--text-light);
             color: var(--text-light);
         }
+
+        /* --- Proprietary Notification System --- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 450px;
+            transform: translateX(120%);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        .toast-success .toast-icon {
+            color: #00e676;
+        }
+
+        .toast-error .toast-icon {
+            color: #f44336;
+        }
+
+        .toast-warning .toast-icon {
+            color: #ff9800;
+        }
+
+        .toast-info .toast-icon {
+            color: #2196f3;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            font-weight: 500;
+            flex: 1;
+        }
     </style>
 </head>
 
@@ -643,7 +703,65 @@
         .hidden {
             display: none;
         }
+
+        /* Toast Styles */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background-color: #333;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+            min-width: 250px;
+            max-width: 350px;
+            font-size: 14px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .toast-success {
+            background-color: #4CAF50;
+        }
+
+        .toast-error {
+            background-color: #F44336;
+        }
+
+        .toast-warning {
+            background-color: #FFC107;
+            color: #333;
+        }
+
+        .toast-info {
+            background-color: #2196F3;
+        }
     </style>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
 
     <div class="actions">
         <button class="btn btn-secondary" onclick="loadSettings()">Reset to Saved</button>
@@ -651,6 +769,21 @@
     </div>
 
     <script>
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            const icons = { success: 'check_circle', error: 'error', warning: 'warning', info: 'info' };
+            toast.innerHTML = `<span class="material-icons toast-icon">${icons[type] || 'info'}</span><span class="toast-message">${message}</span>`;
+            container.appendChild(toast);
+            toast.offsetHeight;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 5000);
+        }
+
         let currentSettings = {};
 
         document.addEventListener('DOMContentLoaded', loadSettings);
@@ -684,7 +817,7 @@
 
             } catch (error) {
                 console.error('Error loading settings:', error);
-                alert('Failed to load settings');
+                showToast('Failed to load settings', 'error');
             }
         }
 
@@ -722,13 +855,13 @@
                 });
 
                 if (response.ok) {
-                    alert('Configuration saved successfully!');
+                    showToast('Configuration saved successfully!', 'success');
                 } else {
                     throw new Error('Server returned error');
                 }
             } catch (error) {
                 console.error('Error saving settings:', error);
-                alert('Failed to save settings: ' + error.message);
+                showToast('Failed to save settings: ' + error.message, 'error');
             }
         }
     </script>

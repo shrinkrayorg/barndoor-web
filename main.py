@@ -370,6 +370,8 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
                 update_data = {
                     'price': listing.get('price'),
                     'score': listing.get('score'),
+                    'mileage': listing.get('mileage') or existing_item.get('mileage', 0),
+                    'listed_at': listing.get('listed_at') if listing.get('hours_since_listed', 0) > 0 else existing_item.get('listed_at'),
                     'last_seen': datetime.now().isoformat(),
                     'batch_id': current_batch_id,
                     'batch_name': listing.get('batch_name'),

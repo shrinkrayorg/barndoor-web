@@ -86,18 +86,30 @@ class ScrapeStrategy(ABC):
         if not mileage_text:
             return 0
             
+        mileage_text = mileage_text.lower().strip()
+        
+        # Handle "123k" or "123.5k" notation
+        k_match = re.search(r'(\d+(?:\.\d+)?)\s*k', mileage_text)
+        if k_match:
+            try:
+                return int(float(k_match.group(1)) * 1000)
+            except: pass
+
         # Prioritize exact numbers like "123,456"
         exact_match = re.search(r'\b(\d{1,3}(?:,\d{3})+)\b', mileage_text)
         if exact_match:
              return int(exact_match.group(1).replace(',', ''))
              
-        # Fallback to K notation
-        # Remove all non-digit characters and convert to int
-        digits = re.sub(r'[^\d]', '', mileage_text)
-        return int(digits) if digits else 0
-
-        digits = re.sub(r'[^\d]', '', mileage_text)
-        return int(digits) if digits else 0
+        # Broad lookup for any sequence of digits, handling separators
+        # e.g. "123 456" or "123.456" or "123456"
+        digits_match = re.search(r'(\d+(?:[,\s.]\d{3})*)', mileage_text)
+        if digits_match:
+            digits = re.sub(r'[^\d]', '', digits_match.group(1))
+            val = int(digits) if digits else 0
+            # Sanity check: if it's like 123, assume it's k? No, too risky.
+            return val
+            
+        return 0
 
 
 

@@ -410,6 +410,66 @@
             color: rgba(255, 255, 255, 0.7);
             text-transform: uppercase;
         }
+
+        /* --- Proprietary Notification System --- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            max-width: 450px;
+            transform: translateX(120%);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        .toast-success .toast-icon {
+            color: #00e676;
+        }
+
+        .toast-error .toast-icon {
+            color: #f44336;
+        }
+
+        .toast-warning .toast-icon {
+            color: #ff9800;
+        }
+
+        .toast-info .toast-icon {
+            color: #2196f3;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            font-weight: 500;
+            flex: 1;
+        }
     </style>
 </head>
 
@@ -470,6 +530,8 @@
                     <span class="plaque-text">VALUING<br>HOSPITAL WORKERS</span>
                 </div>
             </div>
+            <!-- Toast Container -->
+            <div id="toast-container"></div>
         </div>
 
         <!-- Login Modal -->
@@ -585,6 +647,21 @@
         </div>
 
         <script>
+            function showToast(message, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                const icons = { success: 'check_circle', error: 'error', warning: 'warning', info: 'info' };
+                toast.innerHTML = `<span class="material-icons toast-icon">${icons[type] || 'info'}</span><span class="toast-message">${message}</span>`;
+                container.appendChild(toast);
+                toast.offsetHeight;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 400);
+                }, 5000);
+            }
+
             window.onload = function () {
                 {% if signup_mode %}
                 showSignup();
@@ -723,7 +800,7 @@
                     const data = await res.json();
 
                     if (res.ok) {
-                        alert("Password updated! Please login.");
+                        showToast("Password updated! Please login.", "success");
                         showLogin();
                     } else {
                         msg.innerText = data.error || "Reset failed";

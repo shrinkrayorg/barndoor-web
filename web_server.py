@@ -584,7 +584,7 @@ def get_listings():
 
 @app.route('/api/listings/delete', methods=['POST'])
 def delete_listings():
-    """Bulk soft-delete listings by ID or URL (MongoDB)."""
+    """Bulk soft-delete listings by ID or URL (MongoDB with TinyDB fallback)."""
     try:
         payload = request.json
         ids_to_delete = payload.get('ids', []) 
@@ -592,40 +592,68 @@ def delete_listings():
         if not ids_to_delete:
              return jsonify({'success': True, 'count': 0})
              
-        if mongo_db is None:
-             return jsonify({'error': 'No Database Connection'}), 500
-        
         deleted_count = 0
         
-        for identifier in ids_to_delete:
-            id_str = str(identifier)
-            res = None
+        # 1. MongoDB Strategy
+        if mongo_db is not None:
+            for identifier in ids_to_delete:
+                id_str = str(identifier)
+                res = None
+                
+                # 1. Try by ObjectId
+                if ObjectId.is_valid(id_str):
+                    res = mongo_db.listings.update_one(
+                        {'_id': ObjectId(id_str)},
+                        {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
+                    )
+                
+                # 2. Try by 'original_id' (legacy migration ID)
+                if not res or res.modified_count == 0:
+                     res = mongo_db.listings.update_one(
+                         {'original_id': id_str},
+                         {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
+                     )
+                     
+                # 3. Try by URL fallback
+                if not res or res.modified_count == 0:
+                    res = mongo_db.listings.update_one(
+                        {'listing_url': id_str},
+                        {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
+                    )
+                
+                if res and res.modified_count > 0:
+                    deleted_count += 1
+            return jsonify({'success': True, 'count': deleted_count})
+
+        # 2. Local Ledger Strategy (Fallback)
+        local_db_path = PROJECT_DIR / "database" / "ledger.json"
+        if local_db_path.exists():
+            with open(local_db_path, 'r') as f:
+                data = json.load(f)
             
-            # 1. Try by ObjectId
-            if ObjectId.is_valid(id_str):
-                res = mongo_db.listings.update_one(
-                    {'_id': ObjectId(id_str)},
-                    {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
-                )
+            listings_map = data.get('listings', {})
+            for lid in ids_to_delete:
+                lid_str = str(lid)
+                # Try by direct ID
+                if lid_str in listings_map:
+                    listings_map[lid_str]['status'] = 'deleted'
+                    listings_map[lid_str]['deleted_at'] = datetime.now().isoformat()
+                    deleted_count += 1
+                else:
+                    # Try searching by URL
+                    for item_id, item in listings_map.items():
+                        if item.get('listing_url') == lid_str:
+                            item['status'] = 'deleted'
+                            item['deleted_at'] = datetime.now().isoformat()
+                            deleted_count += 1
+                            break
             
-            # 2. Try by 'original_id' (legacy migration ID)
-            if not res or res.modified_count == 0:
-                 res = mongo_db.listings.update_one(
-                     {'original_id': id_str},
-                     {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
-                 )
-                 
-            # 3. Try by URL fallback
-            if not res or res.modified_count == 0:
-                res = mongo_db.listings.update_one(
-                    {'listing_url': id_str},
-                    {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
-                )
+            with open(local_db_path, 'w') as f:
+                json.dump(data, f, indent=4)
+                
+            return jsonify({'success': True, 'count': deleted_count})
             
-            if res and res.modified_count > 0:
-                deleted_count += 1
-        
-        return jsonify({'success': True, 'count': deleted_count})
+        return jsonify({'error': 'No Database Connection'}), 500
             
     except Exception as e:
         print(f"Error deleting listings: {e}")
@@ -634,7 +662,7 @@ def delete_listings():
 
 @app.route('/api/listings/bulk_status', methods=['POST'])
 def bulk_update_status():
-    """Update status for multiple listings by ID (MongoDB)."""
+    """Update status for multiple listings by ID (MongoDB with TinyDB fallback)."""
     try:
         payload = request.json
         ids_to_update = payload.get('ids', [])
@@ -643,35 +671,57 @@ def bulk_update_status():
         if not ids_to_update or not new_status:
             return jsonify({'success': True, 'count': 0})
             
-        if mongo_db is None:
-             return jsonify({'error': 'No Database Connection'}), 500
-             
         updated_count = 0
-        
         update_data = {'status': new_status}
         if new_status == 'tickle':
             update_data['tickle_at'] = datetime.now().isoformat()
+
+        # 1. MongoDB Strategy
+        if mongo_db is not None:
+            for id_str in ids_to_update:
+                 res = None
+                 # Try ObjectId
+                 if ObjectId.is_valid(str(id_str)):
+                     res = mongo_db.listings.update_one(
+                         {'_id': ObjectId(str(id_str))},
+                         {'$set': update_data}
+                     )
+                
+                 # Try original_id or URL
+                 if not res or res.modified_count == 0:
+                     res = mongo_db.listings.update_one(
+                         {'$or': [{'original_id': str(id_str)}, {'listing_url': str(id_str)}]},
+                         {'$set': update_data}
+                     )
+                     
+                 if res and res.modified_count > 0:
+                     updated_count += 1
+            return jsonify({'success': True, 'count': updated_count})
+
+        # 2. Local Ledger Strategy (Fallback)
+        local_db_path = PROJECT_DIR / "database" / "ledger.json"
+        if local_db_path.exists():
+            with open(local_db_path, 'r') as f:
+                data = json.load(f)
             
-        for id_str in ids_to_update:
-             res = None
-             # Try ObjectId
-             if ObjectId.is_valid(id_str):
-                 res = mongo_db.listings.update_one(
-                     {'_id': ObjectId(id_str)},
-                     {'$set': update_data}
-                 )
+            listings_map = data.get('listings', {})
+            for lid in ids_to_update:
+                lid_str = str(lid)
+                if lid_str in listings_map:
+                    listings_map[lid_str].update(update_data)
+                    updated_count += 1
+                else:
+                    for item_id, item in listings_map.items():
+                        if item.get('listing_url') == lid_str:
+                            item.update(update_data)
+                            updated_count += 1
+                            break
             
-             # Try original_id
-             if not res or res.modified_count == 0:
-                 res = mongo_db.listings.update_one(
-                     {'original_id': str(id_str)},
-                     {'$set': update_data}
-                 )
-                 
-             if res and res.modified_count > 0:
-                 updated_count += 1
+            with open(local_db_path, 'w') as f:
+                json.dump(data, f, indent=4)
+            return jsonify({'success': True, 'count': updated_count})
         
-        return jsonify({'success': True, 'count': updated_count})
+        return jsonify({'error': 'No Database Connection'}), 500
             
     except Exception as e:
         print(f"Error bulk updating listings: {e}")

@@ -55,18 +55,8 @@
       "value": "1920x1080",
       "domain": ".facebook.com",
       "path": "/",
-      "expires": 1770196025,
+      "expires": 1770196360,
       "httpOnly": false,
-      "secure": true,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "fr",
-      "value": "0fCqlnqDGIHRUl93w..Bpeage..AAA.0.0.BpeaiA.AWc7Ppt_KceJuM_RaxdKCcdX590",
-      "domain": ".facebook.com",
-      "path": "/",
-      "expires": 1777356672.781699,
-      "httpOnly": true,
       "secure": true,
       "sameSite": "Lax"
     },
@@ -75,20 +65,30 @@
       "value": "1",
       "domain": ".facebook.com",
       "path": "/",
-      "expires": 1770196025,
+      "expires": 1770196360,
       "httpOnly": false,
       "secure": true,
       "sameSite": "None"
     },
     {
       "name": "cl_b",
-      "value": "4|d3faf4c81d97eafd04a33a8d44ff6129227b3221|1769587123eZmYE",
+      "value": "4|e173704b4b11d870fed67760e23447a267e45b06|1769590924BrkAc",
       "domain": ".craigslist.org",
       "path": "/",
-      "expires": 1804147124.037612,
+      "expires": 1804150924.757595,
       "httpOnly": false,
       "secure": true,
       "sameSite": "Lax"
+    },
+    {
+      "name": "fr",
+      "value": "0fCqlnqDGIHRUl93w..Bpeage..AAA.0.0.BpedCr.AWfOjBFl9aCT0XwJtflqUpgLFVw",
+      "domain": ".facebook.com",
+      "path": "/",
+      "expires": 1777366955.443075,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
     }
   ]
 }
