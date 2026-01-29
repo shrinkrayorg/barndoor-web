@@ -118,6 +118,10 @@ class BrightDataEnricher:
                     
                     time.sleep(10)
                     continue
+                elif r.status_code in [500, 502, 503, 504]:
+                    print(f"   ⚠️ Bright Data server error ({r.status_code}). Retrying in 5s...")
+                    time.sleep(5)
+                    continue
                 else:
                     print(f"   ❌ Error fetching results: {r.status_code} - {r.text}")
                     return None
