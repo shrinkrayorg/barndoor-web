@@ -208,6 +208,8 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
     try:
         check_and_rotate_session()
         print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 Starting Pipeline Run...")
+    except Exception as e:
+        print(f"⚠️ Session rotation warning: {e}")
 
     # Initialize database locally to ensure fresh read/write (avoid cache issues with web server)
     db = TinyDB('database/ledger.json')
