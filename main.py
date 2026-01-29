@@ -4,7 +4,6 @@ Main execution script for the Barnfind data processing application.
 Orchestrates the Hunter, Vetter, Ghost, and Herald modules for automated vehicle market analysis.
 Runs on a schedule: every 10 minutes for pipeline execution, midnight for daily digest.
 """
-from modules import Hunter, Vetter, Ghost, Herald
 from tinydb import TinyDB, Query
 from database.config_db import ConfigDB
 from datetime import datetime, timedelta
@@ -33,6 +32,10 @@ def initialize_modules():
     Called once at startup.
     """
     global db, listings_table, ghost, hunter, vetter, herald, account_creator, active_config
+    
+    
+    # Import modules here to catch ImportError within main try/except block
+    from modules import Hunter, Vetter, Ghost, Herald
     
     print("=" * 60)
     print("🚗 BARNFIND - Automated Vehicle Market Analysis")
