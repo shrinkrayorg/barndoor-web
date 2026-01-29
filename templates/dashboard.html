@@ -2400,28 +2400,33 @@
                             </select>
 
                             <div style="display: flex; gap: 8px;">
-                                <div style="flex: 1; text-align: center;">
+                                <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
                                     <button onclick="triggerManualScrape('facebook')"
                                         style="width: 100%; background: #1877F2; color: white; border: none; padding: 8px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 4px;">
                                         <span class="material-icons" style="font-size: 14px;">facebook</span>
                                         SCAN FB
                                     </button>
-                                    <div id="status-facebook"
-                                        style="color: #27ae60; font-size: 10px; font-weight: 700; margin-top: 4px; min-height: 14px;">
+                                    <!-- Progress Tile FB -->
+                                    <div id="tile-facebook"
+                                        style="width: 100%; background: #f0f2f5; border: 1px solid #ddd; border-radius: 4px; padding: 6px 0; text-align: center; font-weight: 800; font-family: 'Roboto Condensed', sans-serif; font-size: 14px; color: #333; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                        /
                                     </div>
                                 </div>
 
-                                <div style="flex: 1; text-align: center;">
+                                <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
                                     <button onclick="triggerManualScrape('craigslist')"
                                         style="width: 100%; background: #5a32a3; color: white; border: none; padding: 8px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 4px;">
                                         <span class="material-icons" style="font-size: 14px;">list_alt</span>
                                         SCAN CL
                                     </button>
-                                    <div id="status-craigslist"
-                                        style="color: #27ae60; font-size: 10px; font-weight: 700; margin-top: 4px; min-height: 14px;">
+                                    <!-- Progress Tile CL -->
+                                    <div id="tile-craigslist"
+                                        style="width: 100%; background: #f3e5f5; border: 1px solid #ddd; border-radius: 4px; padding: 6px 0; text-align: center; font-weight: 800; font-family: 'Roboto Condensed', sans-serif; font-size: 14px; color: #333; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                        /
                                     </div>
                                 </div>
                             </div>
+                            <!-- Global status text (hidden or minimal below if needed, keeping hidden for now per request for tiles) -->
                             <div id="scrape-status"
                                 style="font-size: 10px; margin-top: 4px; text-align: center; color: #888; height: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: none;">
                             </div>
@@ -2436,23 +2441,41 @@
                             const res = await fetch('/api/ops/progress');
                             const data = await res.json();
 
-                            const fbStatus = document.getElementById('status-facebook');
-                            const clStatus = document.getElementById('status-craigslist');
+                            const fbTile = document.getElementById('tile-facebook');
+                            const clTile = document.getElementById('tile-craigslist');
 
-                            // Reset both
-                            if (fbStatus) fbStatus.innerText = '';
-                            if (clStatus) clStatus.innerText = '';
+                            // Reset logic implies we only show % if active and specific source matches
+                            // But we need to keep the other one as '/'
+                            // Default State
+                            if (fbTile) fbTile.innerText = '/';
+                            if (clTile) clTile.innerText = '/';
 
                             // Only show if active and not Idle
                             if (data.active && data.status !== 'Idle' && !data.status.includes('Stale')) {
-                                const percentStr = data.percent + '%';
+                                const percentStr = Math.round(data.percent) + '%';
 
                                 // Update specific source
                                 if (data.source === 'facebook') {
-                                    if (fbStatus) fbStatus.innerText = percentStr;
+                                    if (fbTile) {
+                                        fbTile.innerText = percentStr;
+                                        fbTile.style.color = '#1877F2';
+                                    }
                                 } else if (data.source === 'craigslist') {
-                                    if (clStatus) clStatus.innerText = percentStr;
+                                    if (clTile) {
+                                        clTile.innerText = percentStr;
+                                        clTile.style.color = '#5a32a3';
+                                    }
+                                } else {
+                                    // If 'All' or unknown source, maybe show on both?
+                                    // For now, let's assume specific triggers.
+                                    // If source is 'All' (Auto-Run), show on both
+                                    if (fbTile) fbTile.innerText = percentStr;
+                                    if (clTile) clTile.innerText = percentStr;
                                 }
+                            } else {
+                                // Reset colors
+                                if (fbTile) fbTile.style.color = '#333';
+                                if (clTile) clTile.style.color = '#333';
                             }
                         } catch (e) {
                             console.error("Progress poll error", e);
