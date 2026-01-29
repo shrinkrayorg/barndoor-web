@@ -12,6 +12,10 @@ import time
 import sys
 import random
 import os
+from dotenv import load_dotenv
+
+# Load env vars immediately
+load_dotenv()
 
 class Tee(object):
     def __init__(self, *files):
@@ -93,21 +97,7 @@ def initialize_modules():
             print(f"   ❌ MongoDB Connection Failed: {e}")
             mongo_db = None # Fallback logic handles None inside run_pipeline adapter selection
     
-    if mongo_uri:
-        print("   ☁️  Using MongoDB (Persistent Cloud Storage)")
-        try:
-            import pymongo
-            import certifi
-            client = pymongo.MongoClient(mongo_uri, tlsCAFile=certifi.where())
-            db_instance = client['barndoor']
-            # Simple Adapter for TinyDB compatibility
-            class MongoAdapter:
-                def __init__(self, collection):
-                    self.collection = collection
-                def search(self, query):
-                    # Query is complex in TinyDB, here we assume it's a URL match from code below
-                    # The code below uses: listings_table.search(Listing.listing_url == clean_url)
-                    # We can't support generic TinyDB queries easily, but we know the exact line calling it.
+
                     # HACK: The caller constructs a query. We intercept it in the specialized method below.
                     return [] # Fallback
                 
