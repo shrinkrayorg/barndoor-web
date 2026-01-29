@@ -25,6 +25,8 @@ account_creator = None
 active_config = None
 session_start_time = 0
 session_rotation_interval = 0
+mongo_client = None
+mongo_db = None
 
 
 def initialize_modules():
@@ -32,7 +34,7 @@ def initialize_modules():
     Initialize all modules and database connections.
     Called once at startup.
     """
-    global db, listings_table, ghost, hunter, vetter, herald, account_creator, active_config
+    global db, listings_table, ghost, hunter, vetter, herald, account_creator, active_config, mongo_client, mongo_db
     
     
     # Import modules here to catch ImportError within main try/except block
@@ -57,6 +59,18 @@ def initialize_modules():
     # Initialize database
     print("\n[0.5/4] initializing Database...")
     mongo_uri = os.getenv('MONGO_URI')
+    if mongo_uri:
+        try:
+            import certifi
+            from pymongo import MongoClient
+            mongo_client = MongoClient(mongo_uri, tlsCAFile=certifi.where())
+            mongo_db = mongo_client['barndoor']
+            # Send a ping to confirm a successful connection
+            mongo_client.admin.command('ping')
+            print("   ✅ Connected to MongoDB!")
+        except Exception as e:
+            print(f"   ❌ MongoDB Connection Failed: {e}")
+            mongo_db = None # Fallback logic handles None inside run_pipeline adapter selection
     
     if mongo_uri:
         print("   ☁️  Using MongoDB (Persistent Cloud Storage)")
