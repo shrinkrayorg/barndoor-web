@@ -2450,8 +2450,29 @@
                             if (fbTile) fbTile.innerText = '/';
                             if (clTile) clTile.innerText = '/';
 
-                            // Only show if active and not Idle
-                            if (data.active && data.status !== 'Idle' && !data.status.includes('Stale')) {
+                            // Error State Handling
+                            if (data.status && data.status.startsWith('Error')) {
+                                const errorMsg = "ERR"; // Short error for tile
+                                if (fbTile) {
+                                    fbTile.innerText = "ERR";
+                                    fbTile.style.color = "red";
+                                    fbTile.title = data.status; // Tooltip full error
+                                }
+                                if (clTile) {
+                                    clTile.innerText = "ERR";
+                                    clTile.style.color = "red";
+                                    clTile.title = data.status;
+                                }
+                                // Also show in global status
+                                const statusDiv = document.getElementById('scrape-status');
+                                if (statusDiv) {
+                                    statusDiv.style.display = 'block';
+                                    statusDiv.innerText = data.status;
+                                    statusDiv.style.color = 'red';
+                                }
+                            }
+                            // Active State
+                            else if (data.active && data.status !== 'Idle' && !data.status.includes('Stale')) {
                                 const percentStr = Math.round(data.percent) + '%';
 
                                 // Update specific source
