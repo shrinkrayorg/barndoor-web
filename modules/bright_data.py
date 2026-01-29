@@ -100,9 +100,9 @@ class BrightDataEnricher:
         """Poll for results until ready."""
         result_url = f"{self.base_url}/snapshot/{snapshot_id}?format=json"
         
-        print("   ⏳ Waiting for results (this may take 1-3 minutes)...")
+        print("   ⏳ Waiting for results (cloud processing, up to 10m)...", flush=True)
         start_time = time.time()
-        timeout = 600  # 10 minutes max
+        timeout = 600  # Restored to 10 minutes to handle 200+ links batches
         
         while time.time() - start_time < timeout:
             try:
