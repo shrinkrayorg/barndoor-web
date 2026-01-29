@@ -212,9 +212,42 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
     except Exception as e:
         print(f"⚠️ Session rotation warning: {e}")
 
-    # Initialize database locally to ensure fresh read/write (avoid cache issues with web server)
-    db = TinyDB('database/ledger.json')
-    listings_table = db.table('listings')
+    # Database Adapter Selection
+    listings_table = None
+    
+    if mongo_db is not None:
+        print("   💽 Using MongoDB Adapter")
+        
+        class MongoAdapter:
+            def __init__(self, db):
+                self.collection = db.listings
+            
+            def search(self, query):
+                # We only really search by listing_url in the main loop
+                # The query passed is unlikely to be parsable easily if it's a TinyDB Query obj
+                # BUT, looking at the code: listings_table.search(Listing.listing_url == clean_url)
+                # We can't easily intercept the Query execution.
+                # So we should modify the call site OR implement a 'get_by_url' method and use that.
+                pass
+                
+            def get_by_url(self, url):
+                res = self.collection.find_one({'listing_url': url})
+                if res:
+                    # Convert _id to string id if needed, though main.py doesn't seem to use id much
+                    return [res] # Return list to match search() result
+                return []
+                
+            def insert(self, doc):
+                self.collection.insert_one(doc)
+                
+            def update_by_url(self, url, data):
+                self.collection.update_one({'listing_url': url}, {'$set': data})
+                
+        listings_table = MongoAdapter(mongo_db)
+    else:
+        print("   📂 Using TinyDB (Local File Storage)")
+        db = TinyDB('database/ledger.json')
+        listings_table = db.table('listings')
     
     try:
         # === STEP 1: HUNT ===
@@ -302,9 +335,11 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
             # Check if listing already exists (by partial URL match)
             # Support both TinyDB and our MongoAdapter
             existing_results = []
+            
             if hasattr(listings_table, 'get_by_url'):
                  existing_results = listings_table.get_by_url(clean_url)
             else:
+                 # Fallback for standard TinyDB
                  Listing = Query()
                  existing_results = listings_table.search(Listing.listing_url == clean_url)
             
