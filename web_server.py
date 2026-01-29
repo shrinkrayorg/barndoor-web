@@ -695,14 +695,13 @@ def trigger_scrape():
             
         print(f"🚀 Triggering Manual Scrape: {' '.join(cmd)}")
         
-        # Run in background (nohup style) with logging
-        out_log = open(PROJECT_DIR / 'main.stdout.log', 'a')
-        err_log = open(PROJECT_DIR / 'main.stderr.log', 'a')
+        print(f"🚀 Triggering Manual Scrape: {' '.join(cmd)}")
         
+        # Run in background.
+        # We use None for stdout/stderr to inherit from parent (Flask app),
+        # so output shows up in Railway logs.
         subprocess.Popen(
             cmd,
-            stdout=out_log,
-            stderr=err_log,
             cwd=str(PROJECT_DIR)
         )
         
