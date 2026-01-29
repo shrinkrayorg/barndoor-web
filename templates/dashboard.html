@@ -3494,8 +3494,16 @@
             const hoursVal = document.getElementById('scrape-hours').value;
             const statusDiv = document.getElementById('scrape-status');
 
+            // Unhide the status div
+            if (statusDiv) statusDiv.style.display = 'block';
             statusDiv.innerText = `Starting ${source || 'manual'} scan...`;
             statusDiv.style.color = "#0066cc";
+
+            // Also update the specific button status if it exists
+            if (source) {
+                const specificStatus = document.getElementById(`status-${source}`);
+                if (specificStatus) specificStatus.innerText = "Starting...";
+            }
 
             try {
                 const res = await fetch('/api/ops/scrape', {
