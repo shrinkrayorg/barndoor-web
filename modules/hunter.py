@@ -653,19 +653,19 @@ class CraigslistStrategy(ScrapeStrategy):
         date_pattern = r'^(\d{1,2}/\d{1,2}|\w{3}\s\d{1,2}|\d+\w ago)'
         date_match = re.search(date_pattern, cleaned_meta)
         date_str = ""
-            if date_match:
-                date_str = date_match.group(1)
-                # Remove date from string
-                cleaned_meta = cleaned_meta.replace(date_str, '', 1).strip()
-                
-                # Check if date_str is TODAY (e.g., "Jan 29" matching current date)
-                # This handles the "0 results" bug where CL gives day resolution only
-                try:
-                    today = datetime.now()
-                    if date_str == today.strftime("%b %d") or date_str == today.strftime("%b %-d"):
-                        hours_since_listed = 0.1 # Treat as fresh
-                except:
-                    pass
+        if date_match:
+            date_str = date_match.group(1)
+            # Remove date from string
+            cleaned_meta = cleaned_meta.replace(date_str, '', 1).strip()
+            
+            # Check if date_str is TODAY (e.g., "Jan 29" matching current date)
+            # This handles the "0 results" bug where CL gives day resolution only
+            try:
+                today = datetime.now()
+                if date_str == today.strftime("%b %d") or date_str == today.strftime("%b %-d"):
+                    hours_since_listed = 0.1 # Treat as fresh
+            except:
+                pass
             
             # Helper to parse date to hours
             try:
