@@ -183,18 +183,16 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
         max_hours (float): If set, filters listings by age.
         source_filter (str): If set, only scrapes URLs containing this string.
     """
-    check_and_rotate_session()
-    print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 Starting Pipeline Run...")
-    
-    # Initialize Status File for UI Progress
+    # Initialize Status File for UI Progress immediately
     try:
         import json
         from pathlib import Path
+        import traceback
         status_file = Path('database/scan_status.json')
         with open(status_file, 'w') as f:
             json.dump({
                 'active': True,
-                'status': 'Starting...',
+                'status': 'Initializing...',
                 'percent': 0,
                 'current': 0,
                 'total': 0,
@@ -203,6 +201,10 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
             }, f)
     except Exception as e:
         print(f"⚠️ Failed to init status file: {e}")
+
+    try:
+        check_and_rotate_session()
+        print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 Starting Pipeline Run...")
 
     # Initialize database locally to ensure fresh read/write (avoid cache issues with web server)
     db = TinyDB('database/ledger.json')
