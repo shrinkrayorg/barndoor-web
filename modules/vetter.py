@@ -93,7 +93,8 @@ class Vetter:
         if location:
             distance = self.calculate_distance(location)
             if distance and distance > self.geo_radius_miles:
-                return False, f"too_far_{int(distance)}_miles"
+                # SOFT WARNING: Don't reject, just tag. User might be searching remotely (e.g. Chicago).
+                return True, f"passed_but_far_{int(distance)}_miles"
 
         return True, "passed"
 
