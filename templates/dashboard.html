@@ -2457,11 +2457,15 @@
                                     fbTile.innerText = "ERR";
                                     fbTile.style.color = "red";
                                     fbTile.title = data.status; // Tooltip full error
+                                    fbTile.style.cursor = "pointer";
+                                    fbTile.onclick = () => alert(data.status); // Click for mobile/no-hover
                                 }
                                 if (clTile) {
                                     clTile.innerText = "ERR";
                                     clTile.style.color = "red";
                                     clTile.title = data.status;
+                                    clTile.style.cursor = "pointer";
+                                    clTile.onclick = () => alert(data.status);
                                 }
                                 // Also show in global status
                                 const statusDiv = document.getElementById('scrape-status');
