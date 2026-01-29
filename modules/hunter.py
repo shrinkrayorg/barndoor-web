@@ -266,7 +266,17 @@ class FacebookStrategy(ScrapeStrategy):
             if progress_callback:
                 progress_callback(0, 0, "Simulating human interaction...")
             self.simulate_human_interaction(page)
-            self.login_if_needed(page)
+            
+            # Check for login requirement
+            if self.login_if_needed(page):
+                 print("   ✅ Login handled or not needed.")
+            else:
+                 # Check if we are stuck on a login page/overlay
+                 if page.query_selector('input[name="email"], div[role="dialog"] h2:has-text("Log In")'):
+                      print("   ⛔ CRITICAL: Stuck at Login Wall. Aborting this run.")
+                      if progress_callback:
+                           progress_callback(0, 0, "Error: Login Wall Detected")
+                      return [] # Abort gracefully
             
             # Collect Links (Scroll a bit to get a good batch)
             print("   🔍 Scanning feed for potential vehicles...")
