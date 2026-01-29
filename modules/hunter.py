@@ -793,33 +793,7 @@ class Hunter:
     # ... get_domain and get_strategy methods unchanged ...
     # ... scrape_url unchanged ...
 
-    def execute(self, target_urls: list) -> list:
-        """Execute main hunting process."""
-        self.raw_listings = []
-        browser_context = None
-        if self.ghost:
-            browser_context = self.ghost.get_browser_context()
-        
-        # 1. Scrape all targets first
-        for url in target_urls:
-            print(f"\n🔍 Scraping: {url}")
-            listings = self.scrape_url(url, browser_context)
-            self.raw_listings.extend(listings)
-        
-        # 2. Add found items to global history so we don't re-scrape them next run (within same session)
-        for l in self.raw_listings:
-            u = l.get('listing_url')
-            if u: self.global_history.add(u)
-            
-        # 3. TRIGGER LONG SOCIAL BREAK (Human Behavior)
-        # Instead of rapid switching, we take a dedicated 15-20 min break AFTER the work is done.
-        # This replaces the rapid random detours.
-        if self.ghost and self.raw_listings:
-            print("\n☕ Work complete. Taking a 15-minute social break (Human Pattern)...")
-            self.ghost.take_long_break(duration_minutes=15)
-        
-        print(f"\n📊 Total listings collected: {len(self.raw_listings)}")
-        return self.raw_listings
+
     
     def get_domain(self, url: str) -> str:
         """

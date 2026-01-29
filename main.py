@@ -13,6 +13,27 @@ import sys
 import random
 import os
 
+class Tee(object):
+    def __init__(self, *files):
+        self.files = files
+    def write(self, obj):
+        for f in self.files:
+            f.write(obj)
+            f.flush() # Ensure immediate write
+    def flush(self):
+        for f in self.files:
+            f.flush()
+
+# Redirect stdout/stderr to both console and log file for UI visibility
+try:
+    log_file = os.path.join(os.path.dirname(__file__), 'barnfind.log')
+    f = open(log_file, 'a')
+    original_stdout = sys.stdout
+    sys.stdout = Tee(sys.stdout, f)
+    sys.stderr = Tee(sys.stderr, f)
+except Exception as e:
+    print(f"⚠️ Logging redirection failed: {e}")
+
 
 # Global instances (persistent across scheduled runs)
 db = None
