@@ -2691,67 +2691,7 @@
 
     <!-- Dashboard Section -->
     {% if mode != 'tickle' %}
-    <section id="dashboard" class="dashboard-section">
-        <div class="container">
-            <!-- Service Status -->
-            <div class="status-card">
-                <div class="status-header">
-                    <div class="status-icon" id="statusIcon">
-                        <span class="material-icons">pending</span>
-                    </div>
-                    <div class="status-text">
-                        <h3>Service Status</h3>
-                        <p id="statusText">Checking system...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Controls -->
-            <div class="controls">
-                <button class="btn btn-start" id="startBtn" onclick="startService()">
-                    <span class="material-icons" style="font-size: 18px; vertical-align: middle;">play_arrow</span>
-                    START SERVICE
-                </button>
-                <button class="btn btn-stop" id="stopBtn" onclick="stopService()">
-                    <span class="material-icons" style="font-size: 18px; vertical-align: middle;">stop</span>
-                    STOP SERVICE
-                </button>
-                <!-- SPECTATOR MODE TILE -->
-                <button class="btn btn-spectator" onclick="openSpectator()">
-                    <div class="spectator-icon">
-                        <span class="material-icons">visibility</span>
-                    </div>
-                    <span>LIVE VIEW</span>
-                </button>
-            </div>
-
-            <!-- Statistics -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">TOTAL LISTINGS</div>
-                    <div class="stat-value" id="totalListings">—</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">LAST SCAN</div>
-                    <div class="stat-value time" id="lastRun">—</div>
-                </div>
-            </div>
-
-            <!-- Activity Logs -->
-            <div class="logs-section">
-                <div class="logs-header">
-                    <h3>RECENT ACTIVITY</h3>
-                    <button class="btn-refresh" onclick="refreshLogs()">
-                        <span class="material-icons" style="font-size: 16px;">refresh</span>
-                        REFRESH
-                    </button>
-                </div>
-                <div class="logs-content" id="logsContent">
-                    Initializing system...
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- Dashboard Section Removed (Legacy) -->
     {% endif %}
 
     <script>
