@@ -358,13 +358,16 @@ class FacebookStrategy(ScrapeStrategy):
                 targets = unique_links[:20] 
                 
                 print(f"   🚀 Triggering cloud batch for {len(targets)} items...")
-                if progress_callback:
-                    progress_callback(50, 60, f"Enriching 20 items via Cloud...")
                 
-                enriched_listings = self.enricher.enrich(targets, progress_callback)
-                
-                if progress_callback:
-                    progress_callback(90, 60, "Cloud enrichment complete.")
+                # Create a scaled callback for the enrichment phase (50% -> 90%)
+                def enrichment_callback(curr, tot, msg):
+                    if progress_callback and tot > 0:
+                        # Scale 0-100% of enrichment to 50-90% of total
+                        enrichment_pct = curr / tot
+                        scaled_pct = 50 + (enrichment_pct * 40)
+                        progress_callback(scaled_pct, 100, f"Enriching: {msg}")
+
+                enriched_listings = self.enricher.enrich(targets, enrichment_callback)
                 
                 if enriched_listings:
                     listings.extend(enriched_listings)
