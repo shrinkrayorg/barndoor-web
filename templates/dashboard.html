@@ -2766,6 +2766,21 @@
                     </div>
                 </div>
 
+                <!-- Source -->
+                <div class="filter-group">
+                    <h4>Source</h4>
+                    <div class="filter-content">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="filterSourceFacebook" checked>
+                            <span>Facebook Marketplace</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="filterSourceCraigslist" checked>
+                            <span>Craigslist</span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Show Only -->
                 <div class="filter-group">
                     <h4>Show only</h4>
@@ -3540,6 +3555,26 @@
                     // Batch Filter
                     const batchVal = getVal('filterBatch');
                     if (batchVal && vehicle.batch_name !== batchVal) return false;
+
+                    // Source Filter
+                    const sourceFacebookChecked = getChecked('filterSourceFacebook');
+                    const sourceCraigslistChecked = getChecked('filterSourceCraigslist');
+                    const vehicleSource = (vehicle.source || '').toLowerCase();
+
+                    // If neither is checked, show nothing
+                    if (!sourceFacebookChecked && !sourceCraigslistChecked) return false;
+
+                    // If only Facebook is checked
+                    if (sourceFacebookChecked && !sourceCraigslistChecked) {
+                        if (!vehicleSource.includes('facebook')) return false;
+                    }
+
+                    // If only Craigslist is checked
+                    if (!sourceFacebookChecked && sourceCraigslistChecked) {
+                        if (!vehicleSource.includes('craigslist')) return false;
+                    }
+
+                    // If both are checked, show all sources (no filter needed)
 
                     // Make filter
                     const makeVal = getVal('filterMake');
