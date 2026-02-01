@@ -167,7 +167,13 @@
         "transmission_manual": 10,
         "year_2010_plus": 30,
         "mileage_under_120k": 30,
-        "spanish_description_penalty": -20
+        "spanish_description_penalty": -20,
+        "freshness_under_1hr": 25,
+        "freshness_under_24hr": 10,
+        "high_value_bonus": 15,
+        "medium_value_bonus": 5,
+        "older_non_high_value_penalty": -10,
+        "high_mileage_penalty": -20
     },
     "target_urls": [
         "https://www.facebook.com/marketplace/chicago/search?sortBy=creation_time_descend&sellerType=individual&query=Vehicles&category_id=546583916084032&exact=false&referral_ui_component=category_menu_item",

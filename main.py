@@ -14,6 +14,7 @@ import random
 import os
 from dotenv import load_dotenv
 import functools
+from modules.ghost import Ghost
 
 # Load env vars immediately
 load_dotenv()
@@ -67,7 +68,8 @@ def initialize_modules():
     
     
     # Import modules here to catch ImportError within main try/except block
-    from modules import Hunter, Vetter, Ghost, Herald
+    from modules import Hunter, Vetter, Herald
+    from modules.ghost import Ghost
     
     print("=" * 60)
     print("🚗 BARNFIND - Automated Vehicle Market Analysis")
@@ -168,41 +170,11 @@ def initialize_modules():
 
 def check_and_rotate_session():
     """
-    Enforce intermittent session rotation (5-25 mins).
-    Closes and re-opens browser to evade detection.
+    Session rotation DISABLED for persistent browser profiles.
+    Persistent profiles naturally maintain sessions without manual rotation.
     """
-    global ghost, hunter, session_start_time, session_rotation_interval, active_config
-    
-    elapsed = time.time() - session_start_time
-    if elapsed > session_rotation_interval:
-        print(f"\n🔄 SESSION ROTATION TRIGGERED (Active {int(elapsed/60)}m / Limit {int(session_rotation_interval/60)}m)")
-        print("   Throwing off detection algorithms...")
-        
-        # 1. Close Old
-        try:
-            ghost.close()
-        except: pass
-        
-        
-        # 2. Wait (Long Pause)
-        wait_time = random.uniform(5 * 60, 25 * 60) # 5 to 25 minutes
-        print(f"   Sleeping for {int(wait_time/60)} minutes to cool down...")
-        print("   (This extensive pause is to evade bot detection)")
-        time.sleep(wait_time)
-        
-        # 3. Open New
-        print("   Starting Fresh Ghost Session...")
-        ghost = Ghost(config=active_config)
-        ghost.execute()
-        
-        # 4. Update References
-        if hunter:
-            hunter.ghost = ghost
-            
-        # 5. Reset Timer
-        session_start_time = time.time()
-        session_rotation_interval = random.randint(5 * 60, 25 * 60)
-        print(f"   ✅ Session Rotated. Next swap in {int(session_rotation_interval/60)} mins.")
+    # Session rotation disabled - persistent profiles handle this automatically
+    pass
 
 
 def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
@@ -237,6 +209,24 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
     try:
         check_and_rotate_session()
         print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 Starting Pipeline Run...")
+        
+        # --- RELOAD CONFIGURATION ---
+        # Ensure we pick up latest settings (e.g. Proxy changes)
+        try:
+            config_db = ConfigDB()
+            new_config = config_db.get_active_config()
+            if new_config:
+                global active_config
+                active_config = new_config
+                # Update modules with new config
+                if ghost: ghost.config = active_config
+                if hunter: hunter.config = active_config
+                if vetter: vetter.config = active_config
+                if herald: herald.config = active_config
+                print("   🔄 Configuration reloaded.")
+        except Exception as e:
+            print(f"   ⚠️ Config reload warning: {e}")
+            
     except Exception as e:
         print(f"⚠️ Session rotation warning: {e}")
 
@@ -391,7 +381,20 @@ def run_pipeline(manual_mode=False, max_hours=None, source_filter=None):
         
     finally:
         # DB closure is now handled globally in main() finally block to support scheduling
-        pass
+        print("🏁 Pipeline run finished.")
+        # Update Status to Complete/Idle
+        try:
+            status_file = Path('database/scan_status.json')
+            with open(status_file, 'w') as f:
+                json.dump({
+                    'active': False,
+                    'status': 'Complete',
+                    'percent': 100,
+                    'source': source_filter or 'All',
+                    'updated_at': datetime.now().isoformat()
+                }, f)
+        except Exception as e:
+            print(f"⚠️ Failed to update completion status: {e}")
 
 
 def send_daily_digest():

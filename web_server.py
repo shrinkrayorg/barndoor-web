@@ -17,6 +17,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime
 import certifi
+import requests
 
 load_dotenv()
 
@@ -28,6 +29,7 @@ PROJECT_DIR = Path(__file__).parent
 # DB_PATH = PROJECT_DIR / "database" / "ledger.json" # Legacy
 SETTINGS_PATH = PROJECT_DIR / "database" / "settings.json"
 USERS_PATH = PROJECT_DIR / "database" / "users.json"
+PROFILES_PATH = PROJECT_DIR / "database" / "profiles.json"
 LOG_PATH = PROJECT_DIR / "barnfind.log"
 PID_FILE = PROJECT_DIR / "barnfind.pid"
 
@@ -92,6 +94,300 @@ def send_email(to_email, subject, content):
     except Exception as e:
         print(f"Error sending email: {e}")
         return False
+
+
+
+# --- Profile Management Helpers ---
+def get_profiles_data():
+    if not PROFILES_PATH.exists():
+        return {"profiles": [], "active_profile_id": None}
+    try:
+        with open(PROFILES_PATH, 'r') as f:
+            return json.load(f)
+    except:
+        return {"profiles": [], "active_profile_id": None}
+
+def save_profiles_data(data):
+    with open(PROFILES_PATH, 'w') as f:
+        json.dump(data, f, indent=4)
+
+
+@app.route('/api/profiles', methods=['GET'])
+def list_profiles():
+    """List all Facebook profiles."""
+    if not session.get('logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    return jsonify(get_profiles_data())
+
+
+@app.route('/api/profiles/add', methods=['POST'])
+def add_profile():
+    """Add a new Facebook profile."""
+    if not session.get('logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
+        
+    profiles_data = get_profiles_data()
+    
+    # Check duplicate
+    if any(p['username'] == username for p in profiles_data['profiles']):
+        return jsonify({'error': 'Profile already exists'}), 400
+    
+    # Create simple ID
+    import uuid
+    new_id = str(uuid.uuid4())[:8]
+    
+    new_profile = {
+        "id": new_id,
+        "username": username,
+        "password": password,
+        "added_at": datetime.now().isoformat()
+    }
+    
+    profiles_data['profiles'].append(new_profile)
+    
+    # If first profile, auto-activate
+    if not profiles_data['active_profile_id']:
+        profiles_data['active_profile_id'] = new_id
+        
+    save_profiles_data(profiles_data)
+    
+    return jsonify({'success': True, 'profile': new_profile})
+
+
+@app.route('/api/profiles/delete', methods=['POST'])
+def delete_profile():
+    """Delete a Facebook profile."""
+    if not session.get('logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    profile_id = request.json.get('id')
+    profiles_data = get_profiles_data()
+    
+    initial_count = len(profiles_data['profiles'])
+    profiles_data['profiles'] = [p for p in profiles_data['profiles'] if p['id'] != profile_id]
+    
+    if len(profiles_data['profiles']) < initial_count:
+        # If we deleted the active one, reset active
+        if profiles_data['active_profile_id'] == profile_id:
+             profiles_data['active_profile_id'] = None
+             if profiles_data['profiles']:
+                 # Auto-activate next available
+                 profiles_data['active_profile_id'] = profiles_data['profiles'][0]['id']
+                 
+        save_profiles_data(profiles_data)
+        return jsonify({'success': True})
+        
+    return jsonify({'error': 'Profile not found'}), 404
+
+
+@app.route('/api/profiles/activate', methods=['POST'])
+def activate_profile():
+    """Set the active Facebook profile."""
+    if not session.get('logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    profile_id = request.json.get('id')
+    profiles_data = get_profiles_data()
+    
+    # Validate exist
+    if not any(p['id'] == profile_id for p in profiles_data['profiles']):
+        return jsonify({'error': 'Profile not found'}), 404
+        
+    profiles_data['active_profile_id'] = profile_id
+    save_profiles_data(profiles_data)
+    
+    return jsonify({'success': True})
+
+
+# --- PROXY MANAGEMENT ---
+PROXY_HISTORY_PATH = PROJECT_DIR / "database" / "proxy_history.json"
+
+def get_proxy_history():
+    if not PROXY_HISTORY_PATH.exists():
+        return {"history": []}
+    try:
+        with open(PROXY_HISTORY_PATH, 'r') as f:
+            return json.load(f)
+    except:
+        return {"history": []}
+
+def save_proxy_history(data):
+    try:
+        with open(PROXY_HISTORY_PATH, 'w') as f:
+            json.dump(data, f, indent=4)
+    except Exception as e:
+        print(f"Error saving proxy history: {e}")
+
+@app.route('/api/proxy/info', methods=['GET'])
+def get_proxy_info():
+    """Get current proxy settings and history."""
+    if not session.get('logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+        
+    # Get active settings
+    settings = {}
+    if SETTINGS_PATH.exists():
+        with open(SETTINGS_PATH, 'r') as f:
+            settings = json.load(f)
+            
+    net_conf = settings.get('network', {})
+    active_mode = net_conf.get('mode', 'direct')
+    proxy_user = net_conf.get('proxy_user', '')
+    
+    # Extract current Zip from username if present
+    # Format: ...-country-us-postal-12345
+    current_zip = ""
+    if '-postal-' in proxy_user:
+        try:
+            parts = proxy_user.split('-postal-')
+            if len(parts) > 1:
+                current_zip = parts[1].split('-')[0]
+        except: pass
+        
+    history = get_proxy_history().get('history', [])
+    
+    return jsonify({
+        'enabled': active_mode == 'proxy',
+        'zipcode': current_zip,
+        'history': history
+    })
+
+@app.route('/api/proxy/current-ip', methods=['GET'])
+def get_current_ip():
+    """Get current IP address and geolocation through proxy."""
+    if not session.get('logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        # Load settings to check proxy config
+        settings = {}
+        if SETTINGS_PATH.exists():
+            with open(SETTINGS_PATH, 'r') as f:
+                settings = json.load(f)
+        
+        net_conf = settings.get('network', {})
+        proxy_enabled = net_conf.get('mode') == 'proxy'
+        
+        # Build proxy dict if enabled
+        proxies = None
+        if proxy_enabled:
+            proxy_user = net_conf.get('proxy_user', '')
+            proxy_pass = net_conf.get('proxy_password', '')
+            proxy_host = net_conf.get('proxy_host', 'brd.superproxy.io')
+            proxy_port = net_conf.get('proxy_port', 33335)
+            
+            if proxy_user and proxy_pass:
+                proxy_url = f"http://{proxy_user}:{proxy_pass}@{proxy_host}:{proxy_port}"
+                proxies = {'http': proxy_url, 'https': proxy_url}
+        
+        # Fetch IP and geolocation from ipapi.co
+        response = requests.get(
+            'https://ipapi.co/json/',
+            proxies=proxies,
+            timeout=10,
+            verify=False  # Bright Data uses SSL interception
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            return jsonify({
+                'success': True,
+                'ip': data.get('ip'),
+                'city': data.get('city'),
+                'region': data.get('region'),
+                'postal': data.get('postal'),
+                'country': data.get('country_name'),
+                'proxy_enabled': proxy_enabled
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'HTTP {response.status_code}'
+            }), 500
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/proxy/update', methods=['POST'])
+def update_proxy():
+    """Update proxy settings (Zipcode & Toggle)."""
+    if not session.get('logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+        
+    data = request.json
+    enabled = data.get('enabled', False)
+    zipcode = data.get('zipcode', '').strip()
+    
+    # Load settings
+    settings = {}
+    if SETTINGS_PATH.exists():
+        with open(SETTINGS_PATH, 'r') as f:
+            settings = json.load(f)
+    
+    if 'network' not in settings: settings['network'] = {}
+    
+    # Toggle Mode
+    settings['network']['mode'] = 'proxy' if enabled else 'direct'
+    
+    # Always update the configured proxy user if we have a base user string
+    # This ensuring that even if disabled, the "Set" button saves the preference.
+    original_user = settings['network'].get('proxy_user', '')
+    
+    # Fallback if settings file is new/empty
+    if not original_user: 
+        # try to find from env or use a placeholder that user must fix later
+        # But usually setup_proxy_magic sets this.
+        # If empty, we can't really "construct" it without the customer ID.
+        pass
+
+    if original_user and zipcode:
+        try:
+            # 1. Strip existing location suffixes
+            base_part = original_user
+            if '-country-' in original_user:
+                base_part = original_user.split('-country-')[0]
+            
+            # 2. Rebuild with new zip
+            new_user = f"{base_part}-country-us-postal-{zipcode}"
+            settings['network']['proxy_user'] = new_user
+
+            # 3. Update History
+            hist_data = get_proxy_history()
+            history = hist_data.get('history', [])
+            # Remove if exists (move to top)
+            if zipcode in history:
+                history.remove(zipcode)
+            history.insert(0, zipcode)
+            # Keep max 5
+            hist_data['history'] = history[:5]
+            save_proxy_history(hist_data)
+        except Exception as e:
+            print(f"Error updating proxy history: {e}")
+        
+    elif original_user and not zipcode:
+        # If user cleared the zip, revert to country-us only?
+        # optionally handle clearing specific targeting
+        pass
+
+    # Save Settings
+    try:
+        with open(SETTINGS_PATH, 'w') as f:
+            json.dump(settings, f, indent=4)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+        
+    return jsonify({'success': True})
 
 
 @app.route('/api/ops/seed_db')
@@ -465,12 +761,14 @@ def handle_settings():
 
 @app.route('/api/logs')
 def get_logs():
-    """Get recent logs."""
+    """Get recent logs from the scraper."""
     try:
-        if not LOG_PATH.exists():
-            return jsonify({'logs': 'No logs yet - start the service to begin'})
+        # Read the actual scraper logs, not the web server logs
+        scraper_log = PROJECT_DIR / "main.stdout.log"
+        if not scraper_log.exists():
+            return jsonify({'logs': 'No scraper logs yet - start a scan to begin'})
         
-        with open(LOG_PATH, 'r') as f:
+        with open(scraper_log, 'r', encoding='utf-8', errors='replace') as f:
             lines = f.readlines()
             recent = ''.join(lines[-100:])
         
@@ -534,48 +832,48 @@ def get_listings():
     status_filter = request.args.get('status')
     
     try:
-        # 1. MongoDB Strategy
+        results = []
+        
+        # 1. Try MongoDB
         if mongo_db is not None:
-            query = {}
-            if status_filter:
-                query['status'] = status_filter
-                
-            cursor = mongo_db.listings.find(query)
-            
-            results = []
-            for doc in cursor:
-                doc['id'] = str(doc['_id'])
-                del doc['_id']
-                if 'status' not in doc: doc['status'] = 'active'
-                results.append(doc)
-            return jsonify({'listings': results, 'total': len(results)})
+            try:
+                query = {}
+                if status_filter:
+                    query['status'] = status_filter
+                cursor = mongo_db.listings.find(query)
+                for doc in cursor:
+                    doc['id'] = str(doc['_id'])
+                    del doc['_id']
+                    if 'status' not in doc: doc['status'] = 'active'
+                    results.append(doc)
+            except Exception as mongo_err:
+                print(f"MongoDB Fetch Error: {mongo_err}")
 
-        # 2. Local Ledger Strategy (Fallback)
+        # 2. Try TinyDB (Always merge or fallback if MongoDB empty)
         local_db_path = PROJECT_DIR / "database" / "ledger.json"
         if local_db_path.exists():
-            with open(local_db_path, 'r') as f:
-                data = json.load(f)
-            
-            # TinyDB structure: {"listings": {"ID": {...}, "ID": {...}}}
-            listings_map = data.get('listings', {})
-            results = []
-            
-            for doc_id, listing in listings_map.items():
-                listing['id'] = str(doc_id)
-                # Default status to 'active' if missing
-                if 'status' not in listing:
-                    listing['status'] = 'active'
+            try:
+                with open(local_db_path, 'r') as f:
+                    data = json.load(f)
                 
-                # Filter by status if requested
-                if status_filter:
-                   if listing['status'] != status_filter:
-                       continue
+                listings_map = data.get('listings', {})
+                for doc_id, listing in listings_map.items():
+                    # Set ID and Default Status
+                    listing['id'] = str(doc_id)
+                    if 'status' not in listing:
+                        listing['status'] = 'active'
+                    
+                    # Filter by status if requested
+                    if status_filter and listing['status'] != status_filter:
+                        continue
+                    
+                    # Avoid duplicates if already in results from MongoDB
+                    if not any(r.get('listing_url') == listing.get('listing_url') for r in results):
+                        results.append(listing)
+            except Exception as tiny_err:
+                print(f"TinyDB Fetch Error: {tiny_err}")
                 
-                results.append(listing)
-                
-            return jsonify({'listings': results, 'total': len(results)})
-            
-        return jsonify({'listings': [], 'total': 0})
+        return jsonify({'listings': results, 'total': len(results)})
 
     except Exception as e:
         print(f"Error serving listings: {e}") 
@@ -593,67 +891,68 @@ def delete_listings():
              return jsonify({'success': True, 'count': 0})
              
         deleted_count = 0
+        ids_set = set(str(i) for i in ids_to_delete)
         
-        # 1. MongoDB Strategy
+        # 1. Try MongoDB
         if mongo_db is not None:
-            for identifier in ids_to_delete:
-                id_str = str(identifier)
-                res = None
-                
-                # 1. Try by ObjectId
-                if ObjectId.is_valid(id_str):
-                    res = mongo_db.listings.update_one(
-                        {'_id': ObjectId(id_str)},
-                        {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
-                    )
-                
-                # 2. Try by 'original_id' (legacy migration ID)
-                if not res or res.modified_count == 0:
-                     res = mongo_db.listings.update_one(
-                         {'original_id': id_str},
-                         {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
-                     )
-                     
-                # 3. Try by URL fallback
-                if not res or res.modified_count == 0:
-                    res = mongo_db.listings.update_one(
-                        {'listing_url': id_str},
-                        {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
-                    )
-                
-                if res and res.modified_count > 0:
-                    deleted_count += 1
-            return jsonify({'success': True, 'count': deleted_count})
+            try:
+                for identifier in ids_to_delete:
+                    id_str = str(identifier)
+                    res = None
+                    if ObjectId.is_valid(id_str):
+                        res = mongo_db.listings.update_one(
+                            {'_id': ObjectId(id_str)},
+                            {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
+                        )
+                    if not res or res.modified_count == 0:
+                        res = mongo_db.listings.update_one(
+                            {'original_id': id_str},
+                            {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
+                        )
+                    if not res or res.modified_count == 0:
+                        res = mongo_db.listings.update_one(
+                            {'listing_url': id_str},
+                            {'$set': {'status': 'deleted', 'deleted_at': datetime.now().isoformat()}}
+                        )
+                    if res and res.modified_count > 0:
+                        deleted_count += 1
+            except Exception as mongo_err:
+                print(f"MongoDB Delete Error: {mongo_err}")
 
-        # 2. Local Ledger Strategy (Fallback)
+        # 2. Try TinyDB (Fallback/Sync)
         local_db_path = PROJECT_DIR / "database" / "ledger.json"
         if local_db_path.exists():
-            with open(local_db_path, 'r') as f:
-                data = json.load(f)
-            
-            listings_map = data.get('listings', {})
-            for lid in ids_to_delete:
-                lid_str = str(lid)
-                # Try by direct ID
-                if lid_str in listings_map:
-                    listings_map[lid_str]['status'] = 'deleted'
-                    listings_map[lid_str]['deleted_at'] = datetime.now().isoformat()
-                    deleted_count += 1
-                else:
-                    # Try searching by URL
-                    for item_id, item in listings_map.items():
-                        if item.get('listing_url') == lid_str:
-                            item['status'] = 'deleted'
-                            item['deleted_at'] = datetime.now().isoformat()
-                            deleted_count += 1
-                            break
-            
-            with open(local_db_path, 'w') as f:
-                json.dump(data, f, indent=4)
+            try:
+                with open(local_db_path, 'r') as f:
+                    data = json.load(f)
                 
-            return jsonify({'success': True, 'count': deleted_count})
-            
-        return jsonify({'error': 'No Database Connection'}), 500
+                listings_map = data.get('listings', {})
+                tiny_deleted = 0
+                for lid_str in ids_set:
+                    # Match by Key
+                    if lid_str in listings_map:
+                        if listings_map[lid_str].get('status') != 'deleted':
+                            listings_map[lid_str]['status'] = 'deleted'
+                            listings_map[lid_str]['deleted_at'] = datetime.now().isoformat()
+                            tiny_deleted += 1
+                    else:
+                        # Match by URL
+                        for item_id, item in listings_map.items():
+                            if item.get('listing_url') == lid_str:
+                                if item.get('status') != 'deleted':
+                                    item['status'] = 'deleted'
+                                    item['deleted_at'] = datetime.now().isoformat()
+                                    tiny_deleted += 1
+                                break
+                
+                if tiny_deleted > 0:
+                    with open(local_db_path, 'w') as f:
+                        json.dump(data, f, indent=4)
+                    deleted_count = max(deleted_count, tiny_deleted) # crude way to report
+            except Exception as tiny_err:
+                print(f"TinyDB Delete Error: {tiny_err}")
+                
+        return jsonify({'success': True, 'count': deleted_count})
             
     except Exception as e:
         print(f"Error deleting listings: {e}")
@@ -672,56 +971,59 @@ def bulk_update_status():
             return jsonify({'success': True, 'count': 0})
             
         updated_count = 0
+        ids_set = set(str(i) for i in ids_to_update)
         update_data = {'status': new_status}
         if new_status == 'tickle':
             update_data['tickle_at'] = datetime.now().isoformat()
 
-        # 1. MongoDB Strategy
+        # 1. Try MongoDB
         if mongo_db is not None:
-            for id_str in ids_to_update:
-                 res = None
-                 # Try ObjectId
-                 if ObjectId.is_valid(str(id_str)):
-                     res = mongo_db.listings.update_one(
-                         {'_id': ObjectId(str(id_str))},
-                         {'$set': update_data}
-                     )
-                
-                 # Try original_id or URL
-                 if not res or res.modified_count == 0:
-                     res = mongo_db.listings.update_one(
-                         {'$or': [{'original_id': str(id_str)}, {'listing_url': str(id_str)}]},
-                         {'$set': update_data}
-                     )
-                     
-                 if res and res.modified_count > 0:
-                     updated_count += 1
-            return jsonify({'success': True, 'count': updated_count})
+            try:
+                for id_str in ids_to_update:
+                    res = None
+                    if ObjectId.is_valid(str(id_str)):
+                        res = mongo_db.listings.update_one(
+                            {'_id': ObjectId(str(id_str))},
+                            {'$set': update_data}
+                        )
+                    if not res or res.modified_count == 0:
+                        res = mongo_db.listings.update_one(
+                            {'$or': [{'original_id': str(id_str)}, {'listing_url': str(id_str)}]},
+                            {'$set': update_data}
+                        )
+                    if res and res.modified_count > 0:
+                        updated_count += 1
+            except Exception as mongo_err:
+                print(f"MongoDB Bulk Update Error: {mongo_err}")
 
-        # 2. Local Ledger Strategy (Fallback)
+        # 2. Try TinyDB (Sync)
         local_db_path = PROJECT_DIR / "database" / "ledger.json"
         if local_db_path.exists():
-            with open(local_db_path, 'r') as f:
-                data = json.load(f)
-            
-            listings_map = data.get('listings', {})
-            for lid in ids_to_update:
-                lid_str = str(lid)
-                if lid_str in listings_map:
-                    listings_map[lid_str].update(update_data)
-                    updated_count += 1
-                else:
-                    for item_id, item in listings_map.items():
-                        if item.get('listing_url') == lid_str:
-                            item.update(update_data)
-                            updated_count += 1
-                            break
-            
-            with open(local_db_path, 'w') as f:
-                json.dump(data, f, indent=4)
-            return jsonify({'success': True, 'count': updated_count})
-        
-        return jsonify({'error': 'No Database Connection'}), 500
+            try:
+                with open(local_db_path, 'r') as f:
+                    data = json.load(f)
+                
+                listings_map = data.get('listings', {})
+                tiny_updated = 0
+                for lid_str in ids_set:
+                    if lid_str in listings_map:
+                        listings_map[lid_str].update(update_data)
+                        tiny_updated += 1
+                    else:
+                        for item_id, item in listings_map.items():
+                            if item.get('listing_url') == lid_str:
+                                item.update(update_data)
+                                tiny_updated += 1
+                                break
+                
+                if tiny_updated > 0:
+                    with open(local_db_path, 'w') as f:
+                        json.dump(data, f, indent=4)
+                    updated_count = max(updated_count, tiny_updated)
+            except Exception as tiny_err:
+                print(f"TinyDB Bulk Update Error: {tiny_err}")
+                
+        return jsonify({'success': True, 'count': updated_count})
             
     except Exception as e:
         print(f"Error bulk updating listings: {e}")
@@ -774,7 +1076,7 @@ def get_debug_log():
     try:
         log_path = PROJECT_DIR / 'database' / 'debug_launcher.log'
         if log_path.exists():
-            return log_path.read_text()
+            return log_path.read_text(encoding='utf-8', errors='replace')
         return "No debug log found."
     except Exception as e:
         return f"Error reading log: {e}"
@@ -793,12 +1095,38 @@ def update_status():
         if new_status == 'tickle': # User requested "Tickle File"
             update_data['tickle_at'] = datetime.now().isoformat()
 
-        res = mongo_db.listings.update_one(
-            {'listing_url': url},
-            {'$set': update_data}
-        )
-        
-        if res.modified_count > 0:
+        success = False
+        # 1. Try MongoDB
+        if mongo_db is not None:
+            try:
+                res = mongo_db.listings.update_one(
+                    {'listing_url': url},
+                    {'$set': update_data}
+                )
+                if res.modified_count > 0:
+                    success = True
+            except: pass
+            
+        # 2. Try TinyDB
+        local_db_path = PROJECT_DIR / "database" / "ledger.json"
+        if local_db_path.exists():
+            try:
+                with open(local_db_path, 'r') as f:
+                    data = json.load(f)
+                listings_map = data.get('listings', {})
+                tiny_success = False
+                for item_id, item in listings_map.items():
+                    if item.get('listing_url') == url:
+                        item.update(update_data)
+                        tiny_success = True
+                        break
+                if tiny_success:
+                    with open(local_db_path, 'w') as f:
+                        json.dump(data, f, indent=4)
+                    success = True
+            except: pass
+            
+        if success:
             return jsonify({'success': True})
         else:
             return jsonify({'error': 'Listing not found'}), 404

@@ -641,62 +641,110 @@
                     <input type="number" id="spanish_description_penalty" value="-20">
                     <div class="helper-text">Penalty for listings written in Spanish</div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Strategy Guide (New) -->
-    <div class="section-card">
-        <div class="section-header" style="cursor: pointer;"
-            onclick="document.getElementById('strategyContent').classList.toggle('hidden')">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>📘 Lead Sourcing Guide</h2>
-                <span class="material-icons">expand_more</span>
-            </div>
-            <p>Buying Rules & Value Guidelines (2026)</p>
-        </div>
-        <div id="strategyContent" class="hidden"
-            style="margin-top: 20px; border-top: 1px solid #333; padding-top: 20px;">
-
-            <h3 style="color: #CC0000; margin-bottom: 15px;">Buying Rules & Setup</h3>
-            <ul style="list-style: disc; margin-left: 20px; color: #ddd; margin-bottom: 20px; line-height: 1.8;">
-                <li><strong>Territory:</strong> 250 miles around Glenview, IL (60025). Marketplace & Craigslist.</li>
-                <li><strong>Goal:</strong> Value at or UNDER Carfax Wholesale. (Run unlimited reports).</li>
-                <li><strong>Mileage/Age:</strong> No strict limits. Sweet spot is 2010+, <120k miles.</li>
-                <li><strong>Body:</strong> NO severe rust/holes on frame/rockers. Surface rust OK. Panel damage OK
-                    ($300-$500 fix).</li>
-                <li><strong>Title:</strong> NO Salvage or Branded Titles. Check Carfax.</li>
-                <li><strong>Mechanical:</strong> Engine/Trans swaps allowed if priced right ($1k-$4k cost).</li>
-            </ul>
-
-            <h3 style="color: #CC0000; margin-bottom: 15px;">Vehicle Values</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div>
-                    <h4 style="color: #4CAF50; margin-bottom: 10px;">HIGH VALUE (Target)</h4>
-                    <ul style="list-style: none; color: #bbb; line-height: 1.6;">
-                        <li>✅ Toyota, Honda, Subaru</li>
-                        <li>✅ Pickups: Chevy, Ford, GMC</li>
-                        <li>✅ SUVS: Chevy, Ford, GMC</li>
-                        <li>✅ Minivans & Handicap Vans (High Value!)</li>
-                        <li>✅ 15-passenger vans (moderate miles)</li>
-                        <li>✅ V8 engines > V6 > I4</li>
-                    </ul>
+                <!-- Year & Mileage Bonuses -->
+                <div class="form-group">
+                    <label>Year 2010+ Bonus</label>
+                    <input type="number" id="year_2010_plus" value="30">
+                    <div class="helper-text">Bonus for modern vehicles (2010 or newer)</div>
                 </div>
-                <div>
-                    <h4 style="color: #F44336; margin-bottom: 10px;">LOW VALUE (Avoid)</h4>
-                    <p style="font-size: 0.9em; color: #888;">(Unless 2010+ with <100k miles)</p>
-                            <ul style="list-style: none; color: #bbb; line-height: 1.6;">
-                                <li>❌ Nissan (Altima, Versa, Rogue, Leaf, etc)</li>
-                                <li>❌ Ford Cars (Focus, Fusion, Taurus, Escape)</li>
-                                <li>❌ Chevy Cars (Cruze, Malibu, Impala, Travese)</li>
-                                <li>❌ Dodge (Journey, Dart, Avenger)</li>
-                                <li>❌ Mitsubishi, Buick (Century/LeSabre), Kia/Hyundai</li>
-                                <li>❌ Jeep Compass/Patriot/Liberty</li>
-                            </ul>
+                <div class="form-group">
+                    <label>Mileage <120k Bonus</label>
+                            <input type="number" id="mileage_under_120k" value="30">
+                            <div class="helper-text">Bonus for low mileage vehicles</div>
+                </div>
+
+                <!-- Freshness Bonuses -->
+                <div class="form-group">
+                    <label>Freshness <1hr Bonus</label>
+                            <input type="number" id="freshness_under_1hr" value="25">
+                            <div class="helper-text">Bonus for listings less than 1 hour old</div>
+                </div>
+                <div class="form-group">
+                    <label>Freshness <24hr Bonus</label>
+                            <input type="number" id="freshness_under_24hr" value="10">
+                            <div class="helper-text">Bonus for listings less than 24 hours old</div>
+                </div>
+
+                <!-- Value Tier Bonuses -->
+                <div class="form-group">
+                    <label>High Value Tier Bonus</label>
+                    <input type="number" id="high_value_bonus" value="15">
+                    <div class="helper-text">Bonus for Tier 1 vehicles</div>
+                </div>
+                <div class="form-group">
+                    <label>Medium Value Tier Bonus</label>
+                    <input type="number" id="medium_value_bonus" value="5">
+                    <div class="helper-text">Bonus for Tier 2 vehicles</div>
+                </div>
+
+                <!-- Penalties -->
+                <div class="form-group">
+                    <label>Older (<2005) Penalty (Negative)</label>
+                            <input type="number" id="older_non_high_value_penalty" value="-10">
+                            <div class="helper-text">Penalty for older vehicles (not high value)</div>
+                </div>
+                <div class="form-group">
+                    <label>High Mileage (>180k) Penalty (Negative)</label>
+                    <input type="number" id="high_mileage_penalty" value="-20">
+                    <div class="helper-text">Penalty for high mileage vehicles (not high value)</div>
+                </div </div>
+            </div>
+        </div>
+
+        <!-- Strategy Guide (New) -->
+        <div class="section-card">
+            <div class="section-header" style="cursor: pointer;"
+                onclick="document.getElementById('strategyContent').classList.toggle('hidden')">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>📘 Lead Sourcing Guide</h2>
+                    <span class="material-icons">expand_more</span>
+                </div>
+                <p>Buying Rules & Value Guidelines (2026)</p>
+            </div>
+            <div id="strategyContent" class="hidden"
+                style="margin-top: 20px; border-top: 1px solid #333; padding-top: 20px;">
+
+                <h3 style="color: #CC0000; margin-bottom: 15px;">Buying Rules & Setup</h3>
+                <ul style="list-style: disc; margin-left: 20px; color: #ddd; margin-bottom: 20px; line-height: 1.8;">
+                    <li><strong>Territory:</strong> 250 miles around Glenview, IL (60025). Marketplace & Craigslist.
+                    </li>
+                    <li><strong>Goal:</strong> Value at or UNDER Carfax Wholesale. (Run unlimited reports).</li>
+                    <li><strong>Mileage/Age:</strong> No strict limits. Sweet spot is 2010+, <120k miles.</li>
+                    <li><strong>Body:</strong> NO severe rust/holes on frame/rockers. Surface rust OK. Panel damage OK
+                        ($300-$500 fix).</li>
+                    <li><strong>Title:</strong> NO Salvage or Branded Titles. Check Carfax.</li>
+                    <li><strong>Mechanical:</strong> Engine/Trans swaps allowed if priced right ($1k-$4k cost).</li>
+                </ul>
+
+                <h3 style="color: #CC0000; margin-bottom: 15px;">Vehicle Values</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h4 style="color: #4CAF50; margin-bottom: 10px;">HIGH VALUE (Target)</h4>
+                        <ul style="list-style: none; color: #bbb; line-height: 1.6;">
+                            <li>✅ Toyota, Honda, Subaru</li>
+                            <li>✅ Pickups: Chevy, Ford, GMC</li>
+                            <li>✅ SUVS: Chevy, Ford, GMC</li>
+                            <li>✅ Minivans & Handicap Vans (High Value!)</li>
+                            <li>✅ 15-passenger vans (moderate miles)</li>
+                            <li>✅ V8 engines > V6 > I4</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: #F44336; margin-bottom: 10px;">LOW VALUE (Avoid)</h4>
+                        <p style="font-size: 0.9em; color: #888;">(Unless 2010+ with <100k miles)</p>
+                                <ul style="list-style: none; color: #bbb; line-height: 1.6;">
+                                    <li>❌ Nissan (Altima, Versa, Rogue, Leaf, etc)</li>
+                                    <li>❌ Ford Cars (Focus, Fusion, Taurus, Escape)</li>
+                                    <li>❌ Chevy Cars (Cruze, Malibu, Impala, Travese)</li>
+                                    <li>❌ Dodge (Journey, Dart, Avenger)</li>
+                                    <li>❌ Mitsubishi, Buick (Century/LeSabre), Kia/Hyundai</li>
+                                    <li>❌ Jeep Compass/Patriot/Liberty</li>
+                                </ul>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     </div>
 
     <style>
@@ -815,6 +863,16 @@
                 document.getElementById('engine_v8').value = currentSettings.score_weights.engine_v8 || 15;
                 document.getElementById('spanish_description_penalty').value = currentSettings.score_weights.spanish_description_penalty || -20;
 
+                // NEW: Year, Mileage, Freshness, Value Tier bonuses
+                document.getElementById('year_2010_plus').value = currentSettings.score_weights.year_2010_plus || 30;
+                document.getElementById('mileage_under_120k').value = currentSettings.score_weights.mileage_under_120k || 30;
+                document.getElementById('freshness_under_1hr').value = currentSettings.score_weights.freshness_under_1hr || 25;
+                document.getElementById('freshness_under_24hr').value = currentSettings.score_weights.freshness_under_24hr || 10;
+                document.getElementById('high_value_bonus').value = currentSettings.score_weights.high_value_bonus || 15;
+                document.getElementById('medium_value_bonus').value = currentSettings.score_weights.medium_value_bonus || 5;
+                document.getElementById('older_non_high_value_penalty').value = currentSettings.score_weights.older_non_high_value_penalty || -10;
+                document.getElementById('high_mileage_penalty').value = currentSettings.score_weights.high_mileage_penalty || -20;
+
             } catch (error) {
                 console.error('Error loading settings:', error);
                 showToast('Failed to load settings', 'error');
@@ -844,7 +902,15 @@
                         type_handicap: parseInt(document.getElementById('typeHandicap').value) || 0,
                         type_minivan: parseInt(document.getElementById('type_minivan').value) || 0,
                         engine_v8: parseInt(document.getElementById('engine_v8').value) || 0,
-                        spanish_description_penalty: parseInt(document.getElementById('spanish_description_penalty').value) || -20
+                        spanish_description_penalty: parseInt(document.getElementById('spanish_description_penalty').value) || -20,
+                        year_2010_plus: parseInt(document.getElementById('year_2010_plus').value) || 30,
+                        mileage_under_120k: parseInt(document.getElementById('mileage_under_120k').value) || 30,
+                        freshness_under_1hr: parseInt(document.getElementById('freshness_under_1hr').value) || 25,
+                        freshness_under_24hr: parseInt(document.getElementById('freshness_under_24hr').value) || 10,
+                        high_value_bonus: parseInt(document.getElementById('high_value_bonus').value) || 15,
+                        medium_value_bonus: parseInt(document.getElementById('medium_value_bonus').value) || 5,
+                        older_non_high_value_penalty: parseInt(document.getElementById('older_non_high_value_penalty').value) || -10,
+                        high_mileage_penalty: parseInt(document.getElementById('high_mileage_penalty').value) || -20
                     }
                 };
 

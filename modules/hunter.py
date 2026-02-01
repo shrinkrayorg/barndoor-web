@@ -10,6 +10,7 @@ import re
 import time
 import random
 import os
+from datetime import datetime
 # Import Navigator
 from modules.navigator import Navigator, NavReason
 # Import Enricher
@@ -119,17 +120,19 @@ class FacebookStrategy(ScrapeStrategy):
     Handles login requirements and FB-specific selectors.
     """
     
-    def __init__(self, ghost=None, navigator=None):
+    def __init__(self, ghost=None, navigator=None, use_direct_api=False):
         """
         Initialize Facebook strategy.
         
         Args:
             ghost: Ghost instance for session management and login
             navigator: Navigator instance for stealth navigation
+            use_direct_api: If True, bypass browser and use Bright Data API directly (default: True)
         """
         super().__init__(navigator)
         self.ghost = ghost
         self.enricher = BrightDataEnricher()
+        self.use_direct_api = use_direct_api
     
     def login_if_needed(self, page: Page):
         """
@@ -216,11 +219,13 @@ class FacebookStrategy(ScrapeStrategy):
 
     def scrape(self, page: Page, url: str, max_hours: float = None, progress_callback=None) -> list:
         """
-        Scrape Facebook Marketplace (Listings -> Enrichment).
-        Uses simple feed scrolling to get URLs, then handles details via Bright Data or simplified extraction.
+        Scrape Facebook Marketplace.
+        
+        NEW (2026-02): Direct API Mode bypasses browser entirely and sends search URL
+        to Bright Data Dataset API, which handles all anti-bot measures.
         
         Args:
-            page: Playwright Page object.
+            page: Playwright Page object (unused if use_direct_api=True).
             url: Target URL (search results page).
             max_hours: Optional filter for listing age.
             progress_callback: Optional progress callback.
@@ -228,6 +233,40 @@ class FacebookStrategy(ScrapeStrategy):
         Returns:
             list: List of extracted listing dictionaries.
         """
+        # ========== DIRECT API MODE (DEFAULT) ==========
+        if self.use_direct_api:
+            print("   🚀 Using Bright Data Direct API (bypassing browser)")
+            print(f"   🔗 Search URL: {url[:80]}...")
+            
+            if progress_callback:
+                progress_callback(0, 100, "Initializing Bright Data API...")
+            
+            # Send search URL directly to Bright Data
+            # They handle all scraping, anti-bot bypassing, etc.
+            listings = self.enricher.enrich_search_url(url, progress_callback)
+            
+            # Apply time filter if specified
+            if max_hours and listings:
+                print(f"   ⏰ Applying {max_hours}h time filter...")
+                filtered = []
+                for listing in listings:
+                    age = listing.get('hours_since_listed')
+                    if age is None:
+                        # Strict mode: skip if age unknown
+                        continue
+                    if age <= max_hours:
+                        filtered.append(listing)
+                
+                print(f"   ✅ Time filter: {len(filtered)}/{len(listings)} listings within {max_hours}h")
+                return filtered
+            
+            return listings
+        
+        # ========== LEGACY BROWSER MODE (FALLBACK) ==========
+        # This is the old approach that's prone to blocking
+        # Only used if use_direct_api=False
+        print("   ⚠️  Using legacy browser mode (may encounter blocking)")
+        
         listings = []
         try:
             print(f"   Getting {url}...")
@@ -245,7 +284,7 @@ class FacebookStrategy(ScrapeStrategy):
             try:
                 # Broader selectors for 2026 FB layout
                 # div[role="main"] is standard, aria-label="Collection..." is specific to feed
-                page.wait_for_selector('div[role="feed"], div[role="main"], div[aria-label*="Marketplace"], div[data-nosnippet]', timeout=15000)
+                page.wait_for_selector('div[role="feed"], div[role="main"], div[aria-label*="Marketplace"], div[data-nosnippet]', timeout=30000)
                 print("   ✅ Content loaded.")
             except Exception:
                 print("   ⚠️ Content wait timed out, proceeding anyway (might be a false alarm or empty page)...")
@@ -260,6 +299,43 @@ class FacebookStrategy(ScrapeStrategy):
             
             # Check for login requirement
             is_logged_in = self.login_if_needed(page)
+            
+            # CRITICAL: Dismiss "See more on Facebook" modal if it appears
+            # Even with cookies, Facebook shows this overlay to non-logged-in users
+            try:
+                # Wait briefly for modal to appear
+                page.wait_for_timeout(2000)
+                
+                # Try various close button selectors
+                modal_selectors = [
+                    'div[aria-label="Close"]',
+                    'div[role="button"]:has-text("Not Now")',
+                    'div[role="button"]:has-text("Close")',
+                    'button:has-text("Not Now")',
+                    '[aria-label="Close"]'
+                ]
+                
+                dismissed = False
+                for selector in modal_selectors:
+                    close_btn = page.query_selector(selector)
+                    if close_btn:
+                        try:
+                            close_btn.click()
+                            page.wait_for_timeout(1500)
+                            print(f"   ✅ Dismissed login modal")
+                            dismissed = True
+                            break
+                        except:
+                            continue
+                
+                if not dismissed:
+                    # Try pressing ESC key as fallback
+                    page.keyboard.press('Escape')
+                    page.wait_for_timeout(1000)
+                    print("   ⚠️  Attempted ESC to dismiss modal")
+                    
+            except Exception as e:
+                print(f"   ⚠️  Modal dismissal check: {e}")
             
             # Check if feed items are actually visible 
             feed_items = page.query_selector_all('a[href*="/marketplace/item/"]')
@@ -285,6 +361,10 @@ class FacebookStrategy(ScrapeStrategy):
             seen_urls = set()
             
             for i in range(12): # Increased to 12 cycles to reach 200+ findings
+                current_percent = 10 + (i * 3) # Starts at 10%, ends at ~46%
+                if progress_callback:
+                    progress_callback(current_percent, 0, f"Scanning Feed (Scroll {i+1}/12)...")
+                
                 print(f"   📜 Scroll {i+1}/12...")
                 # use ghost scroll for live feed
                 if self.ghost:
@@ -307,55 +387,46 @@ class FacebookStrategy(ScrapeStrategy):
                             # Facebook URLs don't carry dates trivially without opening, 
                             # checking inside the loop is safer.
                             
-                            # --- PRE-CLICK FILTER (Smart Feed Filtering) ---
-                            # Extract text from link or parent to check for obvious dealbreakers
+                            # --- PRE-CLICK FILTER (Minimal - Let Bright Data handle most filtering) ---
+                            # CRITICAL: Pre-click filtering was TOO AGGRESSIVE and rejected ALL listings.
+                            # Only filter for OBVIOUS non-car vehicles. Let Bright Data enrichment provide accurate data.
                             try:
-                                link_text = link.inner_text().lower()
+                                link_text = link.get_attribute('aria-label') or ''
+                                link_text = link_text.lower()
                                 
-                                # 1. Severe Rust Check
-                                rust_keywords = ['severe rust', 'frame rot', 'rusted out', 'frame damage', 'serious rust']
-                                if any(rk in link_text for rk in rust_keywords):
-                                    print(f"   ⛔ Skipping (Severe Rust): {full_url}")
-                                    continue
-                                    
-                                # 2. Super High Mileage Check (>180k)
-                                # Look for "200k miles", "200,000 miles", "200k" context
-                                mileage_match = re.search(r'(\d{3})[k]?\s*miles?', link_text)
-                                if mileage_match:
-                                    miles = int(mileage_match.group(1))
-                                    # If it's just "200", assume "200k"
-                                    if miles < 1000: miles *= 1000 
-                                    
-                                    if miles > 180000:
-                                        print(f"   ⛔ Skipping (High Mileage {miles}): {full_url}")
-                                        continue
-
-                                # 3. Vehicle Type & Dealership Exclusions (Smart Filter)
+                                # ONLY exclude obvious non-car vehicles (motorcycles, boats, RVs, etc.)
                                 exclude_keywords = [
-                                    # Non-Standard Vehicles
-                                    'motorcycle', 'scooter', 'bike', 'boat', 'trailer', 'rv', 'camper', 'motorhome', 
-                                    'atv', 'snowmobile', 'parting out', 'part out', 'parts only', 'shell', 'chassis',
-                                    
-                                    # Dealership Keywords (Text Proxy for "Dealership Background")
-                                    'down payment', 'financing', 'finance', 'bad credit', 'buy here pay here', 
-                                    'auto sales', 'motors', 'dealership', 'car lot', 'monthly', 'warranty',
-                                    'llc', 'inc', 'corp', 'group', 'auto group', 'imports', 'exotics'
+                                    'motorcycle', 'scooter', 'dirt bike', 'bike',
+                                    'boat', 'jet ski', 'watercraft', 
+                                    'trailer only', 'rv', 'camper', 'motorhome',
+                                    'atv', 'quad', 'snowmobile',
+                                    'parting out', 'part out', 'parts only', 'for parts'
                                 ]
                                 
-                                # Check link text AND potentially parent text if accessible (simple heuristic for now)
-                                if any(ek in link_text for ek in exclude_keywords):
-                                    print(f"   ⛔ Skipping (Type/Dealer): {full_url}")
+                                if any(keyword in link_text for keyword in exclude_keywords):
+                                    print(f"   ⛔ Skipping (Non-Car Vehicle): {full_url}")
                                     continue
                                         
                             except:
-                                pass # formatting varies, proceed if unsure
+                                pass # If we can't get text, proceed anyway
+                            
+                            
+                            # NOTE: Time filtering moved to POST-enrichment phase
+                            # Pre-click date parsing from link text is unreliable and was rejecting too many valid listings
+                            # Bright Data enrichment provides accurate timestamps for filtering
                             
                             seen_urls.add(full_url)
                             unique_links.append(full_url)
             
             if not unique_links:
                 print("   ⚠️ Found 0 links. Taking debug screenshot...")
-                page.screenshot(path="debug_failure.png")
+                try:
+                    page.screenshot(path="debug_failure.png")
+                except: pass
+                
+                # Critical Fix: Status update to finish progress bar
+                if progress_callback:
+                    progress_callback(100, 100, "Complete (Values: 0)")
                 
             print(f"   Found {len(unique_links)} potential listing links. Sending to Bright Data for enrichment.")
             
@@ -449,14 +520,24 @@ class FacebookStrategy(ScrapeStrategy):
             # TIME POSTED (Advanced Parsing)
             # Try to find relative time like "Listed 2 hours ago"
             hours_since_listed = None
-            time_posted_match = re.search(r'Listed\s+([\d\.]+)\s+(min|minute|hour|day|week)s?\s+ago', body_text, re.IGNORECASE)
-            if time_posted_match:
-                val = float(time_posted_match.group(1))
-                unit = time_posted_match.group(2).lower()
-                if 'min' in unit: hours_since_listed = val / 60.0
-                elif 'hour' in unit: hours_since_listed = val
-                elif 'day' in unit: hours_since_listed = val * 24.0
-                elif 'week' in unit: hours_since_listed = val * 24.0 * 7.0
+            
+            # Expanded Regex for Deep Details too
+            time_match = re.search(r'(?:Listed|Posted)\s+([\d\.]+)\s+(min|minute|hour|day|week)s?\s+ago', body_text, re.IGNORECASE)
+            
+            if not time_match:
+                 time_match = re.search(r'(?:\s|^)([\d\.]+)(h|m|d|w)\s+ago', body_text[:2000], re.IGNORECASE)
+                 
+            if time_match:
+                val = float(time_match.group(1))
+                unit = time_match.group(2).lower()
+                if 'min' in unit or unit == 'm': hours_since_listed = val / 60.0
+                elif 'hour' in unit or unit == 'h': hours_since_listed = val
+                elif 'day' in unit or unit == 'd': hours_since_listed = val * 24.0
+                elif 'week' in unit or unit == 'w': hours_since_listed = val * 24.0 * 7.0
+            elif re.search(r'(Just now|Moments ago)', body_text[:1000], re.IGNORECASE):
+                hours_since_listed = 0.01
+            elif re.search(r'(Yesterday)', body_text[:1000], re.IGNORECASE):
+                hours_since_listed = 24.0
             
             # Construct Listing
             # LOCATION
@@ -579,10 +660,21 @@ class CraigslistStrategy(ScrapeStrategy):
             
             # Craigslist specific selectors
             # Updated based on debug run: 'li.cl-static-search-result' failed, '.cl-search-result' worked (60 items)
+            # 2026 Update: Support multiple layouts (Gallery, List, Classic, Static)
             listing_elements = page.query_selector_all('.cl-search-result')
+            if not listing_elements:
+                listing_elements = page.query_selector_all('li.result-row') # Classic
+            if not listing_elements:
+                listing_elements = page.query_selector_all('li.cl-static-search-result') # Static/NoJS
+            if not listing_elements:
+                listing_elements = page.query_selector_all('div.gallery-card') # New Gallery View specific
             
             if not listing_elements:
                 print("⚠️  No listings found with Craigslist selectors")
+                # Debug screenshot for CL failures
+                try: page.screenshot(path="debug_cl_failure.png") 
+                except: pass
+                if progress_callback: progress_callback(100, 100, "Error: Selectors Failed")
                 return listings
             
             total_items = len(listing_elements)
@@ -595,7 +687,18 @@ class CraigslistStrategy(ScrapeStrategy):
             for idx, elem in enumerate(listing_elements):
                 try:
                     listing_data = self._extract_craigslist_listing(page, elem)
+                    
                     if listing_data and listing_data.get('title'):
+                        # STRICT MODE TIME FILTER
+                        if max_hours:
+                            age = listing_data.get('hours_since_listed')
+                            if age is None:
+                                print(f"   ⏳ Skipping (Date Unknown - Strict Filter): {listing_data.get('title')}")
+                                continue
+                            if age > max_hours:
+                                print(f"   ⏳ Skipping (Too Old: {age:.1f}h > {max_hours}h): {listing_data.get('title')}")
+                                continue
+                                
                         listings.append(listing_data)
                     
                     if progress_callback and idx % 2 == 0:
@@ -645,41 +748,52 @@ class CraigslistStrategy(ScrapeStrategy):
         cleaned_meta = meta_text.replace('\n', ' ').strip()
         
         # 1. Extract Date
-        hours_since_listed = 0 # Default to "Fresh" if unknown, or handled by vetting
-        date_pattern = r'^(\d{1,2}/\d{1,2}|\w{3}\s\d{1,2}|\d+\w ago)'
+        hours_since_listed = None # Strict Mode: Default to None (Unknown)
+        
+        # --- SMART STRICTNESS: EXTENDED CRAIGSLIST DATE PARSING ---
+        # Pattern 1: Absolute date "Jan 27" or "1/27"
+        date_pattern = r'^(\d{1,2}/\d{1,2}|\w{3}\s\d{1,2})'
         date_match = re.search(date_pattern, cleaned_meta)
+        
+        # Pattern 2: Relative date "2h ago", "posted 10 mins ago"
+        rel_pattern = r'(?:posted|updated)?\s*(\d+)\s*(mins?|hours?|days?|h|m|d)\s*ago'
+        rel_match = re.search(rel_pattern, cleaned_meta, re.IGNORECASE)
+
         date_str = ""
-        # Force re-indent check
+        # Handle Absolute Dates
         if date_match:
             date_str = date_match.group(1)
             # Remove date from string
             cleaned_meta = cleaned_meta.replace(date_str, '', 1).strip()
             
-            # Check if date_str is TODAY (e.g., "Jan 29" matching current date)
-            # This handles the "0 results" bug where CL gives day resolution only
             try:
                 today = datetime.now()
-                if date_str == today.strftime("%b %d") or date_str == today.strftime("%b %-d"):
-                    hours_since_listed = 0.1 # Treat as fresh
+                # Parse "Jan 27"
+                try:
+                    dt = datetime.strptime(date_str, "%b %d")
+                    dt = dt.replace(year=today.year) # Assume current year
+                    delta = today - dt
+                    hours_since_listed = delta.total_seconds() / 3600.0
+                except:
+                    # Parse "1/27"
+                    try:
+                         dt = datetime.strptime(date_str, "%m/%d")
+                         dt = dt.replace(year=today.year)
+                         delta = today - dt
+                         hours_since_listed = delta.total_seconds() / 3600.0
+                    except: pass
             except:
                 pass
             
-            # Helper to parse date to hours
+        # Handle Relative Dates (Overrides absolute if present and more specific)
+        if rel_match:
             try:
-                if 'ago' in date_str:
-                    rel_match = re.search(r'(\d+)\s*(mins|min|hours|hour|days|day|h|m|d)', date_str, re.IGNORECASE)
-                    if rel_match:
-                        val = float(rel_match.group(1))
-                        unit = rel_match.group(2).lower()
-                        if 'm' in unit: hours_since_listed = val / 60
-                        elif 'h' in unit: hours_since_listed = val
-                        elif 'd' in unit: hours_since_listed = val * 24
-                else:
-                    # Parse "Jan 27" or "1/27" relative to now
-                    now = datetime.now()
-                    # Simple fuzzy logic: assign 24h+ if not today, etc.
-                    # Ideally use dateutil, but manual is fine for rough sort
-                    pass
+                val = float(rel_match.group(1))
+                unit = rel_match.group(2).lower()
+                
+                if 'min' in unit or 'm' in unit: hours_since_listed = val / 60.0
+                elif 'hour' in unit or 'h' in unit: hours_since_listed = val
+                elif 'day' in unit or 'd' in unit: hours_since_listed = val * 24.0
             except: pass
             
         # 2. Extract Mileage for cleanup (redundant to later mileage extract, but needed for location clean)
@@ -773,10 +887,18 @@ class Hunter:
             import json
             from pathlib import Path
             status_file = Path('database/scan_status.json')
+            # Determine percentage
+            percent = 0
+            if total > 0:
+                percent = int((current / total) * 100)
+            elif 0 < current <= 100:
+                # If total is 0 but current is e.g. 5, treat as 5% stage
+                percent = int(current)
+            
             data = {
                 'current': current,
                 'total': total,
-                'percent': int((current / total) * 100) if total > 0 else 0,
+                'percent': percent,
                 'status': status,
                 'active': True,
                 'updated_at': datetime.now().isoformat()

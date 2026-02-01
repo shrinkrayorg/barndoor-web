@@ -2355,6 +2355,148 @@
                     </div>
                 </div>
 
+
+                <!-- Account Switcher Panel -->
+                <div class="scrape-ops-panel"
+                    style="margin-bottom: 20px; border: 1px solid #ddd; background: #fff; border-radius: 4px; overflow: hidden;">
+                    <div class="ops-header"
+                        style="background: linear-gradient(180deg, #1877F2 0%, #145dbf 100%); color: white; padding: 10px 15px; font-weight: 700; font-family: 'Roboto Condensed', sans-serif; display: flex; align-items: center; justify-content: space-between;">
+                        <span>FB ACCOUNTS</span>
+                        <button onclick="toggleAddProfile()"
+                            style="background:none; border:none; color:white; cursor:pointer;"><span
+                                class="material-icons">add_circle</span></button>
+                    </div>
+
+                    <div class="ops-content" style="padding: 15px;">
+                        <!-- Add Form (Hidden by default) -->
+                        <div id="add-profile-form"
+                            style="display:none; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                            <input type="text" id="new-fb-user" placeholder="Email/Username"
+                                style="width: 100%; margin-bottom:5px; padding:5px; font-size:12px;">
+                            <div style="position: relative; width: 100%; margin-bottom: 5px;">
+                                <input type="password" id="new-fb-pass" placeholder="Password"
+                                    style="width: 100%; padding: 5px 30px 5px 5px; font-size: 12px; box-sizing: border-box;">
+                                <span class="material-icons" onclick="togglePasswordVisibility()" id="toggle-pass-icon"
+                                    style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #999; cursor: pointer; user-select: none;">visibility</span>
+                            </div>
+                            <button onclick="saveProfile()"
+                                style="width:100%; background:#2ecc71; color:white; border:none; padding:5px; cursor:pointer; font-weight:bold; font-size:11px;">SAVE</button>
+                        </div>
+
+                        <!-- Accounts List -->
+                        <div id="profiles-list" style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="text-align:center; font-size:11px; color:#999;">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Proxy Control Panel -->
+                <div class="scrape-ops-panel"
+                    style="margin-bottom: 20px; border: 1px solid #ddd; background: #fff; border-radius: 4px; overflow: hidden;">
+                    <div class="ops-header"
+                        style="background: linear-gradient(180deg, #8e44ad 0%, #6c3483 100%); color: white; padding: 10px 15px; font-weight: 700; font-family: 'Roboto Condensed', sans-serif; display: flex; align-items: center; justify-content: space-between;">
+                        <span>STEALTH MODE</span>
+                        <div style="display:flex; align-items:center; gap:5px;">
+                            <span style="font-size:10px; font-weight:400; opacity:0.8;">ENABLE</span>
+                            <label class="switch"
+                                style="position:relative; display:inline-block; width:34px; height:20px;">
+                                <input type="checkbox" id="proxy-enabled-toggle"
+                                    onchange="updateProxySettings('toggle')" style="opacity:0; width:0; height:0;">
+                                <span class="slider round"
+                                    style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#e74c3c; transition:.4s; border-radius:20px;"></span>
+                                <style>
+                                    input:checked+.slider {
+                                        background-color: #2ecc71 !important;
+                                    }
+
+                                    input:focus+.slider {
+                                        box-shadow: 0 0 1px #2ecc71;
+                                    }
+
+                                    input:checked+.slider:before {
+                                        transform: translateX(14px);
+                                    }
+
+                                    .slider:before {
+                                        position: absolute;
+                                        content: "";
+                                        height: 16px;
+                                        width: 16px;
+                                        left: 2px;
+                                        bottom: 2px;
+                                        background-color: white;
+                                        transition: .4s;
+                                        border-radius: 50%;
+                                    }
+                                </style>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="ops-content" style="padding: 15px;">
+                        <!-- Stealth Status Display -->
+                        <div id="stealth-status-display" style="margin-bottom:12px;">
+                            <!-- Will be populated by JS -->
+                        </div>
+
+                        <!-- Current IP Status -->
+                        <div id="current-ip-display"
+                            style="margin-bottom:12px; padding:10px; background:#f8f9fa; border-radius:4px; display:none;">
+                            <div
+                                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                                <span
+                                    style="font-size:10px; font-weight:700; color:#666; text-transform:uppercase; letter-spacing:0.5px;">Current
+                                    IP</span>
+                                <button onclick="refreshCurrentIP()"
+                                    style="background:none; border:1px solid #ddd; border-radius:3px; padding:2px 6px; cursor:pointer; font-size:10px; color:#666; display:flex; align-items:center; gap:3px; transition:all 0.2s;"
+                                    onmouseover="this.style.borderColor='#8e44ad'; this.style.color='#8e44ad';"
+                                    onmouseout="this.style.borderColor='#ddd'; this.style.color='#666';">
+                                    <span class="material-icons" style="font-size:12px;">refresh</span>
+                                    <span>Refresh</span>
+                                </button>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                <span class="material-icons" style="font-size:16px; color:#8e44ad;">public</span>
+                                <span id="current-ip-address"
+                                    style="font-size:13px; font-weight:600; color:#333; font-family:monospace;">—</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="material-icons" style="font-size:16px; color:#666;">location_on</span>
+                                <span id="current-ip-location" style="font-size:11px; color:#666;">—</span>
+                            </div>
+                        </div>
+
+                        <!-- IP Rotation Info -->
+                        <div
+                            style="margin-bottom:10px; padding:8px; background:#e8f5e9; border-left:3px solid #2ecc71; border-radius:3px;">
+                            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                                <span class="material-icons" style="font-size:14px; color:#2ecc71;">sync</span>
+                                <span style="font-size:11px; font-weight:600; color:#333;">IP Rotation</span>
+                            </div>
+                            <span style="font-size:10px; color:#666;">Automatic • Every page load • US
+                                Residential</span>
+                        </div>
+
+                        <!-- Session Rotation Info -->
+                        <div
+                            style="margin-bottom:10px; padding:8px; background:#fff3e0; border-left:3px solid #ff9800; border-radius:3px;">
+                            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                                <span class="material-icons" style="font-size:14px; color:#ff9800;">shuffle</span>
+                                <span style="font-size:11px; font-weight:600; color:#333;">Session Rotation</span>
+                            </div>
+                            <span style="font-size:10px; color:#666;">Randomized • 5-25 min intervals • Prevents
+                                patterns</span>
+                        </div>
+
+                        <!-- Provider Info -->
+                        <div style="padding:8px; background:#f5f5f5; border-radius:3px; text-align:center;">
+                            <span
+                                style="font-size:9px; color:#999; text-transform:uppercase; letter-spacing:0.5px;">Bright
+                                Data Residential Network</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="sidebar-header">
                     <h3>FILTERS</h3>
                     <a href="/settings" class="settings-link" title="Configure Search Settings">
@@ -2371,6 +2513,7 @@
                         <div class="input-group">
                             <label>Search within</label>
                             <select class="filter-select" id="filterRadius">
+                                <option value="0" selected>Any Distance</option>
                                 <option value="5">5 miles</option>
                                 <option value="10">10 miles</option>
                                 <option value="15">15 miles</option>
@@ -2684,20 +2827,28 @@
                                     statusDiv.style.color = 'red';
                                 }
                             }
-                            // Active State
-                            else if (data.active && data.status !== 'Idle' && !data.status.includes('Stale')) {
+                            // Active State or Completed State
+                            else if ((data.active || data.status === 'Complete') && data.status !== 'Idle' && !data.status.includes('Stale')) {
                                 const percentStr = Math.round(data.percent) + '%';
 
-                                // Update specific source
+                                // Update specific source and clear the other
                                 if (data.source === 'facebook') {
                                     if (fbTile) {
                                         fbTile.innerText = percentStr;
                                         fbTile.style.color = '#1877F2';
                                     }
+                                    if (clTile) {
+                                        clTile.innerText = '/';
+                                        clTile.style.color = 'inherit';
+                                    }
                                 } else if (data.source === 'craigslist') {
                                     if (clTile) {
                                         clTile.innerText = percentStr;
                                         clTile.style.color = '#5a32a3';
+                                    }
+                                    if (fbTile) {
+                                        fbTile.innerText = '/';
+                                        fbTile.style.color = 'inherit';
                                     }
                                 } else {
                                     // If 'All' or unknown source, maybe show on both?
@@ -4116,6 +4267,7 @@
             // Show custom modal
             const countEl = document.getElementById('deleteCount');
             if (countEl) countEl.innerText = itemsToDelete.length;
+            console.log("Prepared items to delete:", itemsToDelete);
 
             const modal = document.getElementById('deleteModal');
             if (modal) modal.style.display = 'flex';
@@ -4251,7 +4403,11 @@
                     updateDeleteBtn();
                     // Refresh data
                     await loadInventory();
-                    showToast('Vehicles deleted successfully.', 'success');
+                    if (data.count > 0) {
+                        showToast(`Successfully deleted ${data.count} vehicles.`, 'success');
+                    } else {
+                        showToast('No vehicles were found to delete in the database.', 'warning');
+                    }
                 } else {
                     showToast('Error deleting: ' + (data.error || 'Unknown error'), 'error');
                 }
@@ -4511,6 +4667,377 @@
 
 
 
+
+
+        // --- Profile Management Logic ---
+        let profiles = [];
+        let activeProfileId = null;
+
+        async function loadProfiles() {
+            try {
+                const res = await fetch('/api/profiles');
+                const data = await res.json();
+                profiles = data.profiles;
+                activeProfileId = data.active_profile_id;
+                renderProfiles();
+            } catch (e) {
+                console.error("Failed to load profiles:", e);
+                document.getElementById('profiles-list').innerHTML = '<div style="text-align:center; font-size:11px; color:#e74c3c;">Offline</div>';
+            }
+        }
+
+        function renderProfiles() {
+            const container = document.getElementById('profiles-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (!profiles || profiles.length === 0) {
+                container.innerHTML = '<div style="text-align:center; font-size:11px; color:#999;">No accounts added.</div>';
+                return;
+            }
+
+            profiles.forEach(p => {
+                const isActive = p.id === activeProfileId;
+                const row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.alignItems = 'center';
+                row.style.justifyContent = 'space-between';
+                row.style.fontSize = '12px';
+                row.style.padding = '4px 0';
+
+                row.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="radio" 
+                               name="fb_account" 
+                               ${isActive ? 'checked' : ''} 
+                               style="cursor:pointer;"
+                               onclick="activateProfile('${p.id}')">
+                        <span style="${isActive ? 'font-weight:700; color:#1877F2;' : 'color:#333;'} overflow:hidden; text-overflow:ellipsis; max-width:140px; white-space:nowrap;" title="${p.username}">
+                            ${p.username}
+                        </span>
+                    </div>
+                    <span class="material-icons" 
+                          onclick="deleteProfile('${p.id}')" 
+                          title="Remove Account"
+                          style="font-size:16px; color:#ccc; cursor:pointer; transition:color 0.2s;">delete</span>
+                `;
+
+                // Add hover effect for delete
+                const delBtn = row.querySelector('.material-icons');
+                delBtn.onmouseover = () => delBtn.style.color = '#e74c3c';
+                delBtn.onmouseout = () => delBtn.style.color = '#ccc';
+
+                container.appendChild(row);
+            });
+        }
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('new-fb-pass');
+            const toggleIcon = document.getElementById('toggle-pass-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                toggleIcon.innerText = 'visibility_off';
+            } else {
+                passInput.type = 'password';
+                toggleIcon.innerText = 'visibility';
+            }
+        }
+
+        async function saveProfile() {
+            const userInput = document.getElementById('new-fb-user');
+            const passInput = document.getElementById('new-fb-pass');
+            const user = userInput.value;
+            const pass = passInput.value;
+
+            if (!user || !pass) {
+                showToast("Username/Pass required", "error");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/profiles/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast("Profile Added", "success");
+                    userInput.value = '';
+                    passInput.value = '';
+                    document.getElementById('add-profile-form').style.display = 'none';
+                    loadProfiles();
+                } else {
+                    showToast(data.error || "Error adding profile", "error");
+                }
+            } catch (e) {
+                showToast("Connection Error", "error");
+            }
+        }
+
+        // --- Proxy Management Logic ---
+        async function loadProxyInfo() {
+            try {
+                const res = await fetch('/api/proxy/info');
+                const data = await res.json();
+
+                document.getElementById('proxy-enabled-toggle').checked = data.enabled;
+                document.getElementById('proxy-zipcode').value = data.zipcode;
+
+                // Update Stealth Status Display
+                const stealthDisplay = document.getElementById('stealth-status-display');
+                if (stealthDisplay) {
+                    if (data.enabled) {
+                        stealthDisplay.innerHTML = `
+                            <div style="padding:8px; background:#e3f2fd; border-left:3px solid #2196f3; border-radius:3px;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span class="material-icons" style="font-size:14px; color:#2196f3;">verified_user</span>
+                                    <span style="font-size:11px; font-weight:700; color:#2196f3;">STEALTH MODE ACTIVE</span>
+                                </div>
+                            </div>
+                        `;
+                        // Load current IP when proxy is enabled
+                        refreshCurrentIP();
+                    } else {
+                        stealthDisplay.innerHTML = `
+                            <div style="padding:8px; background:#ffebee; border-left:3px solid #e74c3c; border-radius:3px;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span class="material-icons" style="font-size:14px; color:#e74c3c;">warning</span>
+                                    <span style="font-size:11px; font-weight:700; color:#e74c3c;">DIRECT MODE (No Proxy)</span>
+                                </div>
+                            </div>
+                        `;
+                        // Hide IP display when proxy is off
+                        document.getElementById('current-ip-display').style.display = 'none';
+                    }
+                }
+
+                // Update Active Target Display (keep for backward compatibility)
+                const activeDisplay = document.getElementById('active-proxy-display');
+                const activeZipSpan = document.getElementById('active-proxy-zip');
+                if (activeDisplay && data.enabled && data.zipcode) {
+                    activeZipSpan.innerText = data.zipcode;
+                    activeDisplay.style.display = 'block';
+                } else if (activeDisplay) {
+                    activeDisplay.style.display = 'none';
+                }
+
+                renderProxyHistory(data.history);
+            } catch (e) {
+                console.error("Failed to load proxy info", e);
+            }
+        }
+
+        async function refreshCurrentIP() {
+            const ipDisplay = document.getElementById('current-ip-display');
+            const ipAddress = document.getElementById('current-ip-address');
+            const ipLocation = document.getElementById('current-ip-location');
+
+            try {
+                // Show loading state
+                ipAddress.innerText = '⏳ Loading...';
+                ipLocation.innerText = 'Fetching location...';
+                ipDisplay.style.display = 'block';
+
+                const res = await fetch('/api/proxy/current-ip');
+                const data = await res.json();
+
+                if (data.success) {
+                    ipAddress.innerText = data.ip || 'Unknown';
+
+                    // Format location string
+                    const locationParts = [];
+                    if (data.city) locationParts.push(data.city);
+                    if (data.region) locationParts.push(data.region);
+                    if (data.postal) locationParts.push(data.postal);
+                    if (data.country) locationParts.push(data.country);
+
+                    ipLocation.innerText = locationParts.join(', ') || 'Location unavailable';
+                } else {
+                    ipAddress.innerText = 'Error';
+                    ipLocation.innerText = data.error || 'Failed to fetch IP';
+                }
+            } catch (e) {
+                console.error("Failed to fetch current IP", e);
+                ipAddress.innerText = 'Error';
+                ipLocation.innerText = e.message;
+            }
+        }
+
+        function renderProxyHistory(history) {
+            const container = document.getElementById('proxy-history-chips');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (!history || history.length === 0) {
+                container.innerHTML = '<span style="font-size:10px; color:#999;">No history</span>';
+                return;
+            }
+
+            history.forEach(zip => {
+                const chip = document.createElement('span');
+                chip.style.cssText = "background:#f0f0f0; border:1px solid #ddd; padding:2px 6px; border-radius:10px; font-size:10px; color:#333; cursor:pointer; transition: all 0.2s;";
+                chip.innerText = zip;
+                chip.onmouseover = () => { chip.style.background = '#e1bee7'; chip.style.borderColor = '#8e44ad'; };
+                chip.onmouseout = () => { chip.style.background = '#f0f0f0'; chip.style.borderColor = '#ddd'; };
+                chip.onclick = () => {
+                    document.getElementById('proxy-zipcode').value = zip;
+                    updateProxySettings();
+                };
+                container.appendChild(chip);
+            });
+        }
+
+        async function updateProxySettings(source) {
+            const enabled = document.getElementById('proxy-enabled-toggle').checked;
+            const zipcode = document.getElementById('proxy-zipcode').value;
+            const setBtn = document.getElementById('btn-set-proxy');
+
+            // Visual feedback on button ONLY if button clicked
+            if (source === 'button' && setBtn) {
+                const originalText = setBtn.innerText;
+                setBtn.innerText = "Saving...";
+                setBtn.style.opacity = "0.7";
+            }
+
+            if (enabled && !zipcode) {
+                // showToast("Zipcode recommended for proxy", "warning"); 
+                // Allow empty for general US
+            }
+
+            try {
+                const res = await fetch('/api/proxy/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: enabled, zipcode: zipcode })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast("Proxy Settings Updated", "success");
+                    loadProxyInfo(); // Reload to confirm state/history
+
+                    if (source === 'button' && setBtn) {
+                        setBtn.innerText = "SAVED!";
+                        setBtn.style.background = "#2ecc71";
+                        setTimeout(() => {
+                            setBtn.innerText = "SET";
+                            setBtn.style.background = "#8e44ad";
+                            setBtn.style.opacity = "1";
+                        }, 1500);
+                    }
+                } else {
+                    showToast("Failed to update proxy settings", "error");
+                    if (source === 'button' && setBtn) {
+                        setBtn.innerText = "ERROR";
+                        setBtn.style.background = "#e74c3c";
+                        setTimeout(() => {
+                            setBtn.innerText = "SET";
+                            setBtn.style.background = "#8e44ad";
+                            setBtn.style.opacity = "1";
+                        }, 2000);
+                    }
+                }
+            } catch (e) {
+                showToast("Connection Error", "error");
+                if (source === 'button' && setBtn) {
+                    setBtn.innerText = "ERROR";
+                    setBtn.style.opacity = "1";
+                }
+            }
+        }
+
+        async function deleteProfile(id) {
+            if (!confirm('Are you sure you want to remove this account?')) return;
+
+            try {
+                const res = await fetch('/api/profiles/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+
+                if (res.ok) {
+                    showToast("Account removed", "success");
+                    loadProfiles();
+                } else {
+                    showToast("Failed to remove account", "error");
+                }
+            } catch (e) {
+                showToast("Error removing account", "error");
+            }
+        }
+
+        async function activateProfile(id) {
+            // Optimistic UI update
+            activeProfileId = id;
+            renderProfiles();
+
+            try {
+                await fetch('/api/profiles/activate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                showToast("Active account switched", "success");
+            } catch (e) {
+                showToast("Failed to switch account", "error");
+                loadProfiles(); // Revert on error
+            }
+        }
+
+        function toggleAddProfile() {
+            const form = document.getElementById('add-profile-form');
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                document.getElementById('new-fb-user').focus();
+            } else {
+                form.style.display = 'none';
+            }
+        }
+
+        // Initialize Profiles & Proxy on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfiles();
+            loadProxyInfo();
+        });
+
+        // --- TOAST NOTIFICATION SYSTEM ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+
+            // Icon mapping
+            let iconName = 'info';
+            if (type === 'success') iconName = 'check_circle';
+            if (type === 'error') iconName = 'error';
+            if (type === 'warning') iconName = 'warning';
+
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <span class="material-icons">${iconName}</span>
+                </div>
+                <div class="toast-message">${message}</div>
+            `;
+
+            container.appendChild(toast);
+
+            // Trigger reflow for animation
+            void toast.offsetWidth;
+
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
 
     </script>
 </body>

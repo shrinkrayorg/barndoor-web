@@ -22,3 +22,5 @@ If cross origin resource sharing is required, please disable server.enableXsrfPr
   $ xcode-select --install
   $ pip install watchdog
             
+tab 1 of window id 88948
+2026-01-31 03:01:35.222 The `use_column_width` parameter has been deprecated and will be removed in a future release. Please utilize the `width` parameter instead.

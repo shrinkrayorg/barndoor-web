@@ -169,41 +169,41 @@ class Vetter:
         # --- 2) High/Medium value logic ---
         is_high_value = False
         if any(h in combined_text for h in high_value):
-            score += 15
+            score += int(weights.get("high_value_bonus", 15))
             tags.append("high_value_keyword")
             is_high_value = True
         elif make and any(make == h for h in high_value):
-            score += 15
+            score += int(weights.get("high_value_bonus", 15))
             tags.append("high_value_make")
             is_high_value = True
         elif any(m in combined_text for m in medium_value):
-            score += 5
+            score += int(weights.get("medium_value_bonus", 5))
             tags.append("medium_value_keyword")
 
         # --- 3) Freshness bonus ---
         hours_since_listed = listing.get('hours_since_listed')
         if hours_since_listed is not None and hours_since_listed < 1.0:
-            score += 25
+            score += int(weights.get("freshness_under_1hr", 25))
             tags.append("fresh_listing")
         elif hours_since_listed is not None and hours_since_listed < 24.0:
-            score += 10
+            score += int(weights.get("freshness_under_24hr", 10))
             tags.append("daily_listing")
 
         # --- 4) Year/Mileage preference ---
         if year:
             if year >= 2010:
-                score += 10
+                score += int(weights.get("year_2010_plus", 10))
                 tags.append("modern_year")
             elif year < 2005 and not is_high_value:
-                score -= 10
+                score += int(weights.get("older_non_high_value_penalty", -10))
                 tags.append("older_non_high_value")
 
         if mileage > 0:
             if mileage <= 120000:
-                score += 15
+                score += int(weights.get("mileage_under_120k", 15))
                 tags.append("low_mileage")
             elif mileage > 180000 and not is_high_value:
-                score -= 20
+                score += int(weights.get("high_mileage_penalty", -20))
                 tags.append("high_mileage_risk")
 
         # --- 5) Engine/type bonuses from weights ---
@@ -246,7 +246,7 @@ class Vetter:
         ]
         spanish_count = sum(1 for word in spanish_keywords if word in description_lower)
         if spanish_count >= 2:
-            score -= 10
+            score += int(weights.get("spanish_description_penalty", -10))
             tags.append("spanish_description")
 
         emoji_pattern = re.compile(r"[\U00010000-\U0010ffff]", flags=re.UNICODE)

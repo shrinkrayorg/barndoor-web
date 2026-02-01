@@ -77,6 +77,113 @@ class BrightDataEnricher:
         
         return formatted_listings
 
+    def enrich_search_url(self, search_url: str, progress_callback=None) -> list:
+        """
+        Scrape Facebook Marketplace using Bright Data Dataset API with search parameters.
+        Bright Data's dataset accepts KEYWORD + LOCATION inputs, not raw search URLs.
+        
+        Args:
+            search_url: Facebook Marketplace search URL (parsed to extract params)
+            progress_callback: Optional callback(current, total, status)
+            
+        Returns:
+            list: List of standardized listing dictionaries from the search results
+        """
+        if not search_url:
+            return []
+            
+        print(f"   ☁️  Using Bright Data Direct API (keyword search mode)...")
+        
+        # Parse search URL to extract location and filters
+        # Example URL: https://www.facebook.com/marketplace/chicago/search?sortBy=creation_time_descend&sellerType=individual&query=Vehicles&category_id=546583916084032
+        
+        location = "chicago"  # Default location
+        keyword = "cars"  # Default search term
+        category = "vehicles"  # Category
+        
+        # Try to extract location from URL
+        import re
+        from urllib.parse import urlparse, parse_qs
+        
+        try:
+            parsed = urlparse(search_url)
+            path_parts = parsed.path.split('/')
+            if 'marketplace' in path_parts:
+                idx = path_parts.index('marketplace')
+                if len(path_parts) > idx + 1:
+                    location = path_parts[idx + 1]  # e.g., "chicago"
+            
+            # Extract query parameters
+            params = parse_qs(parsed.query)
+            if 'query' in params:
+                keyword = params['query'][0]
+        except:
+            pass
+        
+        print(f"   📍 Location: {location}")
+        print(f"   🔍 Keyword: {keyword}")
+        
+        if progress_callback:
+            progress_callback(5, 100, "Triggering Bright Data API...")
+        
+        # Build input using Bright Data's expected format for Facebook Marketplace
+        # Based on documentation: accepts keyword, location, category, price_min, price_max, etc.
+        payload = [{
+            "keyword": keyword,
+            "location": location,
+            "category": category,
+            "seller_type": "individual",  # Match our search criteria
+            "sort_by": "date_listed",  # Most recent first
+            "limit": 100  # Max listings to return
+        }]
+        
+        print(f"   🚀 Sending to Bright Data: keyword='{keyword}', location='{location}'")
+        
+        # Trigger dataset with keyword-based search
+        snapshot_id = self._trigger_keyword_search(payload)
+        if not snapshot_id:
+            print("   ❌ Failed to trigger Bright Data job")
+            return []
+            
+        # 2. Poll for results (1-3 minutes typically)
+        if progress_callback:
+            progress_callback(10, 100, "Cloud Processing (1-3m wait)...")
+            
+        raw_data = self.poll_results(snapshot_id, progress_callback, total_expected=0)
+        if not raw_data:
+            print("   ❌ No data returned from Bright Data")
+            return []
+            
+        # 3. Format results
+        if progress_callback:
+            progress_callback(95, 100, "Formatting results...")
+            
+        formatted_listings = self._format_results(raw_data)
+        print(f"   ✨ Received {len(formatted_listings)} listings from Bright Data")
+        
+        if progress_callback:
+            progress_callback(100, 100, f"Complete ({len(formatted_listings)} listings)")
+        
+        return formatted_listings
+    
+    def _trigger_keyword_search(self, payload: list) -> str:
+        """Trigger keyword-based search (for Facebook Marketplace search pages)."""
+        trigger_url = f"{self.base_url}/trigger?dataset_id={self.dataset_id}"
+        
+        try:
+            r = requests.post(trigger_url, headers=self.headers, json=payload)
+            r.raise_for_status()
+            data = r.json()
+            snapshot_id = data.get("snapshot_id")
+            print(f"   ✅ Job started! Snapshot ID: {snapshot_id}")
+            return snapshot_id
+        except Exception as e:
+            print(f"   ❌ Error triggering Bright Data: {e}")
+            if hasattr(e, 'response') and e.response is not None:
+                print(f"      Response: {e.response.text}")  
+            return None
+
+
     def trigger_dataset(self, urls: list) -> str:
         """Trigger the dataset collection for specific URLs."""
         trigger_url = f"{self.base_url}/trigger?dataset_id={self.dataset_id}"
@@ -112,10 +219,12 @@ class BrightDataEnricher:
                 if r.status_code == 200:
                     return r.json()
                 elif r.status_code == 202:
-                    # Still processing
                     elapsed = int(time.time() - start_time)
                     if progress_callback:
-                         progress_callback(0, total_expected, f"Cloud Processing... ({elapsed}s)")
+                         # Show dynamic wait progress (0-95%) based on expected 120s processing time
+                         # This will be scaled by the caller (e.g. 50-90% in FB strategy)
+                         wait_progress = min(95, int((elapsed / 120) * 100))
+                         progress_callback(wait_progress, 100, f"Cloud Processing... ({elapsed}s)")
                     
                     time.sleep(10)
                     continue
@@ -172,7 +281,7 @@ class BrightDataEnricher:
                              mileage = int(float(m_val)) if m_val else 0
                 
                 # Hours Since Listed
-                hours_since_listed = 0
+                hours_since_listed = None # Strict Mode: Default to None (Unknown)
                 
                 # Try 'listing_date' or 'date_posted'
                 date_str = item.get('listing_date') or item.get('date_posted')
