@@ -466,6 +466,15 @@ class Hunter:
             import json
             from pathlib import Path
             status_file = Path('database/scan_status.json')
+            
+            # Read existing to preserve 'source'
+            existing_data = {}
+            if status_file.exists():
+                try:
+                    with open(status_file, 'r') as f:
+                        existing_data = json.load(f)
+                except: pass
+            
             # Determine percentage
             percent = 0
             if total > 0:
@@ -480,6 +489,7 @@ class Hunter:
                 'percent': percent,
                 'status': status,
                 'active': True,
+                'source': existing_data.get('source', 'All'), # Preserve source
                 'updated_at': datetime.now().isoformat()
             }
             with open(status_file, 'w') as f:

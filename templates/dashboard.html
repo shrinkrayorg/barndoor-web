@@ -3850,7 +3850,7 @@
                             <div style="padding: 12px 15px; background: #252526; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span style="color: #ccc; font-weight: bold; font-family: 'Roboto Mono', monospace; font-size: 14px;">🖥️ SYSTEM LOGS</span>
-                                    <span style="background: #333; color: #888; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-family: monospace;">READ-ONLY</span>
+                                    <span style="background: #333; color: #888; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-family: monospace;">LIVE TAIL</span>
                                 </div>
                                 <div style="display: flex; gap: 10px;">
                                      <button onclick="copyToClipboard()" style="background: #333; border: 1px solid #444; color: #ccc; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; text-transform: uppercase;">Copy All</button>
@@ -3871,6 +3871,10 @@
                 // Define global helper functions
                 window.closeDebugModal = function () {
                     document.getElementById('debug-modal-overlay').style.display = 'none';
+                    if (window.logInterval) {
+                        clearInterval(window.logInterval);
+                        window.logInterval = null;
+                    }
                 };
 
                 window.copyToClipboard = function () {
@@ -3895,30 +3899,46 @@
                 });
             }
 
-            try {
-                // Show loading state
-                const contentEl = document.getElementById('debug-log-content');
-                const overlayEl = document.getElementById('debug-modal-overlay');
+            // Function to fetch logs
+            async function fetchLogs() {
+                try {
+                    const res = await fetch('/api/debug/log?_t=' + Date.now());
+                    if (!res.ok) throw new Error("HTTP " + res.status);
 
-                contentEl.innerText = "Fetching logs...";
-                contentEl.style.color = "#888";
-                overlayEl.style.display = 'flex';
+                    const text = await res.text();
+                    const contentEl = document.getElementById('debug-log-content');
 
-                const res = await fetch('/api/debug/log?_t=' + Date.now());
-                if (!res.ok) throw new Error("HTTP " + res.status);
+                    // Only update and scroll if content changed (to prevent jitter)
+                    if (contentEl.innerText !== text) {
+                        contentEl.innerText = text;
+                        contentEl.style.color = "#d4d4d4";
 
-                const text = await res.text();
-                contentEl.innerText = text;
-                contentEl.style.color = "#d4d4d4"; // Reset color
-
-                // Auto-scroll to bottom
-                const scrollContainer = contentEl.parentElement;
-                scrollContainer.scrollTop = scrollContainer.scrollHeight;
-
-            } catch (e) {
-                document.getElementById('debug-log-content').innerText = "Failed to fetch logs: " + e.message;
-                document.getElementById('debug-log-content').style.color = "#f44336";
+                        // Auto-scroll to bottom only if we are already near bottom or it's first load
+                        const scrollContainer = contentEl.parentElement;
+                        if (scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight - 100 || contentEl.innerText.length < 100) {
+                            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+                        }
+                    }
+                } catch (e) {
+                    document.getElementById('debug-log-content').innerText = "Failed to fetch logs: " + e.message;
+                    document.getElementById('debug-log-content').style.color = "#f44336";
+                }
             }
+
+            // Show loading state
+            const contentEl = document.getElementById('debug-log-content');
+            const overlayEl = document.getElementById('debug-modal-overlay');
+
+            contentEl.innerText = "Fetching logs...";
+            contentEl.style.color = "#888";
+            overlayEl.style.display = 'flex';
+
+            // Initial Fetch
+            await fetchLogs();
+
+            // Start Polling
+            if (window.logInterval) clearInterval(window.logInterval);
+            window.logInterval = setInterval(fetchLogs, 2000);
         }
 
         // Save functionality helper
