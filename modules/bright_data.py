@@ -91,19 +91,28 @@ class BrightDataManager:
         """
         print(f"   🚀 Properties: Location={location}, Radius={radius_miles}mi, Limit={limit}, Sort={sort}")
         
-        # Construct Payload for gd_lkaxegm826bjpoo9m5
-        # Schema inference: standard FB scraper usually takes 'location', 'url' or 'keyword'
-        # We will use 'keyword' search if supported, or 'url' construction
+        # Construct Valid Facebook Marketplace URL
+        # The scraper requires a direct URL, it does not accept abstract search parameters.
         
-        # Based on typical usage for this scraper (Marketplace):
+        # 1. Convert location to slug (Basic approximation)
+        # "Chicago, IL" -> "chicago"
+        city_slug = location.split(',')[0].strip().lower().replace(' ', '')
+        
+        # 2. Build Query Params
+        # sort: creation_time_descend, best_match, price_ascend, price_descend
+        fb_sort = "best_match"
+        if "date" in sort or "newest" in sort:
+             fb_sort = "creation_time_descend"
+             
+        # 3. Construct URL
+        # https://www.facebook.com/marketplace/chicago/search?query=vehicles&sortBy=creation_time_descend
+        search_url = f"https://www.facebook.com/marketplace/{city_slug}/search?query=vehicles&sortBy={fb_sort}&exact=false"
+        
+        print(f"   🔗 Constructed Target URL: {search_url}")
+        
+        # 4. Create Payload
         payload = [{
-            "location": location,
-            "keyword": "vehicles", # Broad search for vehicles
-            "radius": radius_miles,
-            "sort_by": "creation_time_descend" if "date" in sort or "newest" in sort else "best_match",
-            "limit": limit,
-            "marketplace": True, # Ensure it targets marketplace
-            "category_id": "vehicles" # Explicit category if supported
+            "url": search_url,
         }]
         
         if progress_callback:
