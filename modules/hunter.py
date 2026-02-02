@@ -3,7 +3,13 @@ Hunter module for data collection and retrieval.
 Uses Playwright with site-specific scraping strategies.
 Implements the Strategy Pattern for modular, extensible scraping.
 """
-from playwright.sync_api import sync_playwright, Page, Locator
+try:
+    from playwright.sync_api import sync_playwright, Page, Locator
+except ImportError:
+    sync_playwright = None
+    Page = None
+    Locator = None
+    print("⚠️  Playwright not installed. Browser automation disabled (API only).")
 from abc import ABC, abstractmethod
 from urllib.parse import urlparse
 import re
@@ -556,6 +562,10 @@ class Hunter:
             if browser_context:
                 page = browser_context.new_page()
             else:
+                if not sync_playwright:
+                    print(f"⚠️  Cannot scrape {url}: Playwright not installed.")
+                    return listings
+                    
                 with sync_playwright() as p:
                     # Launch visible browser for user interaction (login)
                     print("   🖥️ Launching visible browser...")

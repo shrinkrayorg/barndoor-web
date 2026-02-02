@@ -12,7 +12,7 @@ schedule
 # rumps (Disabled for Vercel/Linux compatibility)
 # rumps
 flask
-playwright==1.44.0
-streamlit
-pandas
+# playwright==1.44.0 (Too large for Vercel, API mode used)
+# streamlit (Legacy dashboard only)
+# pandas (Legacy dashboard only)
 beautifulsoup4
