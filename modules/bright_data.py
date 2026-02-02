@@ -110,34 +110,19 @@ class BrightDataManager:
         
         print(f"   🔗 Constructed Target URL: {search_url}")
         
-        # 4. Create Payload
-        payload = [{
-            "url": search_url,
-        }]
+        # 4. Create Payload (Legacy: Kept for reference or backup if needed)
+        # payload = [{"url": search_url}]
         
-        if progress_callback:
-            progress_callback(10, 100, "Triggering Real-time Scraper...")
-            
-        snapshot_id = self.trigger_scraper(self.REALTIME_SCRAPER_ID, payload)
+        # USER DIRECTIVE: ALWAYS USE WEB UNLOCKER
+        # Bypassing Scraper API and going straight to Proxy/Unlocker
+        print("   🔓 Mode: Web Unlocker (Forced Default)")
+        return self._fallback_web_unlocker(search_url, progress_callback)
         
-        if not snapshot_id:
-            logger.error("Failed to trigger scraper.")
-            return []
-            
-        # Poll for results
-        if progress_callback:
-            progress_callback(20, 100, "Waiting for Bright Data (1-3 min)...")
-            
-        raw_data = self.poll_results(snapshot_id, progress_callback)
-        
-        if not raw_data:
-            print("   ⚠️  Scraper API returned 0 results. switch to Web Unlocker fallback...")
-            return self._fallback_web_unlocker(search_url, progress_callback)
-            
-        # Check if list is empty
-        if isinstance(raw_data, list) and len(raw_data) == 0:
-             print("   ⚠️  Scraper API returned empty list. Switching to Web Unlocker fallback...")
-             return self._fallback_web_unlocker(search_url, progress_callback)
+        # --- Legacy API Trigger Code (Disabled) ---
+        # if progress_callback:
+        #     progress_callback(10, 100, "Triggering Real-time Scraper...")
+        # snapshot_id = self.trigger_scraper(self.REALTIME_SCRAPER_ID, payload)
+        # ...
             
         # Format results
         if progress_callback:
