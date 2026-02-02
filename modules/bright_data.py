@@ -131,7 +131,13 @@ class BrightDataManager:
         raw_data = self.poll_results(snapshot_id, progress_callback)
         
         if not raw_data:
-            return []
+            print("   ⚠️  Scraper API returned 0 results. switch to Web Unlocker fallback...")
+            return self._fallback_web_unlocker(search_url, progress_callback)
+            
+        # Check if list is empty
+        if isinstance(raw_data, list) and len(raw_data) == 0:
+             print("   ⚠️  Scraper API returned empty list. Switching to Web Unlocker fallback...")
+             return self._fallback_web_unlocker(search_url, progress_callback)
             
         # Format results
         if progress_callback:
@@ -309,6 +315,88 @@ class BrightDataManager:
                 logger.warning(f"Formatting error: {e}")
                 
         return listings
+
+    def _fallback_web_unlocker(self, url: str, progress_callback=None) -> list:
+        """
+        Fallback: Download raw HTML via Web Unlocker and parse locally.
+        """
+        if progress_callback:
+            progress_callback(50, 100, "Attempting Proxy Fallback...")
+            
+        html = self.fetch_via_web_unlocker(url)
+        if not html:
+            return []
+            
+        # Parse HTML locally
+        try:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(html, 'html.parser')
+            print("   Parsing fallback HTML...")
+            
+            listings = []
+            
+            # 2026 Generic Marketplace Parsing Strategy
+            # Look for <a> tags with 'href' containing '/marketplace/item/'
+            
+            seen_ids = set()
+            
+            # Select all links
+            links = soup.find_all('a', href=True)
+            for link in links:
+                href = link['href']
+                
+                if '/marketplace/item/' in href:
+                    # Found a listing link
+                    # Extract ID
+                    match = re.search(r'item/(\d+)', href)
+                    if not match: continue
+                    id_ = match.group(1)
+                    
+                    if id_ in seen_ids: continue
+                    seen_ids.add(id_)
+                    
+                    # Extract Data from parent/siblings
+                    # Strategy: Go up to the container that holds the text
+                    
+                    # Try to find price and title within the link itself or its text
+                    text = link.get_text(" ", strip=True)
+                    
+                    # Heuristic: Price is usually $123 or 123
+                    price = 0
+                    price_match = re.search(r'\$(\d{1,3}(?:,\d{3})*)', text)
+                    if price_match:
+                        price = int(price_match.group(1).replace(',', ''))
+                        
+                    # Title is the longest text segment?
+                    # This is rough, but better than 0.
+                    title = text
+                    
+                    # Image
+                    img = link.find('img')
+                    image_url = img['src'] if img else ""
+                    
+                    listing = {
+                        'listing_id': id_,
+                        'title': title,
+                        'price': price,
+                        'mileage': 0, # Hard to get from raw HTML easily without specific selectors
+                        'location': 'Facebook Marketplace',
+                        'description': 'Scraped via Proxy Fallback',
+                        'images': [image_url] if image_url else [],
+                        'listing_url': f"https://www.facebook.com{href}" if href.startswith('/') else href,
+                        'source': 'facebook_marketplace',
+                        'scraped_at': datetime.now(timezone.utc).isoformat(),
+                        'posted_at': datetime.now(timezone.utc).isoformat(), # Unknown
+                        'hours_since_listed': 0
+                    }
+                    listings.append(listing)
+            
+            print(f"   ✅ Fallback Recovered {len(listings)} listings")
+            return listings
+            
+        except Exception as e:
+            logger.error(f"Fallback parsing failed: {e}")
+            return []
 
 # Test
 if __name__ == "__main__":
