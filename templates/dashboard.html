@@ -2268,8 +2268,7 @@
                                 <option value="3">Last 3 Hours</option>
                                 <option value="24">Last 24 Hours</option>
                                 <option value="48">Last 48 Hours</option>
-                                <option value="72">Last 72 Hours</option>
-                                <option value="">All Listings (Slow)</option>
+
                             </select>
 
                             <!-- Scanner Button Styles -->
@@ -2390,112 +2389,7 @@
                     </div>
                 </div>
 
-                <!-- Proxy Control Panel -->
-                <div class="scrape-ops-panel"
-                    style="margin-bottom: 20px; border: 1px solid #ddd; background: #fff; border-radius: 4px; overflow: hidden;">
-                    <div class="ops-header"
-                        style="background: linear-gradient(180deg, #8e44ad 0%, #6c3483 100%); color: white; padding: 10px 15px; font-weight: 700; font-family: 'Roboto Condensed', sans-serif; display: flex; align-items: center; justify-content: space-between;">
-                        <span>STEALTH MODE</span>
-                        <div style="display:flex; align-items:center; gap:5px;">
-                            <span style="font-size:10px; font-weight:400; opacity:0.8;">ENABLE</span>
-                            <label class="switch"
-                                style="position:relative; display:inline-block; width:34px; height:20px;">
-                                <input type="checkbox" id="proxy-enabled-toggle"
-                                    onchange="updateProxySettings('toggle')" style="opacity:0; width:0; height:0;">
-                                <span class="slider round"
-                                    style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#e74c3c; transition:.4s; border-radius:20px;"></span>
-                                <style>
-                                    input:checked+.slider {
-                                        background-color: #2ecc71 !important;
-                                    }
 
-                                    input:focus+.slider {
-                                        box-shadow: 0 0 1px #2ecc71;
-                                    }
-
-                                    input:checked+.slider:before {
-                                        transform: translateX(14px);
-                                    }
-
-                                    .slider:before {
-                                        position: absolute;
-                                        content: "";
-                                        height: 16px;
-                                        width: 16px;
-                                        left: 2px;
-                                        bottom: 2px;
-                                        background-color: white;
-                                        transition: .4s;
-                                        border-radius: 50%;
-                                    }
-                                </style>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="ops-content" style="padding: 15px;">
-                        <!-- Stealth Status Display -->
-                        <div id="stealth-status-display" style="margin-bottom:12px;">
-                            <!-- Will be populated by JS -->
-                        </div>
-
-                        <!-- Current IP Status -->
-                        <div id="current-ip-display"
-                            style="margin-bottom:12px; padding:10px; background:#f8f9fa; border-radius:4px; display:none;">
-                            <div
-                                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-                                <span
-                                    style="font-size:10px; font-weight:700; color:#666; text-transform:uppercase; letter-spacing:0.5px;">Current
-                                    IP</span>
-                                <button onclick="refreshCurrentIP()"
-                                    style="background:none; border:1px solid #ddd; border-radius:3px; padding:2px 6px; cursor:pointer; font-size:10px; color:#666; display:flex; align-items:center; gap:3px; transition:all 0.2s;"
-                                    onmouseover="this.style.borderColor='#8e44ad'; this.style.color='#8e44ad';"
-                                    onmouseout="this.style.borderColor='#ddd'; this.style.color='#666';">
-                                    <span class="material-icons" style="font-size:12px;">refresh</span>
-                                    <span>Refresh</span>
-                                </button>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                                <span class="material-icons" style="font-size:16px; color:#8e44ad;">public</span>
-                                <span id="current-ip-address"
-                                    style="font-size:13px; font-weight:600; color:#333; font-family:monospace;">—</span>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span class="material-icons" style="font-size:16px; color:#666;">location_on</span>
-                                <span id="current-ip-location" style="font-size:11px; color:#666;">—</span>
-                            </div>
-                        </div>
-
-                        <!-- IP Rotation Info -->
-                        <div
-                            style="margin-bottom:10px; padding:8px; background:#e8f5e9; border-left:3px solid #2ecc71; border-radius:3px;">
-                            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                                <span class="material-icons" style="font-size:14px; color:#2ecc71;">sync</span>
-                                <span style="font-size:11px; font-weight:600; color:#333;">IP Rotation</span>
-                            </div>
-                            <span style="font-size:10px; color:#666;">Automatic • Every page load • US
-                                Residential</span>
-                        </div>
-
-                        <!-- Session Rotation Info -->
-                        <div
-                            style="margin-bottom:10px; padding:8px; background:#fff3e0; border-left:3px solid #ff9800; border-radius:3px;">
-                            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                                <span class="material-icons" style="font-size:14px; color:#ff9800;">shuffle</span>
-                                <span style="font-size:11px; font-weight:600; color:#333;">Session Rotation</span>
-                            </div>
-                            <span style="font-size:10px; color:#666;">Randomized • 5-25 min intervals • Prevents
-                                patterns</span>
-                        </div>
-
-                        <!-- Provider Info -->
-                        <div style="padding:8px; background:#f5f5f5; border-radius:3px; text-align:center;">
-                            <span
-                                style="font-size:9px; color:#999; text-transform:uppercase; letter-spacing:0.5px;">Bright
-                                Data Residential Network</span>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="sidebar-header">
                     <h3>FILTERS</h3>
