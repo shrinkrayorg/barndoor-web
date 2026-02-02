@@ -14,7 +14,8 @@ from datetime import datetime
 # Import Navigator
 from modules.navigator import Navigator, NavReason
 # Import Enricher
-from modules.bright_data import BrightDataEnricher
+# Import Enricher - Removed incorrect import
+from modules.bright_data import BrightDataManager
 
 # Common User Agents to rotate
 USER_AGENTS = [
