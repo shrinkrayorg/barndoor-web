@@ -33,20 +33,25 @@ PROFILES_PATH = PROJECT_DIR / "database" / "profiles.json"
 LOG_PATH = PROJECT_DIR / "barnfind.log"
 PID_FILE = PROJECT_DIR / "barnfind.pid"
 
-# MongoDB Connection
-MONGO_URI = os.getenv('MONGO_URI')
-mongo_client = None
-mongo_db = None
-
-if MONGO_URI:
-    try:
-        mongo_client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
-        mongo_db = mongo_client['barndoor']
-        # Send a ping to confirm a successful connection
-        mongo_client.admin.command('ping')
-        print("✅ Connected to MongoDB!")
-    except Exception as e:
-        print(f"❌ MongoDB Connection Failed: {e}")
+# Database Configuration
+try:
+    # Get MongoDB URI from environment (supports Vercel's MONGO_URI and Railway's MONGO_URL)
+    mongo_uri = os.getenv('MONGO_URI') or os.getenv('MONGO_URL')
+    
+    if not mongo_uri:
+        # Fallback for local dev if .env is missing
+        mongo_uri = "mongodb://localhost:27017/"
+        print("⚠️  MONGO_URI not set, using localhost default")
+        
+    client = MongoClient(mongo_uri, tlsCAFile=certifi.where())
+    # Connect to 'barnfind' database
+    db = client['barnfind']
+    print(f"✅ Connected to MongoDB: {mongo_uri.split('@')[-1] if '@' in mongo_uri else 'localhost'}")
+except Exception as e:
+    print(f"❌ Failed to connect to MongoDB: {e}")
+    # Initialize dummy db/collection for avoiding crash on import, but auth will fail
+    client = None
+    db = None
 
 
 def get_users():
@@ -1286,6 +1291,147 @@ def get_scan_progress():
             return jsonify({'active': False, 'status': 'Idle', 'percent': 0})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/facebook_marketplace/listings', methods=['GET'])
+def get_facebook_listings():
+    """
+    Public API endpoint to retrieve Facebook Marketplace listings.
+    Internal API, secured via session or open if meant for external consumption (assuming internal/local for now).
+    """
+    try:
+        # 1. Parse Parameters
+        try:
+            limit = int(request.args.get('limit', 100))
+            if limit > 500: limit = 500
+        except:
+            limit = 100
+            
+        cursor = request.args.get('cursor')
+        sort = request.args.get('sort', 'posted_at_desc')
+        max_age_minutes = request.args.get('max_age_minutes')
+        
+        # 2. Build Query
+        query = {}
+        
+        # Filter by Source
+        query['source'] = 'facebook_marketplace'
+        
+        # Filter by freshness (max_age_minutes)
+        if max_age_minutes:
+            try:
+                minutes = int(max_age_minutes)
+                cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=minutes)
+                # Ensure we strictly filter by posted_at or processed_at
+                # Note: 'posted_at' is ISO string in our schema
+                query['posted_at'] = {'$gte': cutoff_time.isoformat()}
+            except:
+                pass
+                
+        # Cursor Pagination (Keyset Pagination on posted_at)
+        if cursor:
+            # Cursor is expected to be the last seen 'posted_at' value
+            # Since we sort DESC, we want values LESS THAN the cursor
+            if 'posted_at' in query:
+                 # Merge with existing range if any (complex, but simple case: $lt)
+                 existing = query['posted_at']
+                 if isinstance(existing, dict):
+                     existing['$lt'] = cursor
+                 else:
+                     query['posted_at'] = {'$lt': cursor}
+            else:
+                query['posted_at'] = {'$lt': cursor}
+
+        # 3. Execute Query
+        if db is not None:
+            collection = db['listings']
+            
+            # Sort direction
+            sort_dir = -1 # Descending
+            if 'asc' in sort: sort_dir = 1
+            
+            # Fetch
+            cursor_obj = collection.find(query).sort('posted_at', sort_dir).limit(limit)
+            results = list(cursor_obj)
+        else:
+            # Fallback to empty if DB not connected
+            results = []
+
+        # 4. Format Response
+        items = []
+        last_posted_at = None
+        
+        for doc in results:
+            # Transform _id to string
+            if '_id' in doc:
+                doc['_id'] = str(doc['_id'])
+            
+            # Track cursor
+            last_posted_at = doc.get('posted_at')
+            
+            items.append(doc)
+            
+        # 5. Construct Next Cursor
+        next_cursor = last_posted_at if len(items) == limit else None
+        
+        response = {
+            "meta": {
+                "count": len(items),
+                "cursor": next_cursor,
+                "params": {
+                    "limit": limit,
+                    "sort": sort,
+                    "max_age_minutes": max_age_minutes
+                }
+            },
+            "items": items
+        }
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        print(f"API Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+# --- Scanner Control APIs ---
+@app.route('/api/scanner/start', methods=['POST'])
+def start_scanner():
+    """
+    Trigger a manual scan. 
+    On Vercel/Railway, this triggers the Bright Data job.
+    """
+    try:
+        source = request.json.get('source', 'facebook')
+        # In a real serverless setup, we'd trigger a cloud function or just run the light logic here.
+        # Since we are using Bright Data API, this is lightweight!
+        
+        # We can import and run the specific manager method directly
+        from modules.bright_data import BrightDataManager
+        import threading
+        
+        def run_background_scan():
+            try:
+                print(f"🚀 Starting background scan for {source}...")
+                mgr = BrightDataManager()
+                # Default location/context
+                # TODO: Get from database/config
+                mgr.fetch_listings(location="Chicago, IL") 
+            except Exception as e:
+                print(f"❌ Background scan failed: {e}")
+
+        # Run in thread so request returns immediately
+        threading.Thread(target=run_background_scan).start()
+
+        return jsonify({"status": "started", "message": f"{source} scan initiated"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/scanner/status', methods=['GET'])
+def get_scanner_status():
+    # Simple mock status or check DB for recent activity
+    # For now, just return Idle/Running based on a file lock or simplified logic
+    return jsonify({"status": "idle", "last_run": "Just now"})
 
 if __name__ == '__main__':
     # Create templates directory if it doesn't exist

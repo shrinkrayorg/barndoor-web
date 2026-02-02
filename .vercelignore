@@ -4,3 +4,11 @@ __pycache__/
 .DS_Store
 .env
 Barndoor.app.command
+database/browser_profile/
+database/ledger.json
+*.log
+nohup.out
+.vercel/
+node_modules/
+uploads/
+facebook_search_raw.html

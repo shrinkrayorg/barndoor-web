@@ -5,21 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barndoor - Access Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        html {
-            overflow-y: scroll;
-        }
-
         :root {
+            --bg-color: #f0f2f5;
+            --panel-bg: #ffffff;
             --primary-red: #CC0000;
-            --dark-bg: #1a1a1a;
-            --darker-bg: #0d0d0d;
-            --text-light: #ffffff;
-            --text-gray: #b0b0b0;
-            --border-gray: #333333;
+            --fb-blue: #1877F2;
+            --cl-purple: #8e44ad;
+            --text-dark: #333333;
+            --text-muted: #666666;
+            --border-color: #ddd;
+            --success-green: #2ecc71;
+            /* Navbar specific */
+            --nav-bg: #0d0d0d;
         }
 
         * {
@@ -29,23 +29,20 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #ffffff;
-            color: #0d0d0d;
-            line-height: 1.6;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-dark);
             height: 100vh;
-            /* Switched to block layout to match index.html exactly */
-            display: block;
-            overflow: hidden;
-            /* Keep hidden to let iframe handle scroll */
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            display: flex;
+            flex-direction: column;
+            padding-top: 80px;
+            /* Navbar space */
         }
 
-        /* Navigation - Exact match to index.html */
+        /* --- Standard Navbar (Dark) --- */
         .navbar {
-            background: var(--dark-bg);
-            border-bottom: 1px solid var(--border-gray);
+            background: var(--nav-bg);
+            border-bottom: 1px solid #333;
             height: 80px;
             width: 100%;
             position: fixed;
@@ -53,50 +50,39 @@
             z-index: 1000;
             display: flex;
             align-items: center;
-            padding: 0;
-            /* Removed flex-shrink */
         }
 
         .nav-container {
             max-width: 1400px;
             width: 100%;
             margin: 0 auto;
+            padding: 0 40px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 40px;
         }
 
         .logo {
             font-size: 24px;
             font-weight: 800;
-            color: var(--text-light);
+            color: #fff;
             text-decoration: none;
-            letter-spacing: -0.5px;
             text-transform: uppercase;
-            transition: color 0.3s ease;
-        }
-
-        .logo:hover {
-            color: var(--primary-red);
         }
 
         .nav-links {
             display: flex;
-            gap: 40px;
+            gap: 30px;
             list-style: none;
             align-items: center;
         }
 
         .nav-links a {
-            color: var(--text-gray);
+            color: #b0b0b0;
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: color 0.3s ease;
-            padding: 10px 0;
         }
 
         .nav-links a:hover,
@@ -104,149 +90,305 @@
             color: var(--primary-red);
         }
 
-        /* Iframe Container */
-        .iframe-container {
-            flex-grow: 1;
+        /* --- Layout --- */
+        .dashboard-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            max-width: 1600px;
+            margin: 0 auto;
             width: 100%;
-            position: relative;
         }
 
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
+        .sidebar {
+            width: 340px;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex-shrink: 0;
         }
 
-        /* Notification Dropdown */
-        .notification-dropdown {
-            position: absolute;
-            top: 150%;
-            right: -100px;
-            width: 300px;
-            background: var(--darker-bg);
-            border: 1px solid var(--border-gray);
+        /* --- Panels (Streamlit Style) --- */
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            z-index: 2000;
-            display: none;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
-        .notification-dropdown::before {
-            content: '';
-            position: absolute;
-            top: -6px;
-            right: 108px;
-            width: 12px;
-            height: 12px;
-            background: var(--darker-bg);
-            border-left: 1px solid var(--border-gray);
-            border-top: 1px solid var(--border-gray);
-            transform: rotate(45deg);
-        }
-
-        .notification-dropdown.show {
-            display: block;
-        }
-
-        .dropdown-header {
-            padding: 15px;
-            border-bottom: 1px solid var(--border-gray);
-            font-weight: 700;
+        .panel-header {
+            padding: 12px 15px;
+            color: white;
+            font-weight: 800;
+            text-transform: uppercase;
             font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .dropdown-item {
+        .header-red {
+            background: var(--primary-red);
+        }
+
+        .header-dark {
+            background: #333;
+        }
+
+        .panel-content {
             padding: 15px;
-            border-bottom: 1px solid var(--border-gray);
+        }
+
+        /* Controls */
+        .control-label {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+            color: #555;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 13px;
             cursor: pointer;
-            transition: background 0.2s;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: opacity 0.2s;
         }
 
-        .dropdown-item:hover {
-            background: #222;
+        .btn:hover {
+            opacity: 0.9;
         }
 
-        .dropdown-item:last-child {
+        .btn-fb {
+            background: var(--fb-blue);
+        }
+
+        .btn-cl {
+            background: var(--cl-purple);
+        }
+
+        /* Accordion Filters inside Panel */
+        .accordion-item {
+            border-bottom: 1px solid #eee;
+        }
+
+        .accordion-item:last-child {
             border-bottom: none;
         }
 
-        .dropdown-title {
+        .accordion-header {
+            padding: 12px 0;
+            cursor: pointer;
             font-weight: 600;
             font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #333;
+        }
+
+        .accordion-header:hover {
+            color: var(--primary-red);
+        }
+
+        .accordion-content {
+            display: none;
+            padding-bottom: 15px;
+            color: #555;
+        }
+
+        .accordion-content.show {
+            display: block;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-family: inherit;
+        }
+
+        .btn-apply {
+            background: var(--primary-red);
+            color: white;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .toolbar-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        /* Toggle Buttons */
+        .view-toggles button {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 6px 10px;
+            cursor: pointer;
+            color: #555;
+            border-radius: 4px;
+        }
+
+        .view-toggles button.active {
+            background: #eee;
+            color: black;
+            border-color: #999;
+            font-weight: bold;
+        }
+
+        /* Grid View */
+        .grid-container {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+            padding-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: #eee;
+        }
+
+        .card-body {
+            padding: 12px;
+        }
+
+        .card-price {
+            color: var(--success-green);
+            font-weight: 800;
+            font-size: 18px;
             margin-bottom: 4px;
         }
 
-        .dropdown-meta {
-            color: var(--text-gray);
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            text-decoration: none;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #777;
+            margin-top: 8px;
+        }
+
+        /* List View */
+        .list-container {
+            flex: 1;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .list-header {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr 1fr;
+            padding: 10px 15px;
+            border-bottom: 2px solid #eee;
+            background: #f8f9fa;
+            font-weight: 700;
             font-size: 12px;
+            color: #555;
         }
 
-        @keyframes bellShake {
-            0% {
-                transform: rotate(0);
-            }
-
-            15% {
-                transform: rotate(15deg);
-            }
-
-            30% {
-                transform: rotate(-15deg);
-            }
-
-            45% {
-                transform: rotate(10deg);
-            }
-
-            60% {
-                transform: rotate(-10deg);
-            }
-
-            75% {
-                transform: rotate(5deg);
-            }
-
-            90% {
-                transform: rotate(-5deg);
-            }
-
-            100% {
-                transform: rotate(0);
-            }
+        .list-row {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr 1fr;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+            align-items: center;
         }
 
-        .notification-bell:hover .material-icons {
-            color: var(--primary-red) !important;
-            animation: bellShake 0.6s ease-out both;
+        .list-row:hover {
+            background: #fdfdfd;
+        }
+
+        .list-row a {
+            text-decoration: none;
+            color: #1a1a1a;
+            font-weight: 500;
         }
     </style>
 </head>
 
 <body>
-    <!-- Navbar -->
+
+    <!-- NAVBAR -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="logo">
-                BARNDOOR
-            </a>
+            <a href="/" class="logo">BARNDOOR</a>
             <div class="nav-links">
                 <a href="/">HOME</a>
-
-                <!-- Bell Notification -->
-                <div class="notification-wrapper" style="position: relative;">
-                    <div class="notification-bell" id="bellIcon" onclick="toggleDropdown()"
-                        style="cursor: pointer; display: flex; align-items: center; padding: 0 10px;">
-                        <span class="material-icons"
-                            style="color: var(--text-gray); transition: color 0.3s;">notifications</span>
-                        <span id="badge"
-                            style="position: absolute; top: -5px; right: 0px; background: var(--primary-red); color: white; font-size: 10px; padding: 2px 5px; border-radius: 50%; display: none;">0</span>
-                    </div>
-                    <div class="notification-dropdown" id="notificationDropdown">
-                        <div class="dropdown-header">Notifications</div>
-                        <div id="dropdownContent"></div>
-                    </div>
-                </div>
-
                 <a href="/tickle">TICKLE FILE</a>
                 <a href="/settings">SETTINGS</a>
                 <a href="/portal" class="active">ACCESS PORTAL</a>
@@ -254,50 +396,177 @@
         </div>
     </nav>
 
-    <script>
-        // Notification Logic
-        async function checkNotifications() {
-            try {
-                const res = await fetch('/api/notifications');
-                const data = await res.json();
-                const badge = document.getElementById('badge');
-                if (data.count > 0) {
-                    badge.innerText = data.count;
-                    badge.style.display = 'block';
-                } else {
-                    badge.style.display = 'none';
-                }
-                renderDropdown(data.items || []);
-            } catch (e) { }
-        }
-        function renderDropdown(items) {
-            const container = document.getElementById('dropdownContent');
-            if (items.length === 0) {
-                container.innerHTML = '<div style="padding:15px; color:#666; font-size:13px;">No reminders due.</div>';
-                return;
-            }
-            let html = '';
-            items.forEach(item => {
-                const encodedUrl = encodeURIComponent(item.url);
-                html += `<div class="dropdown-item" onclick="window.location.href='/tickle?highlight=${encodedUrl}'">
-                        <div class="dropdown-title">${item.title}</div>
-                        <div class="dropdown-meta"><span class="material-icons" style="font-size:12px; vertical-align:middle;">location_on</span> ${item.location}</div>
-                    </div>`;
-            });
-            container.innerHTML = html;
-        }
-        function toggleDropdown() { document.getElementById('notificationDropdown').classList.toggle('show'); }
-        document.addEventListener('click', function (e) {
-            const wrapper = document.querySelector('.notification-wrapper');
-            if (wrapper && !wrapper.contains(e.target)) document.getElementById('notificationDropdown').classList.remove('show');
-        });
-        document.addEventListener('DOMContentLoaded', checkNotifications);
-    </script>
+    <div class="dashboard-wrapper">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
 
-    <!-- Content -->
-    <div class="iframe-container" style="margin-top: 80px; height: calc(100vh - 80px);">
-        <iframe src="http://localhost:8501"></iframe>
+            <!-- PANEL 1: SCANNER CONTROLS (Red Header) -->
+            <div class="panel">
+                <div class="panel-header header-red">
+                    SCANNER CONTROLS
+                </div>
+                <div class="panel-content">
+                    <div class="control-label">Quick Actions</div>
+                    <div class="btn-row">
+                        <button class="btn btn-fb" onclick="triggerScan('facebook')">
+                            <span class="material-icons" style="font-size:16px;">facebook</span> SCAN FB
+                        </button>
+                        <button class="btn btn-cl" onclick="triggerScan('craigslist')">
+                            <span class="material-icons" style="font-size:16px;">list_alt</span> SCAN CL
+                        </button>
+                    </div>
+
+                    <div
+                        style="font-size:11px; color:#888; margin-top:10px; display:flex; align-items:center; justify-content:space-between;">
+                        <span>Auto-Run Schedule</span>
+                        <span style="color:green; font-weight:bold;">ON</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL 2: FILTERS (Red Header, Accordions) -->
+            <div class="panel">
+                <div class="panel-header header-red" style="display:flex; justify-content:space-between;">
+                    <span>FILTERS</span>
+                    <span class="material-icons" style="font-size:16px; cursor:pointer;"
+                        onclick="resetFilters()">refresh</span>
+                </div>
+                <div class="panel-content">
+
+                    <!-- Accordions -->
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Location <span class="material-icons" style="font-size:16px;">expand_more</span>
+                        </div>
+                        <div class="accordion-content show">
+                            <input type="text" id="loc" placeholder="City, State" value="Chicago, IL">
+                            <input type="number" id="rad" placeholder="Radius" value="50">
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Basics <span class="material-icons" style="font-size:16px;">expand_more</span>
+                        </div>
+                        <div class="accordion-content">
+                            <input type="number" id="minPrice" placeholder="Min Price">
+                            <input type="number" id="maxPrice" placeholder="Max Price">
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Vehicle History <span class="material-icons" style="font-size:16px;">expand_more</span>
+                        </div>
+                        <div class="accordion-content">
+                            <input type="number" id="maxMiles" placeholder="Max Mileage (e.g. 150000)">
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Style <span class="material-icons" style="font-size:16px;">expand_more</span>
+                        </div>
+                        <div class="accordion-content">
+                            <select>
+                                <option>Any Body Style</option>
+                                <option>SUV</option>
+                                <option>Truck</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn-apply" onclick="loadListings()">APPLY FILTERS</button>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="toolbar-area">
+                <div>
+                    <h2 style="font-size:18px; font-weight:700;">Search Results</h2>
+                    <div style="font-size:12px; color:#777;">Live feed from Facebook & Craigslist</div>
+                </div>
+                <div class="view-toggles">
+                    <button class="active" id="btnGrid" onclick="setView('grid')"><span class="material-icons"
+                            style="vertical-align:bottom; font-size:18px;">grid_view</span></button>
+                    <button id="btnList" onclick="setView('list')"><span class="material-icons"
+                            style="vertical-align:bottom; font-size:18px;">view_list</span></button>
+                    <button onclick="loadListings()" style="margin-left:10px;"><span class="material-icons"
+                            style="vertical-align:bottom; font-size:18px;">refresh</span></button>
+                </div>
+            </div>
+
+            <div id="resultsContainer" class="grid-container">
+                <!-- Data injected here -->
+            </div>
+        </div>
     </div>
+
+    <script>
+        let currentView = 'grid';
+
+        function toggleAccordion(header) {
+            header.nextElementSibling.classList.toggle('show');
+            let icon = header.querySelector('.material-icons');
+            icon.textContent = icon.textContent === 'expand_more' ? 'expand_less' : 'expand_more';
+        }
+
+        function setView(view) {
+            currentView = view;
+            document.getElementById('btnGrid').classList.toggle('active', view === 'grid');
+            document.getElementById('btnList').classList.toggle('active', view === 'list');
+            const container = document.getElementById('resultsContainer');
+            if (view === 'list') container.className = 'list-container';
+            else container.className = 'grid-container';
+            loadListings();
+        }
+
+        async function triggerScan(source) {
+            alert('Scan Initiated: ' + source);
+            await fetch('/api/scanner/start', { method: 'POST', body: JSON.stringify({ source }), headers: { 'Content-Type': 'application/json' } });
+        }
+
+        async function loadListings() {
+            const container = document.getElementById('resultsContainer');
+            // Mock data fetch for demo
+            const res = await fetch('/facebook_marketplace/listings?limit=50&sort=posted_at_desc');
+            const data = await res.json();
+
+            if (currentView === 'grid') {
+                container.innerHTML = data.items.map(item => `
+                    <div class="card">
+                        <img src="${item.images?.[0] || ''}" class="card-img" onerror="this.style.background='#eee'">
+                        <div class="card-body">
+                            <div class="card-price">$${item.price?.toLocaleString()}</div>
+                            <a href="${item.listing_url}" target="_blank" class="card-title">${item.title}</a>
+                            <div class="card-meta">
+                                <span>${item.mileage?.toLocaleString()} mi</span>
+                                <span>${item.location}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                let html = '<div class="list-header"><span>TITLE</span><span>PRICE</span><span>MILES</span><span>LOCATION</span><span>SOURCE</span></div>';
+                html += data.items.map(item => `
+                    <div class="list-row">
+                        <a href="${item.listing_url}" target="_blank">${item.title}</a>
+                        <span style="color:#2ecc71; font-weight:700;">$${item.price?.toLocaleString()}</span>
+                        <span>${item.mileage?.toLocaleString()}</span>
+                        <span>${item.location}</span>
+                        <span style="font-weight:700; font-size:10px; text-transform:uppercase; color:${item.source === 'facebook' ? '#1877F2' : '#8e44ad'};">${item.source}</span>
+                    </div>
+                `).join('');
+                container.innerHTML = html;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadListings);
+    </script>
 </body>
 
 </html>

@@ -117,514 +117,86 @@ class ScrapeStrategy(ABC):
 class FacebookStrategy(ScrapeStrategy):
     """
     Scraping strategy for Facebook Marketplace.
-    Handles login requirements and FB-specific selectors.
+    Uses Bright Data Web Scraper API (Server-Side) to bypass anti-bot measures.
+    No local browser automation is used for Facebook.
     """
     
-    def __init__(self, ghost=None, navigator=None, use_direct_api=False):
+    def __init__(self, ghost=None, navigator=None, use_direct_api=True):
         """
         Initialize Facebook strategy.
         
         Args:
-            ghost: Ghost instance for session management and login
-            navigator: Navigator instance for stealth navigation
-            use_direct_api: If True, bypass browser and use Bright Data API directly (default: True)
+            ghost: Unused in API mode, kept for interface compatibility
+            navigator: Unused in API mode
+            use_direct_api: Enforced to True.
         """
         super().__init__(navigator)
-        self.ghost = ghost
-        self.enricher = BrightDataEnricher()
-        self.use_direct_api = use_direct_api
-    
-    def login_if_needed(self, page: Page):
-        """
-        Check if login is required and handle it via Ghost.
-        
-        Args:
-            page: Playwright page object
-        """
-        try:
-            # Check if we're on a login page
-            if 'login' in page.url.lower() or page.query_selector('input[name="email"]'):
-                print("⚠️  Facebook login required")
-                # Wait a bit for potential auto-login from cookies
-                page.wait_for_timeout(2000)
-                if 'login' in page.url.lower() or page.query_selector('input[name="email"]'):
-                    return False
-            
-            # Check for the annoying 'Log in' popup that isn't a hard wall
-            login_popup = page.query_selector('div[role="dialog"] h2:has-text("Log")')
-            if login_popup:
-                print("   🧩 Attempting to dismiss non-blocking login popup...")
-                close_btn = page.query_selector('div[aria-label="Close"], div[role="button"]:has-text("✕")')
-                if close_btn:
-                    close_btn.click()
-                    page.wait_for_timeout(1000)
-            
-            return True # Not stuck
-        except Exception as e:
-            print(f"   ⚠️ Warning during login check: {e}")
-            return True # Proceed with caution
-    
+        from modules.bright_data import BrightDataManager
+        self.manager = BrightDataManager()
     
     def auto_configure(self, criteria: dict) -> str:
         """
-        Automatically configure search by navigating to Marketplace and applying filters.
-        Returns the resulting URL.
+        Configuration is handled via API parameters, not browser navigation.
+        Returns a placeholder or configured location string.
         """
-        print("   🛠️ Auto-Configuring Search Parameters...")
-        if not self.ghost:
-            print("   ❌ Ghost instance required for auto-configuration.")
-            return None
-            
-        page = self.ghost.page
-        try:
-            # 1. Go to Marketplace
-            # page.goto("https://www.facebook.com/marketplace/vehicles", wait_until='domcontentloaded')
-            self.navigate(page, "https://www.facebook.com/marketplace/vehicles", NavReason.INITIAL_LOAD)
-            self.ghost.wait(random.uniform(3.0, 5.0))
-            
-            # 2. Set Location (Simplistic approach: assuming user is logged in or default works, 
-            # otherwise just returning the base vehicle URL with query parameters manually constructed 
-            # is safer/faster than UI interaction which might flake).
-            
-            # Construct URL manually based on criteria to avoid UI flakiness
-            # Zip and Radius are usually stored in cookies, but we can try to pass them if we reverse engineer the URL.
-            # However, `https://www.facebook.com/marketplace/{city_slug}/vehicles` is standard.
-            # Finding the slug from zip is hard without an API.
-            
-            # Better approach: Use the UI to search "Vehicles" which is resilient.
-            
-            # For now, let's return a robust search URL based on the zip if possible, 
-            # or default to the Chicago one if unknown, but better: 
-            # Let's try to interact with the location filter if visible.
-            
-            print("   📍 Attempting to set location via URL parameters (Best Effort)...")
-            # FB doesn't easily accept zip in URL for marketplace without internal ID.
-            # Fallback: Return a generic search URL that the user can refine, or use the one they likely want.
-            # If criteria has 'zip_code', we might need to geocode it to a city slug? 
-            # Too complex for this step.
-            
-            # Alternative: Just search for "Vehicles"
-            query = "Vehicles"
-            page.fill('input[aria-label="Search Marketplace"]', query)
-            page.keyboard.press('Enter')
-            self.ghost.wait(3.0)
-            
-            current_url = page.url
-            print(f"   ✅ Auto-Configuration Complete. URL: {current_url}")
-            return current_url
-            
-        except Exception as e:
-            print(f"   ❌ Auto-Configuration Failed: {e}")
-            return "https://www.facebook.com/marketplace/category/vehicles"
+        location = criteria.get('location', 'Chicago, IL')
+        print(f"   🛠️ Configured for Bright Data: {location}")
+        return location
 
     def scrape(self, page: Page, url: str, max_hours: float = None, progress_callback=None) -> list:
         """
-        Scrape Facebook Marketplace.
-        
-        NEW (2026-02): Direct API Mode bypasses browser entirely and sends search URL
-        to Bright Data Dataset API, which handles all anti-bot measures.
+        Scrape Facebook Marketplace using Bright Data API.
         
         Args:
-            page: Playwright Page object (unused if use_direct_api=True).
-            url: Target URL (search results page).
-            max_hours: Optional filter for listing age.
-            progress_callback: Optional progress callback.
-            
-        Returns:
-            list: List of extracted listing dictionaries.
+            page: Unused (API mode)
+            url: Can be a location string or search URL.
+            max_hours: Filter for listing age.
+            progress_callback: Callback for UI updates.
         """
-        # ========== DIRECT API MODE (DEFAULT) ==========
-        if self.use_direct_api:
-            print("   🚀 Using Bright Data Direct API (bypassing browser)")
-            print(f"   🔗 Search URL: {url[:80]}...")
-            
-            if progress_callback:
-                progress_callback(0, 100, "Initializing Bright Data API...")
-            
-            # Send search URL directly to Bright Data
-            # They handle all scraping, anti-bot bypassing, etc.
-            listings = self.enricher.enrich_search_url(url, progress_callback)
-            
-            # Apply time filter if specified
-            if max_hours and listings:
-                print(f"   ⏰ Applying {max_hours}h time filter...")
-                filtered = []
-                for listing in listings:
-                    age = listing.get('hours_since_listed')
-                    if age is None:
-                        # Strict mode: skip if age unknown
-                        continue
-                    if age <= max_hours:
-                        filtered.append(listing)
-                
-                print(f"   ✅ Time filter: {len(filtered)}/{len(listings)} listings within {max_hours}h")
-                return filtered
-            
-            return listings
+        print("   🚀 Initiating Bright Data API Scan (No Browser)...")
         
-        # ========== LEGACY BROWSER MODE (FALLBACK) ==========
-        # This is the old approach that's prone to blocking
-        # Only used if use_direct_api=False
-        print("   ⚠️  Using legacy browser mode (may encounter blocking)")
+        # Determine Location and Query from 'url' argument
+        # If 'url' is a real URL, we might parse it. 
+        # But commonly we pass a config object or location string in this new architecture.
+        # Fallback: defaults
+        location = "Chicago, IL"
+        radius = 50
         
-        listings = []
-        try:
-            print(f"   Getting {url}...")
-            if progress_callback:
-                progress_callback(0, 0, "Navigating to Marketplace...")
-
-            # page.goto(url, wait_until='networkidle', timeout=60000)
-            self.navigate(page, url, NavReason.INITIAL_LOAD)
-
-            # Check for login wall or captcha
-            print("   👀 Waiting for Marketplace feed to load...")
-            if progress_callback:
-                progress_callback(0, 0, "Waiting for content...")
-                
-            try:
-                # Broader selectors for 2026 FB layout
-                # div[role="main"] is standard, aria-label="Collection..." is specific to feed
-                page.wait_for_selector('div[role="feed"], div[role="main"], div[aria-label*="Marketplace"], div[data-nosnippet]', timeout=30000)
-                print("   ✅ Content loaded.")
-            except Exception:
-                print("   ⚠️ Content wait timed out, proceeding anyway (might be a false alarm or empty page)...")
-            
-            # Initial human behavior before doing work
-            if progress_callback:
-                progress_callback(5, 0, "Warming up (Human behavior)...")
-            self.simulate_human_interaction(page)
-            
-            if progress_callback:
-                progress_callback(10, 0, "Checking Login Status...")
-            
-            # Check for login requirement
-            is_logged_in = self.login_if_needed(page)
-            
-            # CRITICAL: Dismiss "See more on Facebook" modal if it appears
-            # Even with cookies, Facebook shows this overlay to non-logged-in users
-            try:
-                # Wait briefly for modal to appear
-                page.wait_for_timeout(2000)
-                
-                # Try various close button selectors
-                modal_selectors = [
-                    'div[aria-label="Close"]',
-                    'div[role="button"]:has-text("Not Now")',
-                    'div[role="button"]:has-text("Close")',
-                    'button:has-text("Not Now")',
-                    '[aria-label="Close"]'
-                ]
-                
-                dismissed = False
-                for selector in modal_selectors:
-                    close_btn = page.query_selector(selector)
-                    if close_btn:
-                        try:
-                            close_btn.click()
-                            page.wait_for_timeout(1500)
-                            print(f"   ✅ Dismissed login modal")
-                            dismissed = True
-                            break
-                        except:
-                            continue
-                
-                if not dismissed:
-                    # Try pressing ESC key as fallback
-                    page.keyboard.press('Escape')
-                    page.wait_for_timeout(1000)
-                    print("   ⚠️  Attempted ESC to dismiss modal")
-                    
-            except Exception as e:
-                print(f"   ⚠️  Modal dismissal check: {e}")
-            
-            # Check if feed items are actually visible 
-            feed_items = page.query_selector_all('a[href*="/marketplace/item/"]')
-            
-            if is_logged_in or len(feed_items) > 0:
-                 print(f"   ✅ Feed access confirmed ({len(feed_items)} visible items).")
-            else:
-                 # Check if we are stuck on a login page/overlay
-                 if page.query_selector('input[name="email"], div[role="dialog"] h2:has-text("Log In")'):
-                      print("   ⛔ CRITICAL: Hard Login Wall. Please refresh cookies in Ghost.")
-                      if progress_callback:
-                          progress_callback(10, 100, "Error: Login Required")
-                      return [] # Abort gracefully
-                 else:
-                      print("   ⚠️  Login status uncertain, but content not visible. Proceeding with scan...")
-            
-            # Collect Links (Scroll a bit to get a good batch)
-            print("   🔍 Scanning feed for potential vehicles...")
-            if progress_callback:
-                progress_callback(5, 0, "Scanning Feed (Batch 1)...")
-                
-            unique_links = []
-            seen_urls = set()
-            
-            for i in range(12): # Increased to 12 cycles to reach 200+ findings
-                current_percent = 10 + (i * 3) # Starts at 10%, ends at ~46%
-                if progress_callback:
-                    progress_callback(current_percent, 0, f"Scanning Feed (Scroll {i+1}/12)...")
-                
-                print(f"   📜 Scroll {i+1}/12...")
-                # use ghost scroll for live feed
-                if self.ghost:
-                     self.ghost.scroll(page, random.randint(800, 1500)) # Larger scrolls
-                     self.ghost.wait(0.5)
-                else:
-                     page.mouse.wheel(0, random.randint(800, 1500))
-                     self.random_sleep(0.3, 0.7)
-                
-                # Link discovery
-                found_links = page.locator('a[href*="/marketplace/item/"]').all()
-                for link in found_links:
-                    href = link.get_attribute('href')
-                    if href and href not in seen_urls:
-                        # Convert to full URL
-                        full_url = f"https://www.facebook.com{href}" if href.startswith('/') else href
-                        # Simple filter to avoid totally irrelevant links if possible
-                        if '/item/' in full_url:
-                            # 72-hour Freshness Check (Initial URL Filter if supported)
-                            # Facebook URLs don't carry dates trivially without opening, 
-                            # checking inside the loop is safer.
-                            
-                            # --- PRE-CLICK FILTER (Minimal - Let Bright Data handle most filtering) ---
-                            # CRITICAL: Pre-click filtering was TOO AGGRESSIVE and rejected ALL listings.
-                            # Only filter for OBVIOUS non-car vehicles. Let Bright Data enrichment provide accurate data.
-                            try:
-                                link_text = link.get_attribute('aria-label') or ''
-                                link_text = link_text.lower()
-                                
-                                # ONLY exclude obvious non-car vehicles (motorcycles, boats, RVs, etc.)
-                                exclude_keywords = [
-                                    'motorcycle', 'scooter', 'dirt bike', 'bike',
-                                    'boat', 'jet ski', 'watercraft', 
-                                    'trailer only', 'rv', 'camper', 'motorhome',
-                                    'atv', 'quad', 'snowmobile',
-                                    'parting out', 'part out', 'parts only', 'for parts'
-                                ]
-                                
-                                if any(keyword in link_text for keyword in exclude_keywords):
-                                    print(f"   ⛔ Skipping (Non-Car Vehicle): {full_url}")
-                                    continue
-                                        
-                            except:
-                                pass # If we can't get text, proceed anyway
-                            
-                            
-                            # NOTE: Time filtering moved to POST-enrichment phase
-                            # Pre-click date parsing from link text is unreliable and was rejecting too many valid listings
-                            # Bright Data enrichment provides accurate timestamps for filtering
-                            
-                            seen_urls.add(full_url)
-                            unique_links.append(full_url)
-            
-            if not unique_links:
-                print("   ⚠️ Found 0 links. Taking debug screenshot...")
-                try:
-                    page.screenshot(path="debug_failure.png")
-                except: pass
-                
-                # Critical Fix: Status update to finish progress bar
-                if progress_callback:
-                    progress_callback(100, 100, "Complete (Values: 0)")
-                
-            print(f"   Found {len(unique_links)} potential listing links. Sending to Bright Data for enrichment.")
-            
-            # --- CLOUD ENRICHMENT (Bright Data) ---
-            # Instead of visiting locally (risky/slow), send all found links to cloud.
-            if unique_links:
-                # Limit to 20 per batch if needed to control costs/speed, or process all.
-                # Bright Data is fast, so let's process up to 20.
-                targets = unique_links # Removed 20-item cap to restore 200+ findings capacity 
-                
-                print(f"   🚀 Triggering cloud batch for {len(targets)} items...")
-                
-                # Create a scaled callback for the enrichment phase (50% -> 90%)
-                def enrichment_callback(curr, tot, msg):
-                    if progress_callback and tot > 0:
-                        # Scale 0-100% of enrichment to 50-90% of total
-                        enrichment_pct = curr / tot
-                        scaled_pct = 50 + (enrichment_pct * 40)
-                        progress_callback(scaled_pct, 100, f"Enriching: {msg}")
-
-                enriched_listings = self.enricher.enrich(targets, enrichment_callback)
-                
-                if enriched_listings:
-                    listings.extend(enriched_listings)
-                    print(f"   ✅ Successfully enriched {len(enriched_listings)} items via cloud.")
-                else:
-                    print("   ⚠️ Cloud enrichment returned 0 results.")
-            
-            return listings
-            
-        except Exception as e:
-            print(f"Error scraping Facebook Marketplace: {e}")
+        # Try to parse properties if url looks like parameters
+        if "facebook.com" not in url and "," in url:
+             location = url # Treat input as location string if not a URL
         
+        # Fetch properties from active config if available globally? 
+        # Ideally passed in, but we'll try to use the 'url' arg as the location context
+        
+        print(f"   📍 Context: {location}")
+        
+        listings = self.manager.fetch_listings(
+            location=location,
+            radius_miles=radius,
+            limit=100,
+            sort="date_listed",
+            progress_callback=progress_callback
+        )
+        
+        # Apply Time Filter Client-Side (Double Check)
+        if max_hours and listings:
+            print(f"   ⏰ Applying {max_hours}h time filter...")
+            filtered = []
+            for l in listings:
+                age = l.get('hours_since_listed')
+                if age is not None and age <= max_hours:
+                    filtered.append(l)
+            
+            print(f"   ✅ Filtered: {len(filtered)}/{len(listings)} within {max_hours}h")
+            return filtered
+            
         return listings
 
-    def _extract_deep_details(self, page: Page, url: str) -> dict:
-        """Extract details from a specific listing page."""
-        try:
-            # Wait briefly for content
-            try:
-                page.wait_for_selector('h1', timeout=3000)
-            except: pass
-            
-            # Get full text for broad text analysis
-            body_text = page.inner_text()
-            
-            # TITLE
-            title = "Unknown Vehicle"
-            try:
-                title = page.locator('h1').first.inner_text()
-            except: pass
-            
-            # PRICE
-            price = 0
-            # Try finding price in the top section first
-            price_match = re.search(r'\$[\d,]+', body_text)
-            if price_match:
-                price = self.extract_price(price_match.group(0))
-                
-            # MILEAGE (CRITICAL FIX FOR USER)
-            # Prioritize "Driven X miles" from "About this vehicle" section
-            mileage = 0
-            driven_match = re.search(r'Driven\s+([\d,]+)\s+miles', body_text, re.IGNORECASE)
-            if driven_match:
-                mileage = self.extract_mileage(driven_match.group(1))
-            else:
-                # Fallback: look for "odometer" context
-                odo_match = re.search(r'Odometer[:\s]+([\d,]+)', body_text, re.IGNORECASE)
-                if odo_match:
-                     mileage = self.extract_mileage(odo_match.group(1))
-
-            # DESCRIPTION
-            description = body_text # Use full text as fallback description if specific container not found
-            # Try to expand description if possible
-            try:
-                page.get_by_role("button", name="See more").first.click(timeout=1000)
-                description = page.inner_text() # Update text after expansion
-            except: pass
-
-            # IMAGES
-            images = []
-            try:
-                imgs = page.locator('img').all()
-                for img in imgs[:5]: # First few images usually main gallery
-                    src = img.get_attribute('src')
-                    if src and 'fbcdn' in src:
-                        images.append(src)
-            except:
-                pass
-            
-            # TIME POSTED (Advanced Parsing)
-            # Try to find relative time like "Listed 2 hours ago"
-            hours_since_listed = None
-            
-            # Expanded Regex for Deep Details too
-            time_match = re.search(r'(?:Listed|Posted)\s+([\d\.]+)\s+(min|minute|hour|day|week)s?\s+ago', body_text, re.IGNORECASE)
-            
-            if not time_match:
-                 time_match = re.search(r'(?:\s|^)([\d\.]+)(h|m|d|w)\s+ago', body_text[:2000], re.IGNORECASE)
-                 
-            if time_match:
-                val = float(time_match.group(1))
-                unit = time_match.group(2).lower()
-                if 'min' in unit or unit == 'm': hours_since_listed = val / 60.0
-                elif 'hour' in unit or unit == 'h': hours_since_listed = val
-                elif 'day' in unit or unit == 'd': hours_since_listed = val * 24.0
-                elif 'week' in unit or unit == 'w': hours_since_listed = val * 24.0 * 7.0
-            elif re.search(r'(Just now|Moments ago)', body_text[:1000], re.IGNORECASE):
-                hours_since_listed = 0.01
-            elif re.search(r'(Yesterday)', body_text[:1000], re.IGNORECASE):
-                hours_since_listed = 24.0
-            
-            # Construct Listing
-            # LOCATION
-            location = "Unknown"
-            
-            # Pattern 1: "Listed X ago in [Location]"
-            listed_in_match = re.search(r'Listed.*?ago in\s+([\w\s,]+)', body_text, re.IGNORECASE)
-            if listed_in_match:
-                location = listed_in_match.group(1).split('\n')[0].strip() # Take first line only
-            
-            # Pattern 2: Explicit "Location is"
-            if location == "Unknown":
-                loc_match = re.search(r'Location is ([\w\s,]+)', body_text, re.IGNORECASE)
-                if loc_match:
-                    location = loc_match.group(1).strip()
-            
-            # Pattern 3: Fallback City, State
-            if location == "Unknown":
-                # Rough heuristic for US cities
-                city_state_match = re.search(r'([A-Z][a-zA-Z\s]+,\s*[A-Z]{2})', body_text[:1000])
-                if city_state_match:
-                        location = city_state_match.group(1).strip()
-
-            # Construct Listing
-            return {
-                'title': title,
-                'price': price,
-                'mileage': mileage, 
-                'location': location,
-                'description': description,
-                'images': images,
-                'listing_url': url,
-                'source': 'facebook_marketplace',
-                'hours_since_listed': hours_since_listed
-            }
-        except Exception as e:
-            print(f"Deep extract error: {e}")
-            return None
-            
-    
-    def _extract_facebook_listing(self, page: Page, elem) -> dict:
-        """Extract data from a single Facebook listing element."""
-        # Title
-        title_elem = elem.query_selector('span.x1lliihq.x6ikm8r.x10wlt62.x1n2onr6')
-        title = title_elem.inner_text().strip() if title_elem else ""
-        
-        # Price
-        price_elem = elem.query_selector('span.x193iq5w.xeuugli.x13faqbe.x1vvkbs.x1xmvt09.x1lliihq.x1s928wv.xhkezso.x1gmr53x.x1cpjm7i.x1fgarty.x1943h6x.xudqn12.x676frb.x1lkfr7t.x1lbecb7.x1s688f.xzsf02u')
-        price_text = price_elem.inner_text() if price_elem else "0"
-        price = self.extract_price(price_text)
-        
-        # Location
-        location_elem = elem.query_selector('span.x1lliihq.x6ikm8r.x10wlt62.x1n2onr6.xlyipyv.xuxw1ft')
-        location = location_elem.inner_text().strip() if location_elem else ""
-        
-        # URL
-        link_elem = elem.query_selector('a[href*="/marketplace/item/"]')
-        if link_elem:
-            href = link_elem.get_attribute('href')
-            listing_url = f"https://www.facebook.com{href}" if href.startswith('/') else href
-        else:
-            listing_url = ""
-        
-        # Images
-        img_elems = elem.query_selector_all('img')
-        images = [img.get_attribute('src') for img in img_elems if img.get_attribute('src')]
-        
-        # Description (often not available in feed, would need detail page)
-        description = ""
-        
-        # Mileage (extract from title/description if present)
-        mileage = 0
-        combined_text = f"{title} {description}"
-        mileage_match = re.search(r'(\d+[,\d]*)\s*(?:miles|mi|k\s*miles)', combined_text, re.IGNORECASE)
-        if mileage_match:
-            mileage = self.extract_mileage(mileage_match.group(1))
-        
-        return {
-            'title': title,
-            'price': price,
-            'mileage': mileage,
-            'location': location,
-            'description': description,
-            'images': images,
-            'listing_url': listing_url,
-            'source': 'facebook_marketplace'
-        }
+    # Legacy methods stubbed out or removed
+    def login_if_needed(self, page: Page): pass
+    def _extract_deep_details(self, page: Page, url: str): return None
+    def _extract_facebook_listing(self, page: Page, elem): return None
 
 
 class CraigslistStrategy(ScrapeStrategy):

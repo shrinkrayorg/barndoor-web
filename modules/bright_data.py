@@ -1,7 +1,7 @@
 """
-Bright Data Enricher Module
-Integrates with Bright Data's Dataset API to fetch detailed listing data.
-Replaces local deep scraping to reduce detection risk.
+Bright Data Manager Module
+Manages interactions with Bright Data's Web Scraper API and Dataset API.
+Handles real-time ingestion via specific Facebook Scrapers and historical backfills.
 """
 import requests
 import time
@@ -9,24 +9,34 @@ import json
 import os
 import re
 from datetime import datetime, timezone
+import logging
 
-class BrightDataEnricher:
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class BrightDataManager:
     """
-    Manages interactions with Bright Data Dataset API.
-    Triggers scraping jobs and retrieves results.
+    Manages interactions with Bright Data APIs.
     """
     
-    def __init__(self, api_key=None, dataset_id=None):
+    # Pre-built Scraper ID for Facebook Marketplace
+    REALTIME_SCRAPER_ID = "gd_lkaxegm826bjpoo9m5" 
+    # Historical Dataset ID
+    HISTORICAL_DATASET_ID = "gd_lvt9iwuh6fbcwmx1a"
+
+    def __init__(self, api_key=None, zone="web_unlocker", proxy_pass=None):
         """
         Initialize with credentials.
-        defaults to loading from environment/config if not provided.
         """
         import config
         self.api_key = api_key or config.BRIGHT_DATA_API_KEY
-        self.dataset_id = dataset_id or config.BRIGHT_DATA_DATASET_ID
+        self.zone = os.getenv('BRIGHT_DATA_ZONE', zone)
+        self.proxy_pass = proxy_pass or os.getenv('BRIGHT_DATA_PROXY_PASS')
+        self.customer_id = os.getenv('BRIGHT_DATA_CUSTOMER_ID') # Often part of the proxy user
         
-        if not self.api_key or not self.dataset_id:
-            print("⚠️  BrightDataEnricher Warning: Missing API Key or Dataset ID.")
+        if not self.api_key:
+            logger.warning("⚠️  BrightDataManager: Missing API Key.")
             
         self.base_url = "https://api.brightdata.com/datasets/v3"
         self.headers = {
@@ -34,303 +44,268 @@ class BrightDataEnricher:
             "Content-Type": "application/json"
         }
 
-    def enrich(self, urls: list, progress_callback=None) -> list:
+    def fetch_via_web_unlocker(self, url: str) -> str:
         """
-        Full workflow: Trigger dataset -> Poll -> Format Results.
+        Fetch a raw page using Bright Data's Web Unlocker (Proxy Mode).
+        Requires BRIGHT_DATA_ZONE and BRIGHT_DATA_PROXY_PASS in environment.
+        """
+        if not self.proxy_pass or not self.customer_id:
+            logger.warning("⚠️  Web Unlocker requires BRIGHT_DATA_CUSTOMER_ID and BRIGHT_DATA_PROXY_PASS")
+            return None
+
+        print(f"   🔓 Unlocking: {url}...")
+        
+        # Construct Proxy String
+        # format: brd-customer-{id}-zone-{zone}:{password}
+        # Host: brd.superproxy.io:22225
+        
+        proxy_user = f"brd-customer-{self.customer_id}-zone-{self.zone}"
+        proxy_url = f"http://{proxy_user}:{self.proxy_pass}@brd.superproxy.io:22225"
+        
+        proxies = {
+            "http": proxy_url,
+            "https": proxy_url
+        }
+        
+        try:
+            # verify=False is often needed for SSL bumping proxies
+            r = requests.get(url, proxies=proxies, verify=False, timeout=30)
+            return r.text
+        except Exception as e:
+            logger.error(f"   ❌ Unlock Failed: {e}")
+            return None
+
+    def fetch_listings(self, location: str, radius_miles: int = 50, limit: int = 100, sort: str = "date_listed", progress_callback=None) -> list:
+        """
+        Fetch real-time listings using the pre-built Facebook Scraper (Web Scraper API).
         
         Args:
-            urls: List of listing URLs to enrich.
-            progress_callback: Optional callback(current, total, status)
+            location: City, State or Zip (e.g. "San Francisco, CA")
+            radius_miles: Search radius
+            limit: Max listings to return
+            sort: Sort order (default: "date_listed" for newest first)
+            progress_callback: Optional function(current, total, message)
             
         Returns:
             list: List of standardized listing dictionaries.
         """
-        if not urls:
-            return []
-            
-        print(f"   ☁️  Sending {len(urls)} items to Bright Data cloud...")
-        if progress_callback:
-            progress_callback(0, len(urls), "Sending to Cloud...")
+        print(f"   🚀 Properties: Location={location}, Radius={radius_miles}mi, Limit={limit}, Sort={sort}")
         
-        # 1. Trigger
-        snapshot_id = self.trigger_dataset(urls)
-        if not snapshot_id:
-            return []
-            
-        # 2. Poll
-        if progress_callback:
-            progress_callback(0, len(urls), "Cloud Processing (Wait 1-3m)...")
-            
-        raw_data = self.poll_results(snapshot_id, progress_callback, len(urls))
-        if not raw_data:
-            return []
-            
-        # 3. Format
-        if progress_callback:
-            progress_callback(len(urls), len(urls), "Formatting...")
-            
-        formatted_listings = self._format_results(raw_data)
-        print(f"   ✨ Received {len(formatted_listings)} enriched listings from cloud.")
+        # Construct Payload for gd_lkaxegm826bjpoo9m5
+        # Schema inference: standard FB scraper usually takes 'location', 'url' or 'keyword'
+        # We will use 'keyword' search if supported, or 'url' construction
         
-        if progress_callback:
-             progress_callback(len(urls), len(urls), "Cloud Complete")
-        
-        return formatted_listings
-
-    def enrich_search_url(self, search_url: str, progress_callback=None) -> list:
-        """
-        Scrape Facebook Marketplace using Bright Data Dataset API with search parameters.
-        Bright Data's dataset accepts KEYWORD + LOCATION inputs, not raw search URLs.
-        
-        Args:
-            search_url: Facebook Marketplace search URL (parsed to extract params)
-            progress_callback: Optional callback(current, total, status)
-            
-        Returns:
-            list: List of standardized listing dictionaries from the search results
-        """
-        if not search_url:
-            return []
-            
-        print(f"   ☁️  Using Bright Data Direct API (keyword search mode)...")
-        
-        # Parse search URL to extract location and filters
-        # Example URL: https://www.facebook.com/marketplace/chicago/search?sortBy=creation_time_descend&sellerType=individual&query=Vehicles&category_id=546583916084032
-        
-        location = "chicago"  # Default location
-        keyword = "cars"  # Default search term
-        category = "vehicles"  # Category
-        
-        # Try to extract location from URL
-        import re
-        from urllib.parse import urlparse, parse_qs
-        
-        try:
-            parsed = urlparse(search_url)
-            path_parts = parsed.path.split('/')
-            if 'marketplace' in path_parts:
-                idx = path_parts.index('marketplace')
-                if len(path_parts) > idx + 1:
-                    location = path_parts[idx + 1]  # e.g., "chicago"
-            
-            # Extract query parameters
-            params = parse_qs(parsed.query)
-            if 'query' in params:
-                keyword = params['query'][0]
-        except:
-            pass
-        
-        print(f"   📍 Location: {location}")
-        print(f"   🔍 Keyword: {keyword}")
-        
-        if progress_callback:
-            progress_callback(5, 100, "Triggering Bright Data API...")
-        
-        # Build input using Bright Data's expected format for Facebook Marketplace
-        # Based on documentation: accepts keyword, location, category, price_min, price_max, etc.
+        # Based on typical usage for this scraper (Marketplace):
         payload = [{
-            "keyword": keyword,
             "location": location,
-            "category": category,
-            "seller_type": "individual",  # Match our search criteria
-            "sort_by": "date_listed",  # Most recent first
-            "limit": 100  # Max listings to return
+            "keyword": "vehicles", # Broad search for vehicles
+            "radius": radius_miles,
+            "sort_by": "creation_time_descend" if "date" in sort or "newest" in sort else "best_match",
+            "limit": limit,
+            "marketplace": True, # Ensure it targets marketplace
+            "category_id": "vehicles" # Explicit category if supported
         }]
         
-        print(f"   🚀 Sending to Bright Data: keyword='{keyword}', location='{location}'")
+        if progress_callback:
+            progress_callback(10, 100, "Triggering Real-time Scraper...")
+            
+        snapshot_id = self.trigger_scraper(self.REALTIME_SCRAPER_ID, payload)
         
-        # Trigger dataset with keyword-based search
-        snapshot_id = self._trigger_keyword_search(payload)
         if not snapshot_id:
-            print("   ❌ Failed to trigger Bright Data job")
+            logger.error("Failed to trigger scraper.")
             return []
             
-        # 2. Poll for results (1-3 minutes typically)
+        # Poll for results
         if progress_callback:
-            progress_callback(10, 100, "Cloud Processing (1-3m wait)...")
+            progress_callback(20, 100, "Waiting for Bright Data (1-3 min)...")
             
-        raw_data = self.poll_results(snapshot_id, progress_callback, total_expected=0)
+        raw_data = self.poll_results(snapshot_id, progress_callback)
+        
         if not raw_data:
-            print("   ❌ No data returned from Bright Data")
             return []
             
-        # 3. Format results
+        # Format results
         if progress_callback:
-            progress_callback(95, 100, "Formatting results...")
+            progress_callback(90, 100, "Formatting Data...")
             
-        formatted_listings = self._format_results(raw_data)
-        print(f"   ✨ Received {len(formatted_listings)} listings from Bright Data")
+        listings = self._format_results(raw_data)
         
         if progress_callback:
-            progress_callback(100, 100, f"Complete ({len(formatted_listings)} listings)")
+            progress_callback(100, 100, f"Complete: {len(listings)} listings")
+            
+        return listings
+
+    def fetch_historical(self, location: str, max_age_hours: int = 24) -> list:
+        """
+        Fetch listings from the Historical Dataset (gd_lvt9iwuh6fbcwmx1a).
+        """
+        # Note: Dataset API filtering is limited. We might need to fetch a batch and filter client-side 
+        # or use the /query endpoint if enabled (paid feature).
+        # For now, we'll try a trigger with filters if the dataset supports initiated-by-trigger subsetting.
         
-        return formatted_listings
-    
-    def _trigger_keyword_search(self, payload: list) -> str:
-        """Trigger keyword-based search (for Facebook Marketplace search pages)."""
-        trigger_url = f"{self.base_url}/trigger?dataset_id={self.dataset_id}"
+        logger.info(f"Fetching historical data for {location}...")
+        
+        payload = [{
+            "location": location,
+            "include_blob": True # Request full details
+        }]
+        
+        snapshot_id = self.trigger_scraper(self.HISTORICAL_DATASET_ID, payload)
+        if not snapshot_id:
+            return []
+            
+        raw_data = self.poll_results(snapshot_id)
+        return self._format_results(raw_data) if raw_data else []
+
+    def trigger_scraper(self, dataset_id: str, payload: list) -> str:
+        """Trigger a collection job on a specific dataset/scraper."""
+        url = f"{self.base_url}/trigger?dataset_id={dataset_id}"
         
         try:
-            r = requests.post(trigger_url, headers=self.headers, json=payload)
+            r = requests.post(url, headers=self.headers, json=payload)
             r.raise_for_status()
             data = r.json()
             snapshot_id = data.get("snapshot_id")
-            print(f"   ✅ Job started! Snapshot ID: {snapshot_id}")
+            print(f"   ✅ Job Started: {snapshot_id}")
             return snapshot_id
         except Exception as e:
-            print(f"   ❌ Error triggering Bright Data: {e}")
-            if hasattr(e, 'response') and e.response is not None:
-                print(f"      Response: {e.response.text}")  
-            return None
-
-
-    def trigger_dataset(self, urls: list) -> str:
-        """Trigger the dataset collection for specific URLs."""
-        trigger_url = f"{self.base_url}/trigger?dataset_id={self.dataset_id}"
-        
-        # Format payload: List of objects with "url" key
-        payload = [{"url": u} for u in urls]
-        
-        try:
-            r = requests.post(trigger_url, headers=self.headers, json=payload)
-            r.raise_for_status()
-            data = r.json()
-            snapshot_id = data.get("snapshot_id")
-            print(f"   🚀 Job started. Snapshot ID: {snapshot_id}")
-            return snapshot_id
-        except Exception as e:
-            print(f"   ❌ Error triggering Bright Data: {e}")
-            if hasattr(e, 'response') and e.response is not None:
+            print(f"   ❌ Trigger Failed: {e}")
+            if hasattr(e, 'response') and e.response:
                 print(f"      Response: {e.response.text}")
             return None
 
-    def poll_results(self, snapshot_id: str, progress_callback=None, total_expected=0) -> list:
-        """Poll for results until ready."""
-        result_url = f"{self.base_url}/snapshot/{snapshot_id}?format=json"
+    def poll_results(self, snapshot_id: str, progress_callback=None) -> list:
+        """Poll for completion."""
+        url = f"{self.base_url}/snapshot/{snapshot_id}?format=json"
         
-        print("   ⏳ Waiting for results (cloud processing, up to 10m)...", flush=True)
         start_time = time.time()
-        timeout = 600  # Restored to 10 minutes to handle 200+ links batches
+        timeout = 600 # 10 minutes
+        
+        print("   ⏳ Polling for results...")
         
         while time.time() - start_time < timeout:
             try:
-                r = requests.get(result_url, headers=self.headers)
+                r = requests.get(url, headers=self.headers)
                 
                 if r.status_code == 200:
                     return r.json()
                 elif r.status_code == 202:
-                    elapsed = int(time.time() - start_time)
+                    # Still processing
+                    elapsed = time.time() - start_time
                     if progress_callback:
-                         # Show dynamic wait progress (0-95%) based on expected 120s processing time
-                         # This will be scaled by the caller (e.g. 50-90% in FB strategy)
-                         wait_progress = min(95, int((elapsed / 120) * 100))
-                         progress_callback(wait_progress, 100, f"Cloud Processing... ({elapsed}s)")
-                    
+                        # Fake progress 20-80%
+                        pct = 20 + int((elapsed / 120) * 60) 
+                        progress_callback(min(pct, 85), 100, f"Processing... ({int(elapsed)}s)")
                     time.sleep(10)
-                    continue
                 elif r.status_code in [500, 502, 503, 504]:
-                    print(f"   ⚠️ Bright Data server error ({r.status_code}). Retrying in 5s...")
                     time.sleep(5)
-                    continue
                 else:
-                    print(f"   ❌ Error fetching results: {r.status_code} - {r.text}")
+                    print(f"   ❌ Poll Error: {r.status_code}")
                     return None
             except Exception as e:
-                print(f"   ⚠️ Polling Error: {e}")
+                print(f"   ⚠️ Poll Exception: {e}")
                 time.sleep(10)
                 
-        print("   ❌ Polling timed out.")
+        print("   ❌ Polling Timed Out")
         return None
 
     def _format_results(self, raw_data: list) -> list:
         """
-        Convert Bright Data JSON format to Barndoor internal format.
+        Normalize Bright Data results into our standard internal Schema.
         """
         listings = []
         for item in raw_data:
             try:
-                # Map fields
-                price = item.get('final_price') or item.get('initial_price') or 0
+                # Basic fields
+                title = item.get('title', 'Unknown')
                 
-                # Mileage
+                # Price Normalization
+                price = item.get('price') or item.get('final_price') or item.get('initial_price') or 0
+                if isinstance(price, str):
+                    price = re.sub(r'[^\d]', '', price)
+                    price = int(price) if price else 0
+                
+                # Mileage Normalization
                 mileage = 0
-                raw_mileage = item.get('mileage')
-                if raw_mileage:
-                    if isinstance(raw_mileage, (int, float)):
-                        mileage = int(raw_mileage)
-                    else:
-                        m_text = str(raw_mileage).lower()
-                        # Handle "123k" notation
-                        k_match = re.search(r'(\d+(?:\.\d+)?)\s*k', m_text)
-                        if k_match:
-                            mileage = int(float(k_match.group(1)) * 1000)
-                        else:
-                            digits = re.sub(r'[^\d]', '', m_text)
-                            mileage = int(digits) if digits else 0
+                raw_mi = item.get('mileage') or item.get('vehicle_mileage')
+                if raw_mi:
+                     if isinstance(raw_mi, (int, float)):
+                         mileage = int(raw_mi)
+                     elif isinstance(raw_mi, str):
+                         # "12k miles" -> 12000
+                         m_clean = raw_mi.lower().replace(',', '')
+                         k_match = re.search(r'(\d+(?:\.\d+)?)\s*k', m_clean)
+                         if k_match:
+                             mileage = int(float(k_match.group(1)) * 1000)
+                         else:
+                             digits = re.sub(r'[^\d]', '', m_clean)
+                             mileage = int(digits) if digits else 0
                 
-                # If mileage is still 0, try to find it in title or description
-                if mileage == 0:
-                    combined_text = f"{item.get('title', '')} {item.get('description', '')} {item.get('seller_description', '')}".lower()
-                    # Look for "123k miles" or "123,456 miles"
-                    m_match = re.search(r'(\d+(?:[,\d.]\d{3})*)\s*k?\s*(?:miles|mi|k\b)', combined_text)
-                    if m_match:
-                        m_val = m_match.group(1).replace(',', '').replace(' ', '')
-                        if 'k' in m_match.group(0).lower():
-                             mileage = int(float(m_val) * 1000)
-                        else:
-                             mileage = int(float(m_val)) if m_val else 0
+                # Timestamp Parsing
+                posted_at = datetime.now(timezone.utc).isoformat()
+                hours_since = 0
                 
-                # Hours Since Listed
-                hours_since_listed = None # Strict Mode: Default to None (Unknown)
-                
-                # Try 'listing_date' or 'date_posted'
-                date_str = item.get('listing_date') or item.get('date_posted')
+                date_str = item.get('listing_date') or item.get('date_posted') or item.get('posted_at')
                 if date_str:
                     try:
-                        # Handle ISO format with 'Z' or '+00:00'
+                        # Try ISO
                         if date_str.endswith('Z'):
-                            date_str = date_str.replace('Z', '+00:00')
+                             date_str = date_str.replace('Z', '+00:00')
+                        dt = datetime.fromisoformat(date_str)
+                        if dt.tzinfo is None:
+                            dt = dt.replace(tzinfo=timezone.utc)
                         
-                        posted_date = datetime.fromisoformat(date_str)
+                        posted_at = dt.isoformat()
+                        
+                        # Calc hours ago
                         now = datetime.now(timezone.utc)
-                        
-                        # Ensure posted_date has timezone if now does
-                        if posted_date.tzinfo is None:
-                            posted_date = posted_date.replace(tzinfo=timezone.utc)
-                            
-                        diff = now - posted_date
-                        hours_since_listed = diff.total_seconds() / 3600.0
-                        
-                        # Sanity check: if it's in the future (due to clock skew), set to 0
-                        if hours_since_listed < 0:
-                            hours_since_listed = 0
-                    except Exception as e:
-                        print(f"   ⚠️ Date parse error: {e}")
+                        diff = now - dt
+                        hours_since = diff.total_seconds() / 3600.0
+                        if hours_since < 0: hours_since = 0
+                    except:
+                        pass
                 
+                # Build Normalized Object
                 listing = {
-                    'title': item.get('title', 'Unknown'),
+                    'listing_id': str(item.get('id') or item.get('listing_id') or item.get('facebook_id') or ''),
+                    'title': title,
                     'price': price,
-                    'mileage': mileage, 
-                    'location': item.get('location', 'Unknown'),
+                    'mileage': mileage,
+                    'location': item.get('location', {}).get('address') if isinstance(item.get('location'), dict) else str(item.get('location', '')),
                     'description': item.get('description', '') or item.get('seller_description', ''),
-                    'images': item.get('images', []),
-                    'listing_url': item.get('url'),
+                    'images': item.get('images', []) or [item.get('image_url')] if item.get('image_url') else [],
+                    'listing_url': item.get('url') or item.get('original_url'),
                     'source': 'facebook_marketplace',
-                    'hours_since_listed': hours_since_listed, 
-                    'bright_data_snapshot': True
+                    'hours_since_listed': hours_since,
+                    'posted_at': posted_at,
+                    'scraped_at': datetime.now(timezone.utc).isoformat(),
+                    # Raw Payloads
+                    'raw_fields': {k:v for k,v in item.items() if k not in ['images', 'description']}, 
+                    'raw_json': item.get('raw_json', {})
                 }
-                listings.append(listing)
+                
+                # Ensure listing_id is set
+                if not listing['listing_id'] and listing['listing_url']:
+                    # Extract ID from URL
+                    # /item/123456789/
+                    match = re.search(r'item/(\d+)', listing['listing_url'])
+                    if match:
+                        listing['listing_id'] = match.group(1)
+                
+                # Strict check: need ID and URL
+                if listing['listing_id'] and listing['listing_url']:
+                    listings.append(listing)
+                    
             except Exception as e:
-                print(f"   ⚠️ Error formatting item {item.get('url')}: {e}")
+                logger.warning(f"Formatting error: {e}")
                 
         return listings
 
-# Quick Test
+# Test
 if __name__ == "__main__":
-    enricher = BrightDataEnricher()
-    # Test URLs
-    test_urls = [
-      "https://www.facebook.com/marketplace/item/981001136298403/",
-    ]
-    results = enricher.enrich(test_urls)
-    print(json.dumps(results, indent=2))
+    import sys
+    # Verify import works path-wise
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    
+    manager = BrightDataManager()
+    print("Manager Initialized.")

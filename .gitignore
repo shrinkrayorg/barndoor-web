@@ -164,3 +164,4 @@ web_server.stderr.log
 web_server.stdout.log
 debug_*.py
 test_*.py
+.vercel
